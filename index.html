@@ -1370,8 +1370,9 @@ function renderCol(col, prevIds) {
                 title="${esc(u.name)}"
                 onclick="assignCard('${card.id}','${esc(u.name)}','${u.color}')">
                 ${esc(u.name[0].toUpperCase())}
-              </div>`).join('')}
-            ${card.assignee ? `<button onclick="assignCard('${card.id}','','')" style="background:none;border:none;font-size:10px;color:#b0aca5;cursor:pointer;padding:0 2px" title="Clear">✕</button>` : ''}
+              </div>
+              <span style="font-size:11px;color:var(--muted);margin-right:6px">${esc(u.name)}</span>`).join('')}
+            ${card.assignee ? `<button onclick="assignCard('${card.id}','','')" style="background:none;border:none;font-size:10px;color:#b0aca5;cursor:pointer;padding:0 2px" title="Clear assignment">✕ clear</button>` : ''}
           </div>
           ${card.assignee ? `<div class="assigned-badge">
             <div class="assigned-dot" style="background:${card.assigneeColor||'#888'}">${esc((card.assignee||'?')[0].toUpperCase())}</div>
