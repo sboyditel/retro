@@ -390,6 +390,28 @@ header {
 @keyframes db { 0%,80%,100%{transform:scale(.6);opacity:.4}40%{transform:scale(1);opacity:1} }
 .ai-footer { margin-top:24px; display:flex; justify-content:flex-end; }
 
+/* ASSIGNEE */
+.assignee-row { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+.assignee-row span { font-size:11px; color:var(--muted); }
+.assignee-opt {
+  width:26px; height:26px; border-radius:50%; border:2px solid transparent;
+  cursor:pointer; display:flex; align-items:center; justify-content:center;
+  font-size:10px; font-weight:700; color:#fff; transition:all .15s; opacity:.5;
+}
+.assignee-opt:hover { opacity:1; transform:scale(1.1); }
+.assignee-opt.selected { opacity:1; border-color:var(--text); box-shadow:0 0 0 2px var(--surface),0 0 0 3px var(--text); }
+.assigned-badge {
+  display:inline-flex; align-items:center; gap:5px;
+  font-size:11px; font-weight:500; color:var(--muted);
+  background:var(--bg); border:1px solid var(--border);
+  border-radius:20px; padding:2px 8px 2px 3px; margin-left:auto;
+}
+.assigned-dot {
+  width:18px; height:18px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:9px; font-weight:700; color:#fff; flex-shrink:0;
+}
+
 /* HISTORY */
 .history-card {
   background:var(--surface); border:1px solid var(--border); border-radius:16px;
@@ -943,18 +965,34 @@ async function loadRetroName() {
   } catch(e) {}
 }
 
-// Sync
+// Sync — optimised for ~25 concurrent users
+// Board: poll every 4s. Presence: write-only ping every 8s, read every 8s (staggered).
+// Scores: poll every 10s. Name: poll every 15s.
+// This keeps Firebase reads ~25 req/min per user instead of 90+.
+
+let tickCount = 0;
+
 function startSync() {
-  pingPresence();
+  pingPresence();  // write my presence immediately
   loadBoard();
   loadRetroName();
   loadScores();
   initScoreBar();
-  setInterval(tick, 2000);
-  setInterval(pingPresence, 3500);
+  setInterval(tick, 4000);       // board every 4s
+  setInterval(pingPresence, 8000); // presence ping every 8s
 }
 
-async function tick() { await Promise.all([loadBoard(), loadPresence(), loadRetroName(), loadScores()]); }
+async function tick() {
+  tickCount++;
+  // Always load board
+  await loadBoard();
+  // Load presence every 2nd tick (8s)
+  if (tickCount % 2 === 0) await loadPresence();
+  // Load scores every 3rd tick (12s)
+  if (tickCount % 3 === 0) await loadScores();
+  // Load name every 4th tick (16s)
+  if (tickCount % 4 === 0) await loadRetroName();
+}
 
 async function loadBoard() {
   try {
@@ -986,21 +1024,15 @@ async function loadPresence() {
     if (s === lastPresStr) return;
     lastPresStr = s;
     const now = Date.now();
-    presence = Object.fromEntries(Object.entries(remote).filter(([,v]) => now - v.ts < 9000));
+    presence = Object.fromEntries(Object.entries(remote).filter(([,v]) => now - v.ts < 25000));
     renderPresence();
   } catch(e) {}
 }
 
 async function pingPresence() {
+  // Write-only: just update my own entry, don't read the whole object
   try {
-    const cur = await fbGet(`rooms/${roomKey}/presence`) || {};
-    const now = Date.now();
-    cur[me.id] = { name: me.name, color: me.color, ts: now };
-    Object.keys(cur).forEach(k => { if (now - cur[k].ts > 9000) delete cur[k]; });
-    await fbSet(`rooms/${roomKey}/presence`, cur);
-    lastPresStr = JSON.stringify(cur);
-    presence = cur;
-    renderPresence();
+    await fbSet(`rooms/${roomKey}/presence/${me.id}`, { name: me.name, color: me.color, ts: Date.now() });
   } catch(e) {}
 }
 
@@ -1023,7 +1055,11 @@ function setSyncState(s) {
 }
 
 // Presence UI
+let lastPresenceRenderStr = '';
 function renderPresence() {
+  const cur = JSON.stringify(presence);
+  if (cur === lastPresenceRenderStr) return; // skip if nothing changed
+  lastPresenceRenderStr = cur;
   const bar = document.getElementById('presence');
   bar.innerHTML = Object.values(presence).map(u=>`
     <div class="presence-avatar" style="background:${u.color}">
@@ -1094,6 +1130,16 @@ function setCarryIntent(id, intent) {
   saveBoard();
 }
 
+function assignCard(id, name, color) {
+  const card = board.action.find(c=>c.id===id);
+  if (!card) return;
+  // toggle off if same person clicked again
+  if (card.assignee === name) { card.assignee = ''; card.assigneeColor = ''; }
+  else { card.assignee = name; card.assigneeColor = color; }
+  renderCol('action');
+  saveBoard();
+}
+
 const VOTE_BUDGET = 5;
 
 function votesUsed(col) {
@@ -1105,7 +1151,9 @@ function cardTotal(card) {
   return Object.values(card.userVotes).reduce((a, b) => a + b, 0);
 }
 
+let voteLocked = false;
 function vote(col, id, delta) {
+  if (voteLocked) return;
   const card = board[col].find(c=>c.id===id);
   if (!card) return;
   if (!card.userVotes) card.userVotes = {};
@@ -1121,8 +1169,9 @@ function vote(col, id, delta) {
   }
   card.votes = cardTotal(card);
   card.mine = (card.userVotes[me.id] || 0) > 0;
+  voteLocked = true;
   renderCol(col);
-  saveBoard();
+  saveBoard().finally(() => { voteLocked = false; });
 }
 
 // ── Drag and drop (pointer events) ──
@@ -1312,6 +1361,21 @@ function renderCol(col, prevIds) {
             <span style="font-size:11px;color:var(--muted)">Want to do this?</span>
             <button class="label-btn domore${card.carryYes?' on':''}" onclick="setCarryIntent('${card.id}','yes')">👍 Yes</button>
             <button class="label-btn stop${card.carryNo?' on':''}" onclick="setCarryIntent('${card.id}','no')">👎 No</button>
+          </div>` : ''}
+          <div class="assignee-row">
+            <span>Assign:</span>
+            ${Object.values(presence).map(u => `
+              <div class="assignee-opt${card.assignee===u.name?' selected':''}"
+                style="background:${u.color}"
+                title="${esc(u.name)}"
+                onclick="assignCard('${card.id}','${esc(u.name)}','${u.color}')">
+                ${esc(u.name[0].toUpperCase())}
+              </div>`).join('')}
+            ${card.assignee ? `<button onclick="assignCard('${card.id}','','')" style="background:none;border:none;font-size:10px;color:#b0aca5;cursor:pointer;padding:0 2px" title="Clear">✕</button>` : ''}
+          </div>
+          ${card.assignee ? `<div class="assigned-badge">
+            <div class="assigned-dot" style="background:${card.assigneeColor||'#888'}">${esc((card.assignee||'?')[0].toUpperCase())}</div>
+            ${esc(card.assignee)}
           </div>` : ''}` : ''}
         </div>`;
       bindDrag(div, col);
@@ -1404,7 +1468,7 @@ async function saveToHistory() {
       carried:       board.action.filter(c=>c.carry).map(c=>({text:c.text, wantTo:!!c.carryYes, dontWant:!!c.carryNo})),
       doMore:        board.action.filter(c=>c.doMore).map(c=>c.text),
       stopDoing:     board.action.filter(c=>c.stopDoing).map(c=>c.text),
-      actions: board.action.map(c=>({text:c.text,votes:c.votes,carry:!!c.carry,carryYes:!!c.carryYes,carryNo:!!c.carryNo,doMore:!!c.doMore,stopDoing:!!c.stopDoing})),
+      actions: board.action.map(c=>({text:c.text,votes:c.votes,carry:!!c.carry,carryYes:!!c.carryYes,carryNo:!!c.carryNo,doMore:!!c.doMore,stopDoing:!!c.stopDoing,assignee:c.assignee||''})),
       well:   board.well.map(c=>({text:c.text,votes:c.votes})),
       better: board.better.map(c=>({text:c.text,votes:c.votes})),
     };
@@ -1473,10 +1537,11 @@ async function openDetail(id) {
     const scoreColor = r.score ? getScoreColor(Math.round(parseFloat(r.score))) : '#888';
     const scoreBar = r.score ? `<div class="sum-score-bar-wrap"><div class="sum-score-bar" style="width:${parseFloat(r.score)/10*100}%;background:${scoreColor}"></div></div>` : '';
 
-    const renderList = (items, carry=false) => items.length
-      ? items.map(c=>`<div class="sum-item${c.carry?' carry':''}">
+    const renderList = (items) => items.length
+      ? items.map(c=>`<div class="sum-item${c.carry?' carry':''}${c.doMore?' do-more':''}${c.stopDoing?' stop-doing':''}">
           ${c.carry?'<span class="carry-arrow">→</span>':''}
           <span>${esc(c.text||c)}</span>
+          ${c.assignee?`<span class="assigned-badge" style="margin-left:auto"><div class="assigned-dot" style="background:${c.assigneeColor||'#888'}">${esc((c.assignee||'?')[0].toUpperCase())}</div>${esc(c.assignee)}</span>`:''}
           ${c.votes?`<span class="votes">♥ ${c.votes}</span>`:''}
         </div>`).join('')
       : '<div class="sum-empty">Nothing added</div>';
@@ -1632,9 +1697,10 @@ function renderSummary() {
   if (board.action.length) {
     actionEmpty.style.display = 'none';
     actionList.innerHTML = board.action.map(c => `
-      <div class="sum-item${c.carry?' carry':''}">
+      <div class="sum-item${c.carry?' carry':''}${c.doMore?' do-more':''}${c.stopDoing?' stop-doing':''}">
         ${c.carry ? '<span class="carry-arrow">→</span>' : ''}
         <span>${esc(c.text)}</span>
+        ${c.assignee ? `<span class="assigned-badge" style="margin-left:auto"><div class="assigned-dot" style="background:${c.assigneeColor||'#888'}">${esc((c.assignee||'?')[0].toUpperCase())}</div>${esc(c.assignee)}</span>` : ''}
         ${c.votes ? `<span class="votes">♥ ${c.votes}</span>` : ''}
       </div>`).join('');
   } else {
