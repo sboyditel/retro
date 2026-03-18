@@ -1276,7 +1276,7 @@ function renderSummary() {
     scoreBarEl.style.width = (avg / 10 * 100) + '%';
     scoreBarEl.style.background = color;
     document.getElementById('sum-score-chips').innerHTML = Object.values(scores).map(s =>
-      `<span class="score-chip" style="background:${scoreColor(s.value)}">${esc(s.name[0].toUpperCase())} ${s.value}</span>`
+      `<span class="score-chip" style="background:${scoreColor(s.value)}">${s.value}</span>`
     ).join('');
   } else {
     scoreNumEl.textContent = '—';
@@ -1362,10 +1362,10 @@ function renderScoreBar() {
   document.getElementById('score-avg').textContent = avg;
   document.getElementById('score-avg').style.color = scoreColor(Math.round(parseFloat(avg)));
 
-  // breakdown chips — one per person who scored
+  // breakdown chips — anonymous, just show each score value
   const breakdown = document.getElementById('score-breakdown');
   breakdown.innerHTML = Object.values(scores).map(s =>
-    `<span class="score-chip" style="background:${scoreColor(s.value)}">${s.name[0].toUpperCase()} ${s.value}</span>`
+    `<span class="score-chip" style="background:${scoreColor(s.value)}">${s.value}</span>`
   ).join('');
 }
 
