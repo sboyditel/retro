@@ -185,6 +185,8 @@ header {
 }
 .sum-item .votes { font-size:11px; font-weight:600; color:var(--muted); white-space:nowrap; margin-top:2px; flex-shrink:0; }
 .sum-item.carry { background:var(--action-light); }
+.sum-item.do-more { background:var(--well-light); }
+.sum-item.stop-doing { background:#fff0f0; }
 .sum-item .carry-arrow { color:var(--action); font-size:12px; flex-shrink:0; margin-top:2px; }
 .sum-empty { font-size:13px; color:#b0aca5; font-style:italic; }
 
@@ -265,11 +267,14 @@ header {
   border-radius:8px; padding:1px 4px; line-height:1.4;
   position:absolute; top:-6px; right:-8px;
 }
-.col-well .col-header { background:var(--well-light); color:var(--well); }
+.col-well .col-header { background:rgba(14,122,84,.12); color:var(--well); }
 .col-well .col-header .dot { background:var(--well); }
-.col-better .col-header { background:var(--better-light); color:var(--better); }
+.col-well { background:var(--well-light); border-radius:var(--radius); padding:12px; }
+.col-better { background:var(--better-light); border-radius:var(--radius); padding:12px; }
+.col-action { background:var(--action-light); border-radius:var(--radius); padding:12px; }
+.col-better .col-header { background:rgba(155,79,0,.1); color:var(--better); }
 .col-better .col-header .dot { background:var(--better); }
-.col-action .col-header { background:var(--action-light); color:var(--action); }
+.col-action .col-header { background:rgba(45,79,192,.1); color:var(--action); }
 .col-action .col-header .dot { background:var(--action); }
 
 .card {
@@ -301,7 +306,28 @@ header {
 .vote-btn.voted .heart { fill:#e07b30; stroke:#e07b30; }
 .avatar { width:24px; height:24px; border-radius:50%; font-size:10px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; color:#fff; }
 .card.carried { border-color:#a5b8f7; background:#f5f7ff; }
-.carry-btn {
+.card.do-more { border-color:#a8dfc5; background:#f0faf5; }
+.card.stop-doing { border-color:#f5c9c9; background:#fff5f5; }
+
+.action-labels { display:flex; gap:5px; margin-top:8px; flex-wrap:wrap; }
+.label-btn {
+  font-family:var(--sans); font-size:11px; font-weight:500;
+  padding:3px 9px; border-radius:20px; border:1.5px solid var(--border);
+  background:var(--bg); color:var(--muted); cursor:pointer; transition:all .15s;
+}
+.label-btn:hover { border-color:#a5a09b; color:var(--text); }
+.label-btn.carry.on  { border-color:#a5b8f7; background:var(--action-light); color:var(--action); }
+.label-btn.domore.on { border-color:#a8dfc5; background:var(--well-light); color:var(--well); }
+.label-btn.stop.on   { border-color:#f5b8b8; background:#fff0f0; color:#c0392b; }
+
+.card-label-tag {
+  display:inline-flex; align-items:center; gap:4px;
+  font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.5px;
+  border-radius:20px; padding:2px 8px; margin-bottom:6px;
+}
+.tag-carry  { background:var(--action-light); color:var(--action); }
+.tag-domore { background:var(--well-light); color:var(--well); }
+.tag-stop   { background:#fff0f0; color:#c0392b; }
   display:flex; align-items:center; gap:4px; font-size:11px; font-weight:500;
   padding:3px 8px; border-radius:20px; border:1px solid var(--border);
   background:var(--bg); color:var(--muted); cursor:pointer; transition:all .15s; margin-left:auto;
@@ -657,10 +683,10 @@ header {
       <div class="sum-card sum-carry-card">
         <div class="sum-card-label">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="flex-shrink:0"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-          Carrying into next sprint
+          Labelled action items
         </div>
         <div id="sum-carry-list" class="sum-list"></div>
-        <div id="sum-carry-empty" class="sum-empty" style="display:none">No items marked to carry forward</div>
+        <div id="sum-carry-empty" class="sum-empty" style="display:none">No items labelled yet</div>
       </div>
 
       <div class="sum-card">
@@ -1041,10 +1067,29 @@ function moveToAction(col, id) {
   toast('Moved to action items');
 }
 
-function toggleCarry(id) {
+function setLabel(id, label) {
   const card = board.action.find(c=>c.id===id);
   if (!card) return;
-  card.carry = !card.carry;
+  const isOn = card[label];
+  card.carry = false; card.doMore = false; card.stopDoing = false;
+  card.carryYes = false; card.carryNo = false;
+  if (!isOn) card[label] = true;
+  renderCol('action');
+  saveBoard();
+}
+
+function setCarryIntent(id, intent) {
+  const card = board.action.find(c=>c.id===id);
+  if (!card || !card.carry) return;
+  if (intent === 'yes') {
+    const isOn = card.carryYes;
+    card.carryYes = false; card.carryNo = false;
+    if (!isOn) card.carryYes = true;
+  } else {
+    const isOn = card.carryNo;
+    card.carryYes = false; card.carryNo = false;
+    if (!isOn) card.carryNo = true;
+  }
   renderCol('action');
   saveBoard();
 }
@@ -1217,15 +1262,29 @@ function renderCol(col, prevIds) {
   } else {
     items.forEach(card => {
       const div = document.createElement('div');
-      div.className = 'card' + (added.includes(card.id) ? ' flash' : '') + (card.carry ? ' carried' : '');
+      div.className = 'card' + (added.includes(card.id) ? ' flash' : '') +
+        (card.carry ? (card.carryYes ? ' do-more' : card.carryNo ? ' stop-doing' : ' carried') : '') +
+        (!card.carry && card.doMore ? ' do-more' : '') +
+        (!card.carry && card.stopDoing ? ' stop-doing' : '');
       div.dataset.id = card.id;
       div.dataset.col = col;
       const canDel = card.author === me.name;
       const myCount = (card.userVotes && card.userVotes[me.id]) || 0;
       const canAdd = !exhausted;
       const canRemove = myCount > 0;
+
+      // label tag shown at top of card
+      const labelTag = col === 'action' ? (
+        card.carry && card.carryYes  ? '<div class="card-label-tag tag-domore">→ Carry forward · Want to do</div>' :
+        card.carry && card.carryNo   ? '<div class="card-label-tag tag-stop">→ Carry forward · Do not want to do</div>' :
+        card.carry                   ? '<div class="card-label-tag tag-carry">→ Carry forward</div>' :
+        card.doMore                  ? '<div class="card-label-tag tag-domore">✓ Do more of this</div>' :
+        card.stopDoing               ? '<div class="card-label-tag tag-stop">✕ Stop doing this</div>' : ''
+      ) : '';
+
       div.innerHTML = `
         ${canDel ? `<button class="del-btn" onclick="deleteCard('${col}','${card.id}')">×</button>` : ''}
+        ${labelTag}
         <div class="card-text">${esc(card.text)}</div>
         <div class="card-footer">
           <div class="vote-stepper${myCount>0?' active':''}${exhausted&&!canRemove?' exhausted':''}">
@@ -1240,12 +1299,18 @@ function renderCol(col, prevIds) {
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
             Action
           </button>` : `
-          <button class="carry-btn${card.carry?' on':''}" onclick="toggleCarry('${card.id}')" title="Mark to carry into next sprint">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-            ${card.carry ? 'Carrying forward' : 'Carry forward'}
-          </button>`}
-          ${card.carry ? '<div class="carry-tag">→ Next sprint</div>' : ''}
-          ${card.mine ? '<span class="card-author" style="margin-left:auto;color:#b0aca5;font-size:11px">your card</span>' : ''}
+          <div class="action-labels">
+            <button class="label-btn carry${card.carry?' on':''}" onclick="setLabel('${card.id}','carry')">→ Carry forward</button>
+            <button class="label-btn domore${card.doMore?' on':''}" onclick="setLabel('${card.id}','doMore')">✓ Do more</button>
+            <button class="label-btn stop${card.stopDoing?' on':''}" onclick="setLabel('${card.id}','stopDoing')">✕ Stop doing</button>
+          </div>
+          ${card.carry ? `
+          <div class="action-labels" style="margin-top:4px">
+            <span style="font-size:11px;color:var(--muted);align-self:center">Want to do this?</span>
+            <button class="label-btn domore${card.carryYes?' on':''}" onclick="setCarryIntent('${card.id}','yes')">👍 Yes</button>
+            <button class="label-btn stop${card.carryNo?' on':''}" onclick="setCarryIntent('${card.id}','no')">👎 No</button>
+          </div>` : ''}`}
+          ${card.mine ? '<span class="card-author" style="margin-left:auto;color:#b0aca5;font-size:11px;margin-top:4px">your card</span>' : ''}
         </div>`;
       bindDrag(div, col);
       wrap.appendChild(div);
@@ -1334,9 +1399,11 @@ async function saveToHistory() {
       roomKey,
       score: avg,
       scoreCount: vals.length,
-      carried: board.action.filter(c=>c.carry).map(c=>c.text),
-      actions: board.action.map(c=>({text:c.text,votes:c.votes,carry:!!c.carry})),
-      well: board.well.map(c=>({text:c.text,votes:c.votes})),
+      carried:       board.action.filter(c=>c.carry).map(c=>({text:c.text, wantTo:!!c.carryYes, dontWant:!!c.carryNo})),
+      doMore:        board.action.filter(c=>c.doMore).map(c=>c.text),
+      stopDoing:     board.action.filter(c=>c.stopDoing).map(c=>c.text),
+      actions: board.action.map(c=>({text:c.text,votes:c.votes,carry:!!c.carry,carryYes:!!c.carryYes,carryNo:!!c.carryNo,doMore:!!c.doMore,stopDoing:!!c.stopDoing})),
+      well:   board.well.map(c=>({text:c.text,votes:c.votes})),
       better: board.better.map(c=>({text:c.text,votes:c.votes})),
     };
     // Use a safe key: r + timestamp in base36
@@ -1430,13 +1497,26 @@ async function openDetail(id) {
             <div style="font-size:12px;color:var(--muted)">${r.scoreCount} response${r.scoreCount!==1?'s':''}</div>
           ` : '<div class="sum-empty">No scores submitted</div>'}
         </div>
-        ${r.carried?.length ? `
+        ${(r.carried?.length || r.doMore?.length || r.stopDoing?.length) ? `
         <div class="sum-card sum-carry-card">
           <div class="sum-card-label">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-            Carrying into next sprint
+            Labelled action items
           </div>
-          <div class="sum-list">${r.carried.map(t=>`<div class="sum-item carry"><span class="carry-arrow">→</span><span>${esc(t)}</span></div>`).join('')}</div>
+          <div class="sum-list">
+            ${(() => {
+              const rows = [];
+              const wantTo   = (r.carried||[]).filter(c=>c.wantTo);
+              const dontWant = (r.carried||[]).filter(c=>c.dontWant);
+              const undecided= (r.carried||[]).filter(c=>!c.wantTo&&!c.dontWant);
+              if (wantTo.length)    rows.push('<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--well);margin:10px 0 4px">👍 Want to do going forward</div>' + wantTo.map(c=>`<div class="sum-item do-more"><span>${esc(c.text||c)}</span></div>`).join(''));
+              if (dontWant.length)  rows.push('<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#c0392b;margin:10px 0 4px">👎 Do not want to do going forward</div>' + dontWant.map(c=>`<div class="sum-item stop-doing"><span>${esc(c.text||c)}</span></div>`).join(''));
+              if (undecided.length) rows.push('<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--action);margin:10px 0 4px">→ Carry forward (undecided)</div>' + undecided.map(c=>`<div class="sum-item carry"><span>${esc(c.text||c)}</span></div>`).join(''));
+              if ((r.doMore||[]).length)     rows.push('<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--well);margin:10px 0 4px">✓ Do more of this</div>' + (r.doMore||[]).map(t=>`<div class="sum-item do-more"><span>${esc(t)}</span></div>`).join(''));
+              if ((r.stopDoing||[]).length)  rows.push('<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#c0392b;margin:10px 0 4px">✕ Stop doing this</div>' + (r.stopDoing||[]).map(t=>`<div class="sum-item stop-doing"><span>${esc(t)}</span></div>`).join(''));
+              return rows.join('');
+            })()}
+          </div>
         </div>` : ''}
         <div class="sum-card">
           <div class="sum-card-label">Action items</div>
@@ -1504,18 +1584,41 @@ function renderSummary() {
     document.getElementById('sum-score-chips').innerHTML = '<span style="font-size:12px;color:#b0aca5">No scores submitted</span>';
   }
 
-  // Carry forward
-  const carried = board.action.filter(c => c.carry);
-  const carryList = document.getElementById('sum-carry-list');
-  const carryEmpty = document.getElementById('sum-carry-empty');
-  if (carried.length) {
+  // Labelled action items
+  const carried      = board.action.filter(c => c.carry);
+  const carryWantTo  = carried.filter(c => c.carryYes);
+  const carryDontWant= carried.filter(c => c.carryNo);
+  const carryUndecided = carried.filter(c => !c.carryYes && !c.carryNo);
+  const doMore       = board.action.filter(c => c.doMore);
+  const stopDoing    = board.action.filter(c => c.stopDoing);
+  const carryList    = document.getElementById('sum-carry-list');
+  const carryEmpty   = document.getElementById('sum-carry-empty');
+
+  const rows = [];
+  if (carryWantTo.length) {
+    rows.push(`<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--well);margin:10px 0 4px">👍 Want to do going forward</div>`);
+    carryWantTo.forEach(c => rows.push(`<div class="sum-item do-more"><span>${esc(c.text)}</span>${c.votes?`<span class="votes">♥ ${c.votes}</span>`:''}</div>`));
+  }
+  if (carryDontWant.length) {
+    rows.push(`<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#c0392b;margin:10px 0 4px">👎 Do not want to do going forward</div>`);
+    carryDontWant.forEach(c => rows.push(`<div class="sum-item stop-doing"><span>${esc(c.text)}</span>${c.votes?`<span class="votes">♥ ${c.votes}</span>`:''}</div>`));
+  }
+  if (carryUndecided.length) {
+    rows.push(`<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--action);margin:10px 0 4px">→ Carry forward (undecided)</div>`);
+    carryUndecided.forEach(c => rows.push(`<div class="sum-item carry"><span>${esc(c.text)}</span>${c.votes?`<span class="votes">♥ ${c.votes}</span>`:''}</div>`));
+  }
+  if (doMore.length) {
+    rows.push(`<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--well);margin:10px 0 4px">✓ Do more of this</div>`);
+    doMore.forEach(c => rows.push(`<div class="sum-item do-more"><span>${esc(c.text)}</span>${c.votes?`<span class="votes">♥ ${c.votes}</span>`:''}</div>`));
+  }
+  if (stopDoing.length) {
+    rows.push(`<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#c0392b;margin:10px 0 4px">✕ Stop doing this</div>`);
+    stopDoing.forEach(c => rows.push(`<div class="sum-item stop-doing"><span>${esc(c.text)}</span>${c.votes?`<span class="votes">♥ ${c.votes}</span>`:''}</div>`));
+  }
+
+  if (rows.length) {
     carryEmpty.style.display = 'none';
-    carryList.innerHTML = carried.map(c => `
-      <div class="sum-item carry">
-        <span class="carry-arrow">→</span>
-        <span>${esc(c.text)}</span>
-        ${c.votes ? `<span class="votes">♥ ${c.votes}</span>` : ''}
-      </div>`).join('');
+    carryList.innerHTML = rows.join('');
   } else {
     carryEmpty.style.display = 'block';
     carryList.innerHTML = '';
