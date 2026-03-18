@@ -1,0 +1,1485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RetroBoard — Live</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --well: #0e7a54; --well-light: #d4f0e2;
+  --better: #9b4f00; --better-light: #ffe5c2;
+  --action: #2d4fc0; --action-light: #cdd8ff;
+  --bg: #f8f7f4; --surface: #ffffff; --text: #1a1917; --muted: #6b6861; --border: #e2e0da;
+  --shadow: 0 1px 3px rgba(0,0,0,.08), 0 4px 16px rgba(0,0,0,.04);
+  --shadow-lg: 0 2px 8px rgba(0,0,0,.10), 0 12px 40px rgba(0,0,0,.08);
+  --radius: 12px; --serif: 'DM Serif Display',Georgia,serif; --sans: 'DM Sans',system-ui,sans-serif;
+}
+body { font-family: var(--sans); background: var(--bg); color: var(--text); min-height: 100vh; font-size: 15px; }
+
+/* JOIN */
+#screen-landing, #screen-host, #screen-join { min-height:100vh; display:flex; align-items:center; justify-content:center; }
+.join-card {
+  background:var(--surface); border:1px solid var(--border); border-radius:20px;
+  padding:40px 48px; width:100%; max-width:440px; box-shadow:var(--shadow-lg);
+  display:flex; flex-direction:column; gap:20px;
+}
+.join-logo { font-family:var(--serif); font-size:28px; letter-spacing:-.5px; display:flex; align-items:center; gap:10px; }
+.mark { background:var(--text); border-radius:10px; display:flex; align-items:center; justify-content:center; }
+.join-logo .mark { width:34px; height:34px; }
+.join-card h2 { font-family:var(--serif); font-size:22px; font-weight:400; }
+.join-card p { font-size:14px; color:var(--muted); margin-top:-12px; line-height:1.5; }
+.field { display:flex; flex-direction:column; gap:6px; }
+.field label { font-size:13px; font-weight:500; color:var(--muted); }
+.field input {
+  font-family:var(--sans); font-size:15px; padding:10px 14px;
+  border:1px solid var(--border); border-radius:10px; background:var(--bg); color:var(--text); outline:none; transition:border-color .15s;
+}
+.field input:focus { border-color:#a5a09b; background:var(--surface); }
+.field input::placeholder { color:#b8b4ac; }
+.avatar-row { display:flex; gap:8px; flex-wrap:wrap; }
+.avatar-pick {
+  width:32px; height:32px; border-radius:50%; border:2px solid transparent;
+  cursor:pointer; transition:all .15s; display:flex; align-items:center; justify-content:center;
+  font-size:11px; font-weight:700; color:#fff;
+}
+.avatar-pick.selected { border-color:var(--text); box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--text); }
+.join-btn {
+  font-family:var(--sans); font-size:15px; font-weight:500; padding:12px;
+  border-radius:10px; border:none; background:var(--text); color:#fff; cursor:pointer; transition:background .15s; margin-top:4px;
+}
+.join-btn:hover { background:#2a2926; }
+.room-hint { font-size:12px; color:#b8b4ac; text-align:center; line-height:1.5; }
+.room-row { display:flex; gap:8px; align-items:center; }
+.room-row input { flex:1; }
+.gen-btn {
+  font-family:var(--sans); font-size:12px; font-weight:500; padding:10px 12px;
+  border-radius:10px; border:1px solid var(--border); background:var(--bg); color:var(--muted);
+  cursor:pointer; transition:all .15s; white-space:nowrap; flex-shrink:0;
+}
+.gen-btn:hover { background:var(--border); color:var(--text); }
+.copy-strip {
+  display:flex; align-items:center; justify-content:space-between;
+  background:var(--bg); border:1px solid var(--border); border-radius:10px;
+  padding:10px 14px; font-size:13px; font-weight:500; color:var(--text);
+  display:none;
+}
+.copy-strip.visible { display:flex; }
+.copy-strip span { font-family:monospace; font-size:14px; letter-spacing:.5px; }
+.copy-btn {
+  font-family:var(--sans); font-size:12px; font-weight:500; padding:5px 12px;
+  border-radius:7px; border:1px solid var(--border); background:var(--surface);
+  cursor:pointer; transition:all .15s; color:var(--muted);
+}
+.copy-btn:hover { background:var(--border); color:var(--text); }
+.copy-btn.copied { background:#d4f0e2; border-color:#a8dfc5; color:#0e7a54; }
+
+/* HEADER */
+header {
+  background:var(--surface); border-bottom:1px solid var(--border); padding:0 24px;
+  display:flex; align-items:center; gap:14px; height:58px; position:sticky; top:0; z-index:100;
+}
+.logo { font-family:var(--serif); font-size:22px; letter-spacing:-.5px; display:flex; align-items:center; gap:8px; }
+.logo .mark { width:28px; height:28px; border-radius:8px; }
+.sprint-badge { background:var(--bg); border:1px solid var(--border); border-radius:20px; padding:4px 12px 4px 14px; font-size:13px; font-weight:500; color:var(--muted); cursor:pointer; display:flex; align-items:center; gap:6px; transition:background .15s; }
+.sprint-badge:hover { background:var(--border); }
+.spacer { flex:1; }
+.presence-bar { display:flex; align-items:center; }
+.presence-avatar {
+  width:28px; height:28px; border-radius:50%; border:2px solid var(--surface); margin-left:-6px;
+  display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; color:#fff;
+  position:relative; transition:transform .2s; cursor:default; z-index:1;
+}
+.presence-avatar:first-child { margin-left:0; }
+.presence-avatar:hover { transform:translateY(-3px); z-index:5; }
+.presence-avatar .tip {
+  position:absolute; bottom:calc(100% + 6px); left:50%; transform:translateX(-50%);
+  background:var(--text); color:#fff; font-size:11px; padding:3px 8px; border-radius:6px;
+  white-space:nowrap; opacity:0; pointer-events:none; transition:opacity .15s;
+}
+.presence-avatar:hover .tip { opacity:1; }
+.online-dot { width:8px; height:8px; background:#22c55e; border-radius:50%; border:2px solid var(--surface); position:absolute; bottom:-1px; right:-1px; }
+.sync-dot { width:8px; height:8px; border-radius:50%; background:#22c55e; flex-shrink:0; transition:background .3s; }
+.sync-dot.syncing { background:#f59e0b; animation:pulse .6s infinite; }
+.sync-dot.error { background:#ef4444; }
+@keyframes pulse { 0%,100%{opacity:1}50%{opacity:.3} }
+.btn {
+  font-family:var(--sans); font-size:13px; font-weight:500; border-radius:8px;
+  border:1px solid var(--border); background:var(--surface); color:var(--text);
+  padding:7px 14px; cursor:pointer; transition:all .15s; white-space:nowrap;
+}
+.btn:hover { background:var(--bg); border-color:#c8c5be; }
+.btn.ai-btn { background:linear-gradient(135deg,#667eea,#764ba2); color:#fff; border:none; display:flex; align-items:center; gap:6px; }
+.btn.ai-btn:hover { opacity:.9; }
+
+/* STATS BAR */
+.stats-bar { background:var(--surface); border-bottom:1px solid var(--border); padding:10px 24px; display:flex; align-items:center; gap:24px; font-size:13px; color:var(--muted); }
+.stat { display:flex; align-items:center; gap:6px; }
+.stat strong { color:var(--text); font-weight:600; }
+.mood-bar { display:flex; height:4px; border-radius:4px; overflow:hidden; width:120px; background:var(--border); gap:1px; }
+.mood-bar .g { background:var(--well); }
+.mood-bar .o { background:var(--better); }
+.mood-bar .b { background:var(--action); }
+
+/* COMPLETE BAR */
+.complete-bar {
+  display:flex; justify-content:center; padding:32px 24px 48px;
+}
+.complete-btn {
+  font-family:var(--sans); font-size:15px; font-weight:500;
+  padding:13px 32px; border-radius:12px; border:none;
+  background:var(--text); color:#fff; cursor:pointer;
+  display:flex; align-items:center; gap:8px;
+  transition:all .2s; box-shadow:0 2px 8px rgba(0,0,0,.15);
+}
+.complete-btn:hover { background:#2a2926; transform:translateY(-1px); box-shadow:0 4px 16px rgba(0,0,0,.2); }
+.complete-btn:active { transform:none; }
+
+/* SUMMARY PAGE */
+#summary-page { min-height:100vh; background:var(--bg); }
+.summary-header {
+  background:var(--surface); border-bottom:1px solid var(--border);
+  padding:0 24px; height:58px; display:flex; align-items:center; justify-content:space-between;
+}
+.summary-body { max-width:900px; margin:0 auto; padding:40px 24px 64px; }
+.summary-hero { text-align:center; margin-bottom:40px; }
+.summary-check {
+  width:64px; height:64px; border-radius:50%; background:var(--text);
+  display:flex; align-items:center; justify-content:center; margin:0 auto 16px;
+  animation:pop-in .4s cubic-bezier(.16,1,.3,1);
+}
+@keyframes pop-in { from{transform:scale(0);opacity:0} to{transform:scale(1);opacity:1} }
+.summary-hero h1 { font-family:var(--serif); font-size:32px; font-weight:400; color:var(--text); margin-bottom:6px; }
+.sum-date { font-size:14px; color:var(--muted); }
+
+.summary-grid {
+  display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:32px;
+}
+@media(max-width:700px){ .summary-grid { grid-template-columns:1fr; } }
+
+.sum-card {
+  background:var(--surface); border:1px solid var(--border); border-radius:16px;
+  padding:20px 22px; box-shadow:var(--shadow);
+  animation:card-in .3s cubic-bezier(.16,1,.3,1);
+}
+.sum-score-card { grid-column:1/-1; }
+.sum-carry-card { border:1.5px solid var(--action-border); background:var(--action-bg); }
+
+.sum-card-label {
+  font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:.5px;
+  color:var(--muted); margin-bottom:14px; display:flex; align-items:center; gap:6px;
+}
+
+.sum-score-display { display:flex; align-items:baseline; gap:6px; margin-bottom:12px; }
+.sum-score-num { font-family:var(--serif); font-size:56px; line-height:1; color:var(--text); transition:color .3s; }
+.sum-score-denom { font-size:20px; color:var(--muted); }
+.sum-score-bar-wrap { height:8px; background:var(--border); border-radius:8px; overflow:hidden; margin-bottom:14px; }
+.sum-score-bar { height:100%; border-radius:8px; transition:width .6s cubic-bezier(.16,1,.3,1), background .3s; }
+.sum-score-chips { display:flex; gap:6px; flex-wrap:wrap; }
+
+.sum-list { display:flex; flex-direction:column; gap:8px; }
+.sum-item {
+  font-size:14px; line-height:1.5; color:var(--text); padding:10px 12px;
+  background:var(--bg); border-radius:8px; display:flex; align-items:flex-start; gap:8px;
+}
+.sum-item .votes { font-size:11px; font-weight:600; color:var(--muted); white-space:nowrap; margin-top:2px; flex-shrink:0; }
+.sum-item.carry { background:var(--action-light); }
+.sum-item .carry-arrow { color:var(--action); font-size:12px; flex-shrink:0; margin-top:2px; }
+.sum-empty { font-size:13px; color:#b0aca5; font-style:italic; }
+
+.summary-actions { display:flex; gap:12px; justify-content:center; }
+.score-bar {
+  background:var(--surface); border-bottom:1px solid var(--border);
+  padding:14px 24px; display:flex; align-items:center; gap:20px; flex-wrap:wrap;
+}
+.score-prompt { display:flex; align-items:center; gap:14px; flex-wrap:wrap; flex:1; }
+.score-label { font-size:13px; font-weight:500; color:var(--muted); white-space:nowrap; }
+.score-pips { display:flex; gap:5px; }
+.score-pip {
+  width:30px; height:30px; border-radius:7px; border:1.5px solid var(--border);
+  background:var(--bg); font-size:12px; font-weight:600; color:var(--muted);
+  cursor:pointer; transition:all .15s; display:flex; align-items:center; justify-content:center;
+  font-family:var(--sans);
+}
+.score-pip:hover { border-color:#a5a09b; background:var(--border); color:var(--text); }
+.score-pip.sel { color:#fff !important; border-color:transparent !important; background:var(--sel-color) !important; }
+.score-yours { font-size:12px; color:var(--muted); display:flex; align-items:center; gap:6px; }
+.change-score { font-size:11px; color:#b0aca5; text-decoration:underline; cursor:pointer; background:none; border:none; font-family:var(--sans); padding:0; }
+.change-score:hover { color:var(--muted); }
+.score-result { display:flex; align-items:center; gap:16px; }
+.score-avg-wrap { display:flex; align-items:baseline; gap:4px; }
+.score-avg-num { font-family:var(--serif); font-size:30px; line-height:1; color:var(--text); }
+.score-avg-label { font-size:12px; color:var(--muted); white-space:nowrap; }
+.score-breakdown { display:flex; gap:5px; flex-wrap:wrap; align-items:center; }
+.score-chip {
+  font-size:11px; font-weight:600; padding:2px 8px; border-radius:20px;
+  display:flex; align-items:center; gap:4px; color:#fff;
+}
+
+/* BOARD */
+.board { padding:24px; display:grid; grid-template-columns:repeat(3,1fr); gap:16px; max-width:1280px; margin:0 auto; }
+@media(max-width:900px){.board{grid-template-columns:1fr}}
+.column { display:flex; flex-direction:column; gap:12px; }
+.col-header { display:flex; align-items:center; gap:10px; padding:14px 16px; border-radius:var(--radius); font-weight:600; font-size:14px; }
+.col-header .dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+.col-header .cnt { margin-left:auto; font-size:12px; font-weight:500; opacity:.7; background:rgba(0,0,0,.08); border-radius:10px; padding:1px 8px; }
+.vote-pips { display:flex; align-items:center; gap:3px; margin-left:auto; }
+.pip { width:8px; height:8px; border-radius:50%; border:1.5px solid currentColor; opacity:.35; transition:all .2s; flex-shrink:0; }
+.pip.used { opacity:1; background:currentColor; }
+.pip.last { opacity:.6; }
+.vote-btn.exhausted { opacity:.35; cursor:not-allowed; }
+.vote-btn.exhausted:hover { border-color:var(--border); color:var(--muted); background:var(--bg); }
+
+.vote-stepper {
+  display:flex; align-items:center; gap:0;
+  border:1px solid var(--border); border-radius:20px; overflow:hidden;
+  background:var(--bg); transition:border-color .15s;
+}
+.vote-stepper.active { border-color:#f5c99a; background:#fff4e0; }
+.vote-stepper.exhausted { opacity:.4; }
+.vstep {
+  font-family:var(--sans); font-size:15px; font-weight:500;
+  width:28px; height:28px; border:none; background:transparent;
+  cursor:pointer; color:var(--muted); transition:all .15s;
+  display:flex; align-items:center; justify-content:center; line-height:1; flex-shrink:0;
+}
+.vstep:hover:not(:disabled) { background:var(--border); color:var(--text); }
+.vstep:disabled { opacity:.3; cursor:not-allowed; }
+.vcount {
+  display:flex; align-items:center; gap:4px; font-size:13px; font-weight:500;
+  color:var(--muted); padding:0 4px; position:relative; min-width:36px; justify-content:center;
+}
+.vote-stepper.active .vcount { color:#9b4f00; }
+.heart { width:13px; height:13px; fill:none; stroke:currentColor; stroke-width:2; flex-shrink:0; }
+.heart.filled { fill:#e07b30; stroke:#e07b30; }
+.move-btn {
+  display:flex; align-items:center; gap:4px; font-size:11px; font-weight:500;
+  padding:3px 8px; border-radius:20px; border:1px solid var(--action-border);
+  background:var(--action-light); color:var(--action); cursor:pointer; transition:all .15s;
+  margin-left:auto;
+}
+.move-btn:hover { background:var(--action); color:#fff; }
+.card-author { margin-left:0 !important; }
+  font-size:9px; font-weight:700; background:#e07b30; color:#fff;
+  border-radius:8px; padding:1px 4px; line-height:1.4;
+  position:absolute; top:-6px; right:-8px;
+}
+.col-well .col-header { background:var(--well-light); color:var(--well); }
+.col-well .col-header .dot { background:var(--well); }
+.col-better .col-header { background:var(--better-light); color:var(--better); }
+.col-better .col-header .dot { background:var(--better); }
+.col-action .col-header { background:var(--action-light); color:var(--action); }
+.col-action .col-header .dot { background:var(--action); }
+
+.card {
+  background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+  padding:14px 16px; box-shadow:var(--shadow); position:relative; transition:box-shadow .2s, transform .15s;
+  animation:card-in .25s cubic-bezier(.16,1,.3,1);
+  cursor:grab; user-select:none;
+}
+.card:active { cursor:grabbing; }
+.card.dragging { opacity:.35; box-shadow:none; pointer-events:none; }
+.card.drop-above { box-shadow:0 -3px 0 0 #5c7ef7, var(--shadow); }
+.card.drop-below { box-shadow:0 3px 0 0 #5c7ef7, var(--shadow); }
+.col-cards { min-height:60px; }
+.col-cards.drag-target { background:var(--bg); border-radius:var(--radius); outline:1.5px dashed var(--border); }
+@keyframes card-in { from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none} }
+.card:hover { box-shadow:var(--shadow-lg); transform:translateY(-1px); }
+.card.flash { animation:flash .7s ease; }
+@keyframes flash { 0%,100%{background:var(--surface)}35%{background:#fffbeb} }
+.card-text { font-size:14px; line-height:1.55; color:var(--text); word-break:break-word; padding-right:22px; }
+.card-footer { display:flex; align-items:center; gap:8px; margin-top:12px; }
+.vote-btn {
+  display:flex; align-items:center; gap:5px; font-size:13px; font-weight:500;
+  padding:4px 10px; border-radius:20px; border:1px solid var(--border); background:var(--bg);
+  cursor:pointer; transition:all .15s; color:var(--muted);
+}
+.vote-btn:hover { border-color:#b8b4ac; color:var(--text); }
+.vote-btn.voted { background:#fff4e0; border-color:#f5c99a; color:#9b4f00; }
+.heart { width:13px; height:13px; fill:none; stroke:currentColor; stroke-width:2; transition:all .15s; }
+.vote-btn.voted .heart { fill:#e07b30; stroke:#e07b30; }
+.avatar { width:24px; height:24px; border-radius:50%; font-size:10px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; color:#fff; }
+.card.carried { border-color:#a5b8f7; background:#f5f7ff; }
+.carry-btn {
+  display:flex; align-items:center; gap:4px; font-size:11px; font-weight:500;
+  padding:3px 8px; border-radius:20px; border:1px solid var(--border);
+  background:var(--bg); color:var(--muted); cursor:pointer; transition:all .15s; margin-left:auto;
+}
+.carry-btn:hover { border-color:#a5b8f7; color:var(--action); background:var(--action-light); }
+.carry-btn.on { border-color:#a5b8f7; background:var(--action-light); color:var(--action); }
+.carry-tag {
+  position:absolute; top:10px; left:12px;
+  font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:.5px;
+  color:var(--action); background:var(--action-light); border-radius:20px; padding:2px 8px;
+}
+.del-btn {
+  position:absolute; top:10px; right:10px; width:22px; height:22px; border-radius:50%;
+  border:none; background:transparent; color:#c5c2bb; cursor:pointer; font-size:17px;
+  display:flex; align-items:center; justify-content:center; opacity:0; transition:all .15s; line-height:1;
+}
+.card:hover .del-btn { opacity:1; }
+.del-btn:hover { background:#fde8e8; color:#c0392b; }
+
+/* ADD */
+.add-area {
+  background:var(--surface); border:1.5px dashed var(--border); border-radius:var(--radius);
+  padding:14px 16px; cursor:pointer; transition:all .15s;
+  display:flex; align-items:center; gap:8px; color:var(--muted); font-size:14px;
+}
+.add-area:hover { border-color:#b8b4ac; color:var(--text); background:var(--bg); }
+.add-form { background:var(--surface); border:1.5px solid #a5a09b; border-radius:var(--radius); padding:14px 16px; display:none; flex-direction:column; gap:10px; }
+.add-form.open { display:flex; }
+.add-form textarea { font-family:var(--sans); font-size:14px; border:none; outline:none; resize:none; width:100%; background:transparent; color:var(--text); line-height:1.55; }
+.form-row { display:flex; gap:8px; }
+.sbtn { font-family:var(--sans); font-size:12px; font-weight:500; padding:5px 12px; border-radius:7px; border:1px solid var(--border); background:var(--bg); cursor:pointer; color:var(--text); transition:all .15s; }
+.sbtn.ok { background:var(--text); color:#fff; border-color:transparent; }
+.sbtn:hover { background:var(--border); }
+.sbtn.ok:hover { background:#2a2926; }
+.empty { font-size:12px; color:#b0aca5; text-align:center; padding:8px 0; }
+
+/* TOASTS */
+.toasts { position:fixed; bottom:24px; right:24px; display:flex; flex-direction:column; gap:8px; z-index:500; pointer-events:none; }
+.toast { background:var(--text); color:#fff; border-radius:10px; padding:10px 16px; font-size:13px; font-weight:500; display:flex; align-items:center; gap:8px; box-shadow:var(--shadow-lg); animation:toast-in .3s cubic-bezier(.16,1,.3,1); max-width:280px; }
+@keyframes toast-in { from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:none} }
+
+/* AI */
+.overlay { position:fixed; inset:0; background:rgba(0,0,0,.35); z-index:200; display:none; align-items:flex-end; justify-content:center; }
+.overlay.open { display:flex; animation:fade .2s; }
+@keyframes fade { from{opacity:0}to{opacity:1} }
+.ai-panel { background:var(--surface); border-radius:20px 20px 0 0; width:100%; max-width:760px; padding:28px 32px 40px; box-shadow:0 -8px 40px rgba(0,0,0,.16); max-height:80vh; overflow-y:auto; animation:slide-up .25s cubic-bezier(.16,1,.3,1); }
+@keyframes slide-up { from{transform:translateY(60px);opacity:0}to{transform:none;opacity:1} }
+.ai-header { display:flex; align-items:center; gap:12px; margin-bottom:20px; }
+.ai-icon { width:36px; height:36px; border-radius:10px; background:linear-gradient(135deg,#667eea,#764ba2); display:flex; align-items:center; justify-content:center; }
+.ai-panel h2 { font-family:var(--serif); font-size:22px; font-weight:400; }
+.ai-body { font-size:15px; line-height:1.7; }
+.ai-body p { margin-bottom:14px; }
+.ib { background:var(--bg); border-left:3px solid; border-radius:0 8px 8px 0; padding:12px 16px; margin:12px 0; font-size:14px; }
+.ib.g { border-color:var(--well); } .ib.o { border-color:var(--better); } .ib.b { border-color:var(--action); }
+.ib strong { font-weight:600; display:block; margin-bottom:4px; font-size:13px; text-transform:uppercase; letter-spacing:.4px; }
+.ib.g strong { color:var(--well); } .ib.o strong { color:var(--better); } .ib.b strong { color:var(--action); }
+.loading { display:flex; align-items:center; gap:12px; color:var(--muted); font-size:14px; }
+.dots span { display:inline-block; width:6px; height:6px; background:#a5a09b; border-radius:50%; animation:db .9s infinite ease-in-out; }
+.dots span:nth-child(2){animation-delay:.15s}.dots span:nth-child(3){animation-delay:.3s}
+@keyframes db { 0%,80%,100%{transform:scale(.6);opacity:.4}40%{transform:scale(1);opacity:1} }
+.ai-footer { margin-top:24px; display:flex; justify-content:flex-end; }
+
+/* CONFETTI */
+.cp { position:fixed; pointer-events:none; z-index:999; animation:fall linear forwards; }
+@keyframes fall { 0%{transform:translateY(-40px) rotate(0deg);opacity:1}100%{transform:translateY(110vh) rotate(720deg);opacity:0} }
+</style>
+</head>
+<body>
+
+<!-- LANDING: choose role -->
+<div id="screen-landing">
+  <div class="join-card" style="gap:16px">
+    <div class="join-logo">
+      <div class="mark">
+        <svg width="18" height="18" viewBox="0 0 14 14" fill="none">
+          <circle cx="4" cy="4" r="3" fill="white"/>
+          <circle cx="10" cy="10" r="3" fill="white" opacity=".6"/>
+          <circle cx="10" cy="4" r="2" fill="white" opacity=".35"/>
+        </svg>
+      </div>
+      RetroBoard
+    </div>
+    <h2 style="margin-bottom:-4px">Welcome</h2>
+    <p>Are you running this retro or joining one?</p>
+    <button class="join-btn" onclick="showScreen('screen-host')">
+      Create a retro <span style="opacity:.6;font-weight:400;font-size:13px;margin-left:4px">— I'm the host</span>
+    </button>
+    <button class="join-btn" onclick="showScreen('screen-join')" style="background:var(--bg);color:var(--text);border:1px solid var(--border);box-shadow:none">
+      Join a retro <span style="opacity:.6;font-weight:400;font-size:13px;margin-left:4px">— I have a code</span>
+    </button>
+  </div>
+</div>
+
+<!-- HOST SCREEN -->
+<div id="screen-host" style="display:none">
+  <div class="join-card">
+    <div class="join-logo">
+      <div class="mark">
+        <svg width="18" height="18" viewBox="0 0 14 14" fill="none">
+          <circle cx="4" cy="4" r="3" fill="white"/>
+          <circle cx="10" cy="10" r="3" fill="white" opacity=".6"/>
+          <circle cx="10" cy="4" r="2" fill="white" opacity=".35"/>
+        </svg>
+      </div>
+      RetroBoard
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:-4px">
+      <button onclick="showScreen('screen-landing')" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:20px;line-height:1;padding:0">←</button>
+      <h2>Create a retro</h2>
+    </div>
+    <div class="field">
+      <label>Retro name</label>
+      <input id="host-retro-name" type="text" placeholder="e.g. Sprint 24 Retrospective" maxlength="60" autocomplete="off"/>
+    </div>
+    <div class="field">
+      <label>Room code</label>
+      <div class="room-row">
+        <input id="inp-room" type="text" placeholder="e.g. swift-falcon-42" maxlength="32" autocomplete="off"/>
+        <button class="gen-btn" onclick="generateCode()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle;margin-right:4px"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+          Generate
+        </button>
+      </div>
+      <div class="copy-strip" id="copy-strip">
+        <span id="code-display"></span>
+        <button class="copy-btn" id="copy-btn" onclick="copyCode()">Copy</button>
+      </div>
+    </div>
+    <div class="field">
+      <label>Your name</label>
+      <input id="host-name" type="text" placeholder="e.g. Alex" maxlength="24" autocomplete="off"/>
+    </div>
+    <div class="field">
+      <label>Pick your colour</label>
+      <div class="avatar-row" id="color-row"></div>
+    </div>
+    <button class="join-btn" onclick="joinAsHost()">Create &amp; open board →</button>
+    <div class="room-hint">Share the room code with your team so they can join.</div>
+  </div>
+</div>
+
+<!-- PARTICIPANT SCREEN -->
+<div id="screen-join" style="display:none">
+  <div class="join-card">
+    <div class="join-logo">
+      <div class="mark">
+        <svg width="18" height="18" viewBox="0 0 14 14" fill="none">
+          <circle cx="4" cy="4" r="3" fill="white"/>
+          <circle cx="10" cy="10" r="3" fill="white" opacity=".6"/>
+          <circle cx="10" cy="4" r="2" fill="white" opacity=".35"/>
+        </svg>
+      </div>
+      RetroBoard
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:-4px">
+      <button onclick="showScreen('screen-landing')" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:20px;line-height:1;padding:0">←</button>
+      <h2>Join a retro</h2>
+    </div>
+    <div class="field">
+      <label>Room code</label>
+      <input id="join-room" type="text" placeholder="e.g. swift-falcon-42" maxlength="32" autocomplete="off"/>
+    </div>
+    <div class="field">
+      <label>Your name</label>
+      <input id="join-name" type="text" placeholder="e.g. Sam" maxlength="24" autocomplete="off"/>
+    </div>
+    <div class="field">
+      <label>Pick your colour</label>
+      <div class="avatar-row" id="color-row-join"></div>
+    </div>
+    <button class="join-btn" onclick="joinAsParticipant()">Join retro →</button>
+    <div class="room-hint">Ask your facilitator for the room code.</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app" style="display:none">
+  <header>
+    <div class="logo">
+      <div class="mark">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <circle cx="4" cy="4" r="3" fill="white"/>
+          <circle cx="10" cy="10" r="3" fill="white" opacity=".6"/>
+          <circle cx="10" cy="4" r="2" fill="white" opacity=".35"/>
+        </svg>
+      </div>
+      RetroBoard
+    </div>
+    <div class="sprint-badge" id="sprint-badge" onclick="editRetroName()" title="Click to rename">
+      <span id="badge-text">✦ Sprint Retro</span>
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity:.5;flex-shrink:0"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+    </div>
+    <div class="spacer"></div>
+    <div class="presence-bar" id="presence"></div>
+    <div class="sync-dot" id="sync" title="Live sync"></div>
+    <button class="btn" onclick="exportRetro()" style="margin-left:8px">Export</button>
+    <button class="btn ai-btn" onclick="openAI()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+      AI Insights
+    </button>
+  </header>
+
+  <div class="stats-bar">
+    <div class="stat"><strong id="s-total">0</strong> items</div>
+    <div class="stat"><strong id="s-votes">0</strong> votes</div>
+    <div class="stat">
+      <div class="mood-bar">
+        <div class="g" id="m-g" style="flex:1"></div>
+        <div class="o" id="m-o" style="flex:1"></div>
+        <div class="b" id="m-b" style="flex:1"></div>
+      </div>
+      mood
+    </div>
+    <div class="spacer"></div>
+    <div class="stat" style="font-size:12px;color:#b0aca5"><span id="s-online">1 online</span></div>
+  </div>
+
+  <!-- Sprint score bar -->
+  <div class="score-bar" id="score-bar">
+    <div class="score-prompt" id="score-prompt">
+      <span class="score-label">How would you rate this sprint?</span>
+      <div class="score-pips" id="score-pips"></div>
+      <span class="score-yours" id="score-yours" style="display:none"></span>
+    </div>
+    <div class="score-result" id="score-result" style="display:none">
+      <div class="score-avg-wrap">
+        <span class="score-avg-num" id="score-avg">—</span>
+        <span class="score-avg-label">/ 10 team avg</span>
+      </div>
+      <div class="score-breakdown" id="score-breakdown"></div>
+    </div>
+  </div>
+
+  <div class="board">
+    <div class="column col-well">
+      <div class="col-header"><div class="dot"></div>What went well<div class="cnt" id="cnt-well">0</div><div class="vote-pips" id="pips-well"></div></div>
+      <div id="cards-well"></div>
+      <div class="add-area" id="area-well" onclick="showForm('well')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>Add a card
+      </div>
+      <div class="add-form" id="form-well">
+        <textarea id="ta-well" rows="3" placeholder="What helped the team succeed?"></textarea>
+        <div class="form-row">
+          <button class="sbtn ok" onclick="addCard('well')">Add card</button>
+          <button class="sbtn" onclick="hideForm('well')">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="column col-better">
+      <div class="col-header"><div class="dot"></div>What could be better<div class="cnt" id="cnt-better">0</div><div class="vote-pips" id="pips-better"></div></div>
+      <div id="cards-better"></div>
+      <div class="add-area" id="area-better" onclick="showForm('better')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>Add a card
+      </div>
+      <div class="add-form" id="form-better">
+        <textarea id="ta-better" rows="3" placeholder="What caused friction or blockers?"></textarea>
+        <div class="form-row">
+          <button class="sbtn ok" onclick="addCard('better')">Add card</button>
+          <button class="sbtn" onclick="hideForm('better')">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="column col-action">
+      <div class="col-header"><div class="dot"></div>Action items<div class="cnt" id="cnt-action">0</div><div class="vote-pips" id="pips-action"></div></div>
+      <div id="cards-action"></div>
+      <div class="add-area" id="area-action" onclick="showForm('action')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>Add a card
+      </div>
+      <div class="add-form" id="form-action">
+        <textarea id="ta-action" rows="3" placeholder="What should the team do next sprint?"></textarea>
+        <div class="form-row">
+          <button class="sbtn ok" onclick="addCard('action')">Add card</button>
+          <button class="sbtn" onclick="hideForm('action')">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Complete button -->
+  <div class="complete-bar">
+    <button class="complete-btn" onclick="completeRetro()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+      Complete Retrospective
+    </button>
+  </div>
+</div>
+
+<!-- Summary page -->
+<div id="summary-page" style="display:none">
+  <div class="summary-header">
+    <div class="logo" style="font-family:var(--serif);font-size:22px;letter-spacing:-.5px;display:flex;align-items:center;gap:8px">
+      <div class="mark" style="width:28px;height:28px;border-radius:8px">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <circle cx="4" cy="4" r="3" fill="white"/>
+          <circle cx="10" cy="10" r="3" fill="white" opacity=".6"/>
+          <circle cx="10" cy="4" r="2" fill="white" opacity=".35"/>
+        </svg>
+      </div>
+      RetroBoard
+    </div>
+    <button class="btn" onclick="reopenRetro()">← Back to board</button>
+  </div>
+
+  <div class="summary-body">
+    <div class="summary-hero">
+      <div class="summary-check">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+      </div>
+      <h1 id="sum-title">Sprint Retrospective</h1>
+      <p class="sum-date" id="sum-date"></p>
+    </div>
+
+    <div class="summary-grid">
+      <div class="sum-card sum-score-card">
+        <div class="sum-card-label">Overall sprint score</div>
+        <div class="sum-score-display">
+          <span class="sum-score-num" id="sum-score-num">—</span>
+          <span class="sum-score-denom">/10</span>
+        </div>
+        <div class="sum-score-bar-wrap"><div class="sum-score-bar" id="sum-score-bar"></div></div>
+        <div class="sum-score-chips" id="sum-score-chips"></div>
+      </div>
+
+      <div class="sum-card sum-carry-card">
+        <div class="sum-card-label">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="flex-shrink:0"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          Carrying into next sprint
+        </div>
+        <div id="sum-carry-list" class="sum-list"></div>
+        <div id="sum-carry-empty" class="sum-empty" style="display:none">No items marked to carry forward</div>
+      </div>
+
+      <div class="sum-card">
+        <div class="sum-card-label">All action items</div>
+        <div id="sum-action-list" class="sum-list"></div>
+        <div id="sum-action-empty" class="sum-empty" style="display:none">No action items</div>
+      </div>
+
+      <div class="sum-card">
+        <div class="sum-card-label" style="color:var(--well);display:flex;align-items:center;gap:6px">
+          <span style="width:8px;height:8px;border-radius:50%;background:var(--well);display:inline-block"></span>
+          What went well
+        </div>
+        <div id="sum-well-list" class="sum-list"></div>
+        <div id="sum-well-empty" class="sum-empty" style="display:none">Nothing added</div>
+      </div>
+
+      <div class="sum-card">
+        <div class="sum-card-label" style="color:var(--better);display:flex;align-items:center;gap:6px">
+          <span style="width:8px;height:8px;border-radius:50%;background:var(--better);display:inline-block"></span>
+          What could be better
+        </div>
+        <div id="sum-better-list" class="sum-list"></div>
+        <div id="sum-better-empty" class="sum-empty" style="display:none">Nothing added</div>
+      </div>
+    </div>
+
+    <div class="summary-actions">
+      <button class="btn primary" onclick="exportRetro()">Export summary</button>
+      <button class="btn" onclick="reopenRetro()">← Back to board</button>
+    </div>
+  </div>
+</div>
+
+<div class="toasts" id="toasts"></div>
+
+<!-- Rename modal -->
+<div class="overlay" id="rename-overlay">
+  <div class="ai-panel" style="max-height:auto;padding:28px 32px 32px">
+    <div class="ai-header" style="margin-bottom:16px">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      <h2 style="font-size:20px">Name this retro</h2>
+    </div>
+    <div class="field">
+      <input id="rename-input" type="text" placeholder="e.g. Sprint 24 Retrospective" maxlength="60" style="background:var(--bg);font-size:16px"/>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:16px;justify-content:flex-end">
+      <button class="btn" onclick="closeRename()">Cancel</button>
+      <button class="btn primary" onclick="saveRetroName()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="ai-overlay">
+  <div class="ai-panel">
+    <div class="ai-header">
+      <div class="ai-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg></div>
+      <h2>Retrospective Insights</h2>
+    </div>
+    <div id="ai-body" class="ai-body"></div>
+    <div class="ai-footer"><button class="btn" onclick="closeAI()">Close</button></div>
+  </div>
+</div>
+
+<script>
+const PALETTE = ['#5c7ef7','#e07b30','#0e7a54','#9b4f00','#764ba2','#d4516c','#0891b2','#65a30d'];
+let myColor = PALETTE[0];
+let myColorJoin = PALETTE[0];
+
+// Build host colour picker
+const colorRow = document.getElementById('color-row');
+PALETTE.forEach((c,i) => {
+  const el = document.createElement('div');
+  el.className = 'avatar-pick' + (i===0?' selected':'');
+  el.style.background = c;
+  el.onclick = () => { myColor = c; colorRow.querySelectorAll('.avatar-pick').forEach(a=>a.classList.remove('selected')); el.classList.add('selected'); };
+  colorRow.appendChild(el);
+});
+
+// Build participant colour picker
+const colorRowJoin = document.getElementById('color-row-join');
+PALETTE.forEach((c,i) => {
+  const el = document.createElement('div');
+  el.className = 'avatar-pick' + (i===0?' selected':'');
+  el.style.background = c;
+  el.onclick = () => { myColorJoin = c; colorRowJoin.querySelectorAll('.avatar-pick').forEach(a=>a.classList.remove('selected')); el.classList.add('selected'); };
+  colorRowJoin.appendChild(el);
+});
+
+// State
+let me = null, roomKey = null;
+let board = {well:[],better:[],action:[]};
+let presence = {};
+let lastBoardStr = '', lastPresStr = '';
+
+// Room code generator
+const ADJS  = ['swift','calm','bold','bright','keen','sharp','warm','crisp','clear','fresh','sage','quiet','wild','grand','neat'];
+const NOUNS = ['falcon','river','cedar','summit','atlas','comet','grove','harbor','ridge','stone','ember','delta','maple','anchor','beacon'];
+
+function generateCode() {
+  const adj  = ADJS[Math.floor(Math.random() * ADJS.length)];
+  const noun = NOUNS[Math.floor(Math.random() * NOUNS.length)];
+  const num  = Math.floor(Math.random() * 90) + 10;
+  const code = `${adj}-${noun}-${num}`;
+  document.getElementById('inp-room').value = code;
+  document.getElementById('code-display').textContent = code;
+  document.getElementById('copy-strip').classList.add('visible');
+  const btn = document.getElementById('copy-btn');
+  btn.textContent = 'Copy';
+  btn.classList.remove('copied');
+}
+
+function copyCode() {
+  const code = document.getElementById('inp-room').value;
+  navigator.clipboard.writeText(code).then(() => {
+    const btn = document.getElementById('copy-btn');
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+// ── Screen navigation ──
+function showScreen(id) {
+  ['screen-landing','screen-host','screen-join'].forEach(s => {
+    document.getElementById(s).style.display = s === id ? 'flex' : 'none';
+  });
+}
+
+// ── Host join ──
+function joinAsHost() {
+  const name = document.getElementById('host-name').value.trim();
+  const room = document.getElementById('inp-room').value.trim().replace(/\s+/g,'-').toLowerCase() || 'default';
+  const retroName = document.getElementById('host-retro-name').value.trim();
+  if (!name) { document.getElementById('host-name').focus(); return; }
+  if (!room) { document.getElementById('inp-room').focus(); return; }
+  me = { id:'u'+Date.now()+Math.random().toString(36).slice(2), name, color: myColor };
+  roomKey = 'retro-' + room;
+  const defaultName = room.replace(/-/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+  setRetroNameDisplay(retroName || defaultName);
+  if (retroName) saveRetroNameToStorage(retroName);
+  showScreen(null);
+  document.getElementById('app').style.display = 'block';
+  startSync();
+}
+
+// ── Participant join ──
+function joinAsParticipant() {
+  const name = document.getElementById('join-name').value.trim();
+  const room = document.getElementById('join-room').value.trim().replace(/\s+/g,'-').toLowerCase();
+  if (!room) { document.getElementById('join-room').focus(); return; }
+  if (!name) { document.getElementById('join-name').focus(); return; }
+  me = { id:'u'+Date.now()+Math.random().toString(36).slice(2), name, color: myColorJoin };
+  roomKey = 'retro-' + room;
+  showScreen(null);
+  document.getElementById('app').style.display = 'block';
+  startSync();
+}
+
+// keyboard nav
+document.getElementById('inp-room').addEventListener('keydown', e => { if (e.key==='Enter') document.getElementById('host-name').focus(); });
+document.getElementById('host-name').addEventListener('keydown', e => { if (e.key==='Enter') document.getElementById('host-retro-name').focus(); });
+document.getElementById('host-retro-name').addEventListener('keydown', e => { if (e.key==='Enter') joinAsHost(); });
+document.getElementById('join-room').addEventListener('keydown', e => { if (e.key==='Enter') document.getElementById('join-name').focus(); });
+document.getElementById('join-name').addEventListener('keydown', e => { if (e.key==='Enter') joinAsParticipant(); });
+
+function setRetroNameDisplay(name) {
+  document.getElementById('badge-text').textContent = '✦ ' + name;
+}
+
+function editRetroName() {
+  const current = document.getElementById('badge-text').textContent.replace('✦ ','');
+  document.getElementById('rename-input').value = current;
+  document.getElementById('rename-overlay').classList.add('open');
+  setTimeout(()=>document.getElementById('rename-input').select(), 50);
+}
+
+function closeRename() { document.getElementById('rename-overlay').classList.remove('open'); }
+
+document.getElementById('rename-overlay').addEventListener('click',e=>{if(e.target===e.currentTarget)closeRename();});
+document.getElementById('rename-input').addEventListener('keydown',e=>{ if(e.key==='Enter') saveRetroName(); if(e.key==='Escape') closeRename(); });
+
+async function saveRetroName() {
+  const val = document.getElementById('rename-input').value.trim();
+  if (!val) return;
+  setRetroNameDisplay(val);
+  closeRename();
+  await saveRetroNameToStorage(val);
+}
+
+// ── Firebase config ──
+const FB = 'https://retro-34ce1-default-rtdb.firebaseio.com';
+function fbUrl(path) { return `${FB}/${path}.json`; }
+async function fbGet(path) {
+  const r = await fetch(fbUrl(path));
+  if (!r.ok) return null;
+  return await r.json();
+}
+async function fbSet(path, data) {
+  await fetch(fbUrl(path), { method:'PUT', body: JSON.stringify(data), headers:{'Content-Type':'application/json'} });
+}
+
+async function saveRetroNameToStorage(name) {
+  try { await fbSet(`rooms/${roomKey}/name`, name); } catch(e) {}
+}
+
+async function loadRetroName() {
+  try {
+    const name = await fbGet(`rooms/${roomKey}/name`);
+    if (name) setRetroNameDisplay(name);
+  } catch(e) {}
+}
+
+// Sync
+function startSync() {
+  pingPresence();
+  loadBoard();
+  loadRetroName();
+  loadScores();
+  initScoreBar();
+  setInterval(tick, 2000);
+  setInterval(pingPresence, 3500);
+}
+
+async function tick() { await Promise.all([loadBoard(), loadPresence(), loadRetroName(), loadScores()]); }
+
+async function loadBoard() {
+  try {
+    const remote = await fbGet(`rooms/${roomKey}/board`);
+    if (!remote) { renderAll(); return; }
+    const s = JSON.stringify(remote);
+    if (s === lastBoardStr) return;
+    lastBoardStr = s;
+    const prevIds = {well:board.well.map(c=>c.id),better:board.better.map(c=>c.id),action:board.action.map(c=>c.id)};
+    board = remote;
+    ['well','better','action'].forEach(col => {
+      if (!Array.isArray(board[col])) board[col] = [];
+      board[col].forEach(c => {
+        if (!c.userVotes) c.userVotes = {};
+        c.votes = cardTotal(c);
+        c.mine = (c.userVotes[me.id] || 0) > 0;
+      });
+    });
+    renderAll(prevIds);
+    setSyncState('ok');
+  } catch(e) { setSyncState('error'); }
+}
+
+async function loadPresence() {
+  try {
+    const remote = await fbGet(`rooms/${roomKey}/presence`);
+    if (!remote) return;
+    const s = JSON.stringify(remote);
+    if (s === lastPresStr) return;
+    lastPresStr = s;
+    const now = Date.now();
+    presence = Object.fromEntries(Object.entries(remote).filter(([,v]) => now - v.ts < 9000));
+    renderPresence();
+  } catch(e) {}
+}
+
+async function pingPresence() {
+  try {
+    const cur = await fbGet(`rooms/${roomKey}/presence`) || {};
+    const now = Date.now();
+    cur[me.id] = { name: me.name, color: me.color, ts: now };
+    Object.keys(cur).forEach(k => { if (now - cur[k].ts > 9000) delete cur[k]; });
+    await fbSet(`rooms/${roomKey}/presence`, cur);
+    lastPresStr = JSON.stringify(cur);
+    presence = cur;
+    renderPresence();
+  } catch(e) {}
+}
+
+async function saveBoard() {
+  setSyncState('syncing');
+  try {
+    const strip = cards => cards.map(c => { const {mine, ...rest} = c; return rest; });
+    const clean = { well: strip(board.well), better: strip(board.better), action: strip(board.action) };
+    const s = JSON.stringify(clean);
+    await fbSet(`rooms/${roomKey}/board`, clean);
+    lastBoardStr = s;
+    setSyncState('ok');
+  } catch(e) { setSyncState('error'); }
+}
+
+function setSyncState(s) {
+  const dot = document.getElementById('sync');
+  dot.className = 'sync-dot' + (s!=='ok'?' '+s:'');
+  dot.title = {ok:'Live — synced',syncing:'Syncing…',error:'Sync error'}[s];
+}
+
+// Presence UI
+function renderPresence() {
+  const bar = document.getElementById('presence');
+  bar.innerHTML = Object.values(presence).map(u=>`
+    <div class="presence-avatar" style="background:${u.color}">
+      ${esc(u.name[0].toUpperCase())}
+      <div class="online-dot"></div>
+      <div class="tip">${esc(u.name)}</div>
+    </div>`).join('');
+  document.getElementById('s-online').textContent = Object.keys(presence).length + ' online';
+}
+
+// Board mutations
+function addCard(col) {
+  const ta = document.getElementById('ta-'+col);
+  const text = ta.value.trim();
+  if (!text) return;
+  const card = {id:'c'+Date.now()+Math.random().toString(36).slice(2), text, author:me.name, color:me.color, votes:0, ts:Date.now()};
+  board[col].push(card);
+  hideForm(col);
+  renderCol(col, {[col]:board[col].map(c=>c.id).filter(id=>id!==card.id)});
+  saveBoard();
+  confetti();
+}
+
+function deleteCard(col, id) {
+  const card = board[col].find(c=>c.id===id);
+  if (!card) return;
+  if (card.author !== me.name) { toast('You can only delete your own cards'); return; }
+  board[col] = board[col].filter(c=>c.id!==id);
+  renderCol(col);
+  saveBoard();
+}
+
+function moveToAction(col, id) {
+  const idx = board[col].findIndex(c=>c.id===id);
+  if (idx === -1) return;
+  const card = board[col].splice(idx, 1)[0];
+  board.action.push(card);
+  renderCol(col);
+  renderCol('action');
+  saveBoard();
+  toast('Moved to action items');
+}
+
+function toggleCarry(id) {
+  const card = board.action.find(c=>c.id===id);
+  if (!card) return;
+  card.carry = !card.carry;
+  renderCol('action');
+  saveBoard();
+}
+
+const VOTE_BUDGET = 5;
+
+function votesUsed(col) {
+  return board[col].reduce((s, c) => s + ((c.userVotes && c.userVotes[me.id]) || 0), 0);
+}
+
+function cardTotal(card) {
+  if (!card.userVotes) return 0;
+  return Object.values(card.userVotes).reduce((a, b) => a + b, 0);
+}
+
+function vote(col, id, delta) {
+  const card = board[col].find(c=>c.id===id);
+  if (!card) return;
+  if (!card.userVotes) card.userVotes = {};
+  const cur = card.userVotes[me.id] || 0;
+  if (delta > 0) {
+    if (votesUsed(col) >= VOTE_BUDGET) { toast('You\'ve used all 5 votes in this column'); return; }
+    card.userVotes[me.id] = cur + 1;
+    confetti();
+  } else {
+    if (cur <= 0) return;
+    card.userVotes[me.id] = cur - 1;
+    if (card.userVotes[me.id] === 0) delete card.userVotes[me.id];
+  }
+  card.votes = cardTotal(card);
+  card.mine = (card.userVotes[me.id] || 0) > 0;
+  renderCol(col);
+  saveBoard();
+}
+
+// ── Drag and drop (pointer events) ──
+let dragId = null, dragCol = null, dragEl = null, indicatorEl = null;
+
+function bindDrag(el, col) {
+  el.addEventListener('mousedown', e => {
+    if (e.button !== 0) return;
+    if (e.target.closest('button')) return; // don't drag when clicking buttons
+    startDrag(e, el, col);
+  });
+}
+
+function startDrag(e, el, col) {
+  dragId = el.dataset.id;
+  dragCol = col;
+  dragEl = el;
+  el.classList.add('dragging');
+
+  // create floating ghost
+  const ghost = el.cloneNode(true);
+  ghost.id = 'drag-ghost';
+  ghost.style.cssText = `position:fixed;width:${el.offsetWidth}px;opacity:.85;pointer-events:none;z-index:1000;box-shadow:0 8px 24px rgba(0,0,0,.18);transform:rotate(1.5deg);border-radius:12px;`;
+  positionGhost(ghost, e);
+  document.body.appendChild(ghost);
+
+  document.addEventListener('mousemove', onDragMove);
+  document.addEventListener('mouseup', onDragEnd);
+  e.preventDefault();
+}
+
+function positionGhost(ghost, e) {
+  const g = ghost || document.getElementById('drag-ghost');
+  if (!g) return;
+  g.style.left = (e.clientX + 12) + 'px';
+  g.style.top  = (e.clientY - 20) + 'px';
+}
+
+function clearIndicators() {
+  document.querySelectorAll('.drop-above,.drop-below').forEach(el => el.classList.remove('drop-above','drop-below'));
+  document.querySelectorAll('.col-cards.drag-target').forEach(el => el.classList.remove('drag-target'));
+}
+
+function onDragMove(e) {
+  positionGhost(null, e);
+  clearIndicators();
+
+  // find which card or container we're over
+  const el = document.elementFromPoint(e.clientX, e.clientY);
+  const overCard = el?.closest('.card:not(.dragging)');
+  const overContainer = el?.closest('.col-cards');
+
+  if (overCard) {
+    const rect = overCard.getBoundingClientRect();
+    const midY = rect.top + rect.height / 2;
+    if (e.clientY < midY) overCard.classList.add('drop-above');
+    else overCard.classList.add('drop-below');
+  } else if (overContainer) {
+    overContainer.classList.add('drag-target');
+  }
+}
+
+function onDragEnd(e) {
+  document.removeEventListener('mousemove', onDragMove);
+  document.removeEventListener('mouseup', onDragEnd);
+
+  const ghost = document.getElementById('drag-ghost');
+  if (ghost) ghost.remove();
+  if (dragEl) dragEl.classList.remove('dragging');
+
+  // figure out where to drop
+  const el = document.elementFromPoint(e.clientX, e.clientY);
+  const overCard = el?.closest('.card:not(.dragging)');
+  const overContainer = el?.closest('.col-cards');
+
+  if (!overCard && !overContainer) { clearIndicators(); dragId=dragCol=dragEl=null; return; }
+
+  const targetCol = overCard ? overCard.dataset.col : overContainer?.dataset.col;
+  if (!targetCol) { clearIndicators(); dragId=dragCol=dragEl=null; return; }
+
+  // remove from source
+  const srcIdx = board[dragCol].findIndex(c=>c.id===dragId);
+  if (srcIdx === -1) { clearIndicators(); dragId=dragCol=dragEl=null; return; }
+  const [card] = board[dragCol].splice(srcIdx, 1);
+
+  if (overCard) {
+    const rect = overCard.getBoundingClientRect();
+    const midY = rect.top + rect.height / 2;
+    const targetIdx = board[targetCol].findIndex(c=>c.id===overCard.dataset.id);
+    if (e.clientY < midY) {
+      board[targetCol].splice(targetIdx, 0, card); // insert before
+    } else {
+      board[targetCol].splice(targetIdx + 1, 0, card); // insert after
+    }
+  } else {
+    board[targetCol].push(card); // drop on empty column
+  }
+
+  clearIndicators();
+  dragId=dragCol=dragEl=null;
+  renderAll();
+  saveBoard();
+}
+
+function renderAll(prevIds) { ['well','better','action'].forEach(col=>renderCol(col,prevIds)); }
+
+function renderCol(col, prevIds) {
+  const container = document.getElementById('cards-'+col);
+  const items = board[col];
+  const newIds = new Set(items.map(c=>c.id));
+  const oldIds = prevIds ? new Set((prevIds[col]||[])) : new Set(items.map(c=>c.id));
+  const added = [...newIds].filter(id=>!oldIds.has(id));
+
+  // Render vote pips
+  const used = votesUsed(col);
+  const remaining = VOTE_BUDGET - used;
+  const pipsEl = document.getElementById('pips-'+col);
+  if (pipsEl) {
+    pipsEl.innerHTML = Array.from({length: VOTE_BUDGET}, (_,i) => {
+      const isUsed = i < used;
+      const isNext = i === used;
+      return `<div class="pip${isUsed?' used':''}${isNext&&remaining>0?' last':''}"></div>`;
+    }).join('');
+    pipsEl.title = `${remaining} of ${VOTE_BUDGET} votes remaining`;
+  }
+
+  const exhausted = remaining === 0;
+  container.innerHTML = '';
+
+  // wrap cards in a col-cards div for drop targeting
+  const wrap = document.createElement('div');
+  wrap.className = 'col-cards';
+  wrap.dataset.col = col;
+
+  if (!items.length) {
+    wrap.innerHTML = '<div class="empty">No cards yet — add one below ↓</div>';
+  } else {
+    items.forEach(card => {
+      const div = document.createElement('div');
+      div.className = 'card' + (added.includes(card.id) ? ' flash' : '') + (card.carry ? ' carried' : '');
+      div.dataset.id = card.id;
+      div.dataset.col = col;
+      const canDel = card.author === me.name;
+      const myCount = (card.userVotes && card.userVotes[me.id]) || 0;
+      const canAdd = !exhausted;
+      const canRemove = myCount > 0;
+      div.innerHTML = `
+        ${canDel ? `<button class="del-btn" onclick="deleteCard('${col}','${card.id}')">×</button>` : ''}
+        <div class="card-text">${esc(card.text)}</div>
+        <div class="card-footer">
+          <div class="vote-stepper${myCount>0?' active':''}${exhausted&&!canRemove?' exhausted':''}">
+            <button class="vstep minus" onclick="vote('${col}','${card.id}',-1)" ${canRemove?'':'disabled'}>−</button>
+            <span class="vcount">
+              <svg class="heart${myCount>0?' filled':''}" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke-width="2"/></svg>
+              ${card.votes}${myCount>0?`<sup class="my-badge">${myCount}</sup>`:''}
+            </span>
+            <button class="vstep plus" onclick="vote('${col}','${card.id}',1)" ${canAdd?'':'disabled'}>+</button>
+          </div>
+          ${col !== 'action' ? `<button class="move-btn" onclick="moveToAction('${col}','${card.id}')" title="Move to action items">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            Action
+          </button>` : `
+          <button class="carry-btn${card.carry?' on':''}" onclick="toggleCarry('${card.id}')" title="Mark to carry into next sprint">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            ${card.carry ? 'Carrying forward' : 'Carry forward'}
+          </button>`}
+          ${card.carry ? '<div class="carry-tag">→ Next sprint</div>' : ''}
+          ${card.mine ? '<span class="card-author" style="margin-left:auto;color:#b0aca5;font-size:11px">your card</span>' : ''}
+        </div>`;
+      bindDrag(div, col);
+      wrap.appendChild(div);
+    });
+  }
+
+  container.appendChild(wrap);
+  document.getElementById('cnt-'+col).textContent = board[col].length;
+  updateStats();
+}
+
+function updateStats() {
+  const all=[...board.well,...board.better,...board.action];
+  document.getElementById('s-total').textContent=all.length;
+  document.getElementById('s-votes').textContent=all.reduce((s,c)=>s+c.votes,0);
+  const wl=board.well.length,bt=board.better.length,ac=board.action.length,t=wl+bt+ac||1;
+  document.getElementById('m-g').style.flex=wl/t;
+  document.getElementById('m-o').style.flex=bt/t;
+  document.getElementById('m-b').style.flex=ac/t;
+}
+
+// ── Sprint score ──
+let scores = {};   // uid → { name, value }
+let myScore = null;
+const SCORE_COLORS = ['','#ef4444','#ef4444','#f97316','#f97316','#eab308','#eab308','#22c55e','#22c55e','#0ea5e9','#0ea5e9'];
+
+function scoreColor(v) { return SCORE_COLORS[v] || '#888'; }
+
+function initScoreBar() {
+  const pips = document.getElementById('score-pips');
+  pips.innerHTML = '';
+  for (let i = 1; i <= 10; i++) {
+    const btn = document.createElement('button');
+    btn.className = 'score-pip';
+    btn.textContent = i;
+    btn.title = `Rate this sprint ${i}/10`;
+    btn.onclick = () => submitScore(i);
+    pips.appendChild(btn);
+  }
+}
+
+function submitScore(val) {
+  myScore = val;
+  scores[me.id] = { name: me.name, value: val };
+  saveScores();
+  renderScoreBar();
+}
+
+function changeScore() {
+  myScore = null;
+  renderScoreBar();
+}
+
+async function saveScores() {
+  try { await fbSet(`rooms/${roomKey}/scores`, scores); } catch(e) {}
+}
+
+async function loadScores() {
+  try {
+    const remote = await fbGet(`rooms/${roomKey}/scores`);
+    if (!remote) return;
+    scores = remote;
+    if (myScore !== null) scores[me.id] = { name: me.name, value: myScore };
+    renderScoreBar();
+  } catch(e) {}
+}
+
+// ── Complete retro / summary ──
+function completeRetro() {
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('summary-page').style.display = 'block';
+  renderSummary();
+  confetti();
+}
+
+function reopenRetro() {
+  document.getElementById('summary-page').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+}
+
+function renderSummary() {
+  // Title & date
+  document.getElementById('sum-title').textContent =
+    document.getElementById('badge-text').textContent.replace('✦ ', '');
+  document.getElementById('sum-date').textContent =
+    'Completed ' + new Date().toLocaleDateString(undefined, {weekday:'long',year:'numeric',month:'long',day:'numeric'});
+
+  // Score
+  const vals = Object.values(scores).map(s => s.value);
+  const scoreNumEl = document.getElementById('sum-score-num');
+  const scoreBarEl = document.getElementById('sum-score-bar');
+  if (vals.length) {
+    const avg = vals.reduce((a,b)=>a+b,0) / vals.length;
+    const rounded = avg.toFixed(1);
+    scoreNumEl.textContent = rounded;
+    const color = scoreColor(Math.round(avg));
+    scoreNumEl.style.color = color;
+    scoreBarEl.style.width = (avg / 10 * 100) + '%';
+    scoreBarEl.style.background = color;
+    document.getElementById('sum-score-chips').innerHTML = Object.values(scores).map(s =>
+      `<span class="score-chip" style="background:${scoreColor(s.value)}">${esc(s.name[0].toUpperCase())} ${s.value}</span>`
+    ).join('');
+  } else {
+    scoreNumEl.textContent = '—';
+    scoreBarEl.style.width = '0';
+    document.getElementById('sum-score-chips').innerHTML = '<span style="font-size:12px;color:#b0aca5">No scores submitted</span>';
+  }
+
+  // Carry forward
+  const carried = board.action.filter(c => c.carry);
+  const carryList = document.getElementById('sum-carry-list');
+  const carryEmpty = document.getElementById('sum-carry-empty');
+  if (carried.length) {
+    carryEmpty.style.display = 'none';
+    carryList.innerHTML = carried.map(c => `
+      <div class="sum-item carry">
+        <span class="carry-arrow">→</span>
+        <span>${esc(c.text)}</span>
+        ${c.votes ? `<span class="votes">♥ ${c.votes}</span>` : ''}
+      </div>`).join('');
+  } else {
+    carryEmpty.style.display = 'block';
+    carryList.innerHTML = '';
+  }
+
+  // All actions
+  const actionList = document.getElementById('sum-action-list');
+  const actionEmpty = document.getElementById('sum-action-empty');
+  if (board.action.length) {
+    actionEmpty.style.display = 'none';
+    actionList.innerHTML = board.action.map(c => `
+      <div class="sum-item${c.carry?' carry':''}">
+        ${c.carry ? '<span class="carry-arrow">→</span>' : ''}
+        <span>${esc(c.text)}</span>
+        ${c.votes ? `<span class="votes">♥ ${c.votes}</span>` : ''}
+      </div>`).join('');
+  } else {
+    actionEmpty.style.display = 'block';
+    actionList.innerHTML = '';
+  }
+
+  // Well
+  const wellList = document.getElementById('sum-well-list');
+  wellList.innerHTML = board.well.length
+    ? board.well.map(c=>`<div class="sum-item"><span>${esc(c.text)}</span>${c.votes?`<span class="votes">♥ ${c.votes}</span>`:''}</div>`).join('')
+    : '';
+  document.getElementById('sum-well-empty').style.display = board.well.length ? 'none' : 'block';
+
+  // Better
+  const betterList = document.getElementById('sum-better-list');
+  betterList.innerHTML = board.better.length
+    ? board.better.map(c=>`<div class="sum-item"><span>${esc(c.text)}</span>${c.votes?`<span class="votes">♥ ${c.votes}</span>`:''}</div>`).join('')
+    : '';
+  document.getElementById('sum-better-empty').style.display = board.better.length ? 'none' : 'block';
+}
+
+function renderScoreBar() {
+  const result = document.getElementById('score-result');
+  const yoursEl = document.getElementById('score-yours');
+  const pips = document.getElementById('score-pips');
+
+  // highlight my selected pip
+  pips.querySelectorAll('.score-pip').forEach((btn, i) => {
+    const v = i + 1;
+    btn.classList.toggle('sel', myScore === v);
+    btn.style.setProperty('--sel-color', scoreColor(v));
+  });
+
+  if (myScore !== null) {
+    yoursEl.style.display = 'flex';
+    yoursEl.innerHTML = `Your score: <strong>${myScore}</strong> <button class="change-score" onclick="changeScore()">change</button>`;
+  } else {
+    yoursEl.style.display = 'none';
+  }
+
+  const vals = Object.values(scores).map(s => s.value);
+  if (vals.length === 0) {
+    result.style.display = 'none';
+    return;
+  }
+
+  result.style.display = 'flex';
+  const avg = (vals.reduce((a,b)=>a+b,0) / vals.length).toFixed(1);
+  document.getElementById('score-avg').textContent = avg;
+  document.getElementById('score-avg').style.color = scoreColor(Math.round(parseFloat(avg)));
+
+  // breakdown chips — one per person who scored
+  const breakdown = document.getElementById('score-breakdown');
+  breakdown.innerHTML = Object.values(scores).map(s =>
+    `<span class="score-chip" style="background:${scoreColor(s.value)}">${s.name[0].toUpperCase()} ${s.value}</span>`
+  ).join('');
+}
+
+// Forms
+function showForm(col) {
+  document.getElementById('area-'+col).style.display='none';
+  document.getElementById('form-'+col).classList.add('open');
+  document.getElementById('ta-'+col).focus();
+}
+function hideForm(col) {
+  document.getElementById('area-'+col).style.display='';
+  document.getElementById('form-'+col).classList.remove('open');
+  document.getElementById('ta-'+col).value='';
+}
+['well','better','action'].forEach(col=>{
+  document.getElementById('ta-'+col).addEventListener('keydown',e=>{
+    if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();addCard(col);}
+    if(e.key==='Escape')hideForm(col);
+  });
+});
+
+// Toast
+function toast(msg,ms=3500) {
+  const w=document.getElementById('toasts'),el=document.createElement('div');
+  el.className='toast';
+  el.innerHTML=`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg>${esc(msg)}`;
+  w.appendChild(el); setTimeout(()=>el.remove(),ms);
+}
+
+// AI
+function openAI() {
+  document.getElementById('ai-overlay').classList.add('open');
+  document.getElementById('ai-body').innerHTML='<div class="loading"><div class="dots"><span></span><span></span><span></span></div>Analysing your retrospective…</div>';
+  callAI();
+}
+function closeAI(){document.getElementById('ai-overlay').classList.remove('open');}
+document.getElementById('ai-overlay').addEventListener('click',e=>{if(e.target===e.currentTarget)closeAI();});
+
+async function callAI() {
+  const fmt=col=>board[col].map(c=>`• ${c.text} (${c.votes} votes, by ${c.author})`).join('\n')||'None added';
+  const prompt=`You are a skilled Agile coach analysing a sprint retrospective. Here is the board:
+
+WHAT WENT WELL:\n${fmt('well')}
+WHAT COULD BE BETTER:\n${fmt('better')}
+ACTION ITEMS:\n${fmt('action')}
+
+Respond ONLY with HTML in this format:
+<p>2-3 sentence sprint health summary.</p>
+<div class="ib g"><strong>Key strength</strong>Insight about what's working and why it matters.</div>
+<div class="ib o"><strong>Critical friction point</strong>Most important issue and likely root cause.</div>
+<div class="ib b"><strong>Top recommended action</strong>Most impactful next step with concrete advice.</div>
+<p>1-2 sentences on team momentum or culture.</p>
+Be direct, specific, reference actual card content. No markdown.`;
+  try {
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})});
+    const json=await res.json();
+    document.getElementById('ai-body').innerHTML=json.content?.map(b=>b.text||'').join('')||'No insights generated.';
+  } catch(e) {
+    document.getElementById('ai-body').innerHTML='<p style="color:var(--muted)">Couldn\'t reach the AI service. Check your connection and try again.</p>';
+  }
+}
+
+// Export
+function exportRetro() {
+  const badge = document.getElementById('badge-text').textContent.replace('✦ ', '');
+  const divider = '='.repeat(badge.length);
+  let t = badge + '\n' + divider + '\n';
+  t += 'Completed: ' + new Date().toLocaleDateString(undefined, {weekday:'long',year:'numeric',month:'long',day:'numeric'}) + '\n';
+  t += 'Participants: ' + Object.values(presence).map(u=>u.name).join(', ') + '\n\n';
+
+  // Sprint score
+  const vals = Object.values(scores).map(s => s.value);
+  if (vals.length) {
+    const avg = (vals.reduce((a,b)=>a+b,0) / vals.length).toFixed(1);
+    t += 'SPRINT SCORE\n' + '-'.repeat(20) + '\n';
+    t += `Overall: ${avg}/10\n`;
+    Object.values(scores).forEach(s => t += `  ${s.name}: ${s.value}/10\n`);
+    t += '\n';
+  }
+
+  // Carry forward
+  const carried = board.action.filter(c => c.carry);
+  if (carried.length) {
+    t += 'CARRYING INTO NEXT SPRINT\n' + '-'.repeat(20) + '\n';
+    carried.forEach(c => t += `→ ${c.text}\n`);
+    t += '\n';
+  }
+
+  // Board sections
+  t += 'WHAT WENT WELL\n' + '-'.repeat(20) + '\n';
+  board.well.forEach(c => t += `• ${c.text} (${c.votes} votes)\n`);
+  t += '\nWHAT COULD BE BETTER\n' + '-'.repeat(20) + '\n';
+  board.better.forEach(c => t += `• ${c.text} (${c.votes} votes)\n`);
+  t += '\nACTION ITEMS\n' + '-'.repeat(20) + '\n';
+  board.action.forEach(c => t += `${c.carry ? '→' : '•'} ${c.text} (${c.votes} votes)${c.carry ? ' [carry forward]' : ''}\n`);
+
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([t], {type:'text/plain'}));
+  a.download = badge.replace(/\s+/g,'-').toLowerCase() + '.txt';
+  a.click();
+}
+
+// Confetti
+function confetti(){
+  ['#5c7ef7','#e07b30','#0e7a54','#764ba2','#d4516c','#f5c842'].forEach((c,i)=>{
+    setTimeout(()=>{
+      const el=document.createElement('div');el.className='cp';
+      el.style.cssText=`left:${25+Math.random()*50}vw;top:${Math.random()*25}vh;background:${c};animation-duration:${0.8+Math.random()*1.2}s;width:${5+Math.random()*8}px;height:${5+Math.random()*8}px;border-radius:${Math.random()>.5?'50%':'2px'}`;
+      document.body.appendChild(el);el.addEventListener('animationend',()=>el.remove());
+    },i*40);
+  });
+}
+
+function esc(s=''){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+</script>
+</body>
+</html>
