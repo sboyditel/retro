@@ -1298,20 +1298,21 @@ function renderCol(col, prevIds) {
           ${col !== 'action' ? `<button class="move-btn" onclick="moveToAction('${col}','${card.id}')" title="Move to action items">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
             Action
-          </button>` : `
-          <div class="action-labels">
-            <button class="label-btn carry${card.carry?' on':''}" onclick="setLabel('${card.id}','carry')">→ Carry forward</button>
-            <button class="label-btn domore${card.doMore?' on':''}" onclick="setLabel('${card.id}','doMore')">✓ Do more</button>
-            <button class="label-btn stop${card.stopDoing?' on':''}" onclick="setLabel('${card.id}','stopDoing')">✕ Stop doing</button>
-          </div>
-          ${card.carry ? `
-          <div class="action-labels" style="margin-top:4px">
-            <span style="font-size:11px;color:var(--muted);align-self:center">Want to do this?</span>
-            <button class="label-btn domore${card.carryYes?' on':''}" onclick="setCarryIntent('${card.id}','yes')">👍 Yes</button>
-            <button class="label-btn stop${card.carryNo?' on':''}" onclick="setCarryIntent('${card.id}','no')">👎 No</button>
-          </div>` : ''}`}
-          ${card.mine ? '<span class="card-author" style="margin-left:auto;color:#b0aca5;font-size:11px;margin-top:4px">your card</span>' : ''}
-        </div>`;
+          </button>` : ''}
+          ${card.mine ? '<span class="card-author" style="margin-left:auto;color:#b0aca5;font-size:11px">your card</span>' : ''}
+        </div>
+        ${col === 'action' ? `
+        <div class="action-labels" style="margin-top:8px">
+          <button class="label-btn carry${card.carry?' on':''}" onclick="setLabel('${card.id}','carry')">→ Carry forward</button>
+          <button class="label-btn domore${card.doMore?' on':''}" onclick="setLabel('${card.id}','doMore')">✓ Do more</button>
+          <button class="label-btn stop${card.stopDoing?' on':''}" onclick="setLabel('${card.id}','stopDoing')">✕ Stop doing</button>
+        </div>
+        ${card.carry ? `
+        <div class="action-labels" style="margin-top:6px;align-items:center">
+          <span style="font-size:11px;color:var(--muted)">Want to do this?</span>
+          <button class="label-btn domore${card.carryYes?' on':''}" onclick="setCarryIntent('${card.id}','yes')">👍 Yes</button>
+          <button class="label-btn stop${card.carryNo?' on':''}" onclick="setCarryIntent('${card.id}','no')">👎 No</button>
+        </div>` : ''}` : ''}`;
       bindDrag(div, col);
       wrap.appendChild(div);
     });
