@@ -901,7 +901,9 @@ async function fbGet(path) {
   return await r.json();
 }
 async function fbSet(path, data) {
-  await fetch(fbUrl(path), { method:'PUT', body: JSON.stringify(data), headers:{'Content-Type':'application/json'} });
+  const r = await fetch(fbUrl(path), { method:'PUT', body: JSON.stringify(data), headers:{'Content-Type':'application/json'} });
+  if (!r.ok) console.error('Firebase write failed:', path, r.status, await r.text());
+  return r;
 }
 
 async function saveRetroNameToStorage(name) {
@@ -1337,9 +1339,11 @@ async function saveToHistory() {
       well: board.well.map(c=>({text:c.text,votes:c.votes})),
       better: board.better.map(c=>({text:c.text,votes:c.votes})),
     };
-    const historyId = 'retro-' + Date.now();
+    // Use a safe key: r + timestamp in base36
+    const historyId = 'r' + Date.now().toString(36);
     await fbSet(`history/${historyId}`, snapshot);
-  } catch(e) {}
+    console.log('History saved:', historyId);
+  } catch(e) { console.error('History save failed:', e); }
 }
 
 // ── History ──
