@@ -364,7 +364,27 @@ header {
 @keyframes db { 0%,80%,100%{transform:scale(.6);opacity:.4}40%{transform:scale(1);opacity:1} }
 .ai-footer { margin-top:24px; display:flex; justify-content:flex-end; }
 
-/* CONFETTI */
+/* HISTORY */
+.history-card {
+  background:var(--surface); border:1px solid var(--border); border-radius:16px;
+  padding:20px 24px; margin-bottom:12px; cursor:pointer; transition:all .15s;
+  display:flex; align-items:center; gap:16px;
+}
+.history-card:hover { box-shadow:var(--shadow-lg); transform:translateY(-1px); border-color:#c8c5be; }
+.history-icon {
+  width:44px; height:44px; border-radius:12px; background:var(--bg);
+  border:1px solid var(--border); display:flex; align-items:center; justify-content:center;
+  flex-shrink:0; font-family:var(--serif); font-size:18px; color:var(--muted);
+}
+.history-info { flex:1; min-width:0; }
+.history-name { font-weight:600; font-size:15px; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.history-meta { font-size:12px; color:var(--muted); margin-top:3px; display:flex; gap:12px; flex-wrap:wrap; }
+.history-score {
+  font-family:var(--serif); font-size:22px; font-weight:400; flex-shrink:0;
+}
+.history-arrow { color:var(--muted); font-size:18px; flex-shrink:0; }
+.history-empty { text-align:center; padding:60px 24px; color:var(--muted); font-size:14px; }
+.history-empty h3 { font-family:var(--serif); font-size:22px; font-weight:400; margin-bottom:8px; color:var(--text); }
 .cp { position:fixed; pointer-events:none; z-index:999; animation:fall linear forwards; }
 @keyframes fall { 0%{transform:translateY(-40px) rotate(0deg);opacity:1}100%{transform:translateY(110vh) rotate(720deg);opacity:0} }
 </style>
@@ -391,6 +411,9 @@ header {
     </button>
     <button class="join-btn" onclick="showScreen('screen-join')" style="background:var(--bg);color:var(--text);border:1px solid var(--border);box-shadow:none">
       Join a retro <span style="opacity:.6;font-weight:400;font-size:13px;margin-left:4px">— I have a code</span>
+    </button>
+    <button onclick="openHistory()" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:13px;text-decoration:underline;padding:4px 0;font-family:var(--sans)">
+      View past retros
     </button>
   </div>
 </div>
@@ -498,6 +521,10 @@ header {
     <div class="presence-bar" id="presence"></div>
     <div class="sync-dot" id="sync" title="Live sync"></div>
     <button class="btn" onclick="exportRetro()" style="margin-left:8px">Export</button>
+    <button class="btn" onclick="openHistory()" style="display:flex;align-items:center;gap:5px">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+      History
+    </button>
     <button class="btn ai-btn" onclick="openAI()">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
       AI Insights
@@ -670,6 +697,46 @@ header {
 
 <div class="toasts" id="toasts"></div>
 
+<!-- History page -->
+<div id="history-page" style="display:none; min-height:100vh; background:var(--bg);">
+  <div class="summary-header">
+    <div class="logo" style="font-family:var(--serif);font-size:22px;letter-spacing:-.5px;display:flex;align-items:center;gap:8px">
+      <div class="mark" style="width:28px;height:28px;border-radius:8px">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <circle cx="4" cy="4" r="3" fill="white"/>
+          <circle cx="10" cy="10" r="3" fill="white" opacity=".6"/>
+          <circle cx="10" cy="4" r="2" fill="white" opacity=".35"/>
+        </svg>
+      </div>
+      RetroBoard
+    </div>
+    <button class="btn" onclick="closeHistory()">← Back</button>
+  </div>
+  <div style="max-width:800px;margin:0 auto;padding:40px 24px 64px">
+    <h1 style="font-family:var(--serif);font-size:28px;font-weight:400;margin-bottom:8px">Past Retros</h1>
+    <p style="color:var(--muted);font-size:14px;margin-bottom:32px">All completed retrospectives saved to your Firebase database.</p>
+    <div id="history-list"></div>
+  </div>
+</div>
+
+<!-- Past retro detail page -->
+<div id="history-detail" style="display:none; min-height:100vh; background:var(--bg);">
+  <div class="summary-header">
+    <div class="logo" style="font-family:var(--serif);font-size:22px;letter-spacing:-.5px;display:flex;align-items:center;gap:8px">
+      <div class="mark" style="width:28px;height:28px;border-radius:8px">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <circle cx="4" cy="4" r="3" fill="white"/>
+          <circle cx="10" cy="10" r="3" fill="white" opacity=".6"/>
+          <circle cx="10" cy="4" r="2" fill="white" opacity=".35"/>
+        </svg>
+      </div>
+      RetroBoard
+    </div>
+    <button class="btn" onclick="closeDetail()">← All retros</button>
+  </div>
+  <div id="history-detail-body" style="max-width:900px;margin:0 auto;padding:40px 24px 64px"></div>
+</div>
+
 <!-- Rename modal -->
 <div class="overlay" id="rename-overlay">
   <div class="ai-panel" style="max-height:auto;padding:28px 32px 32px">
@@ -758,8 +825,9 @@ function copyCode() {
 
 // ── Screen navigation ──
 function showScreen(id) {
-  ['screen-landing','screen-host','screen-join'].forEach(s => {
-    document.getElementById(s).style.display = s === id ? 'flex' : 'none';
+  ['screen-landing','screen-host','screen-join','history-page','history-detail'].forEach(s => {
+    const el = document.getElementById(s);
+    if (el) el.style.display = s === id ? 'flex' : 'none';
   });
 }
 
@@ -1244,11 +1312,159 @@ async function loadScores() {
 }
 
 // ── Complete retro / summary ──
-function completeRetro() {
+async function completeRetro() {
   document.getElementById('app').style.display = 'none';
   document.getElementById('summary-page').style.display = 'block';
   renderSummary();
   confetti();
+  // Save snapshot to history
+  await saveToHistory();
+}
+
+async function saveToHistory() {
+  try {
+    const title = document.getElementById('badge-text').textContent.replace('✦ ', '');
+    const vals = Object.values(scores).map(s => s.value);
+    const avg = vals.length ? (vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(1) : null;
+    const snapshot = {
+      title,
+      completedAt: Date.now(),
+      roomKey,
+      score: avg,
+      scoreCount: vals.length,
+      carried: board.action.filter(c=>c.carry).map(c=>c.text),
+      actions: board.action.map(c=>({text:c.text,votes:c.votes,carry:!!c.carry})),
+      well: board.well.map(c=>({text:c.text,votes:c.votes})),
+      better: board.better.map(c=>({text:c.text,votes:c.votes})),
+    };
+    const historyId = 'retro-' + Date.now();
+    await fbSet(`history/${historyId}`, snapshot);
+  } catch(e) {}
+}
+
+// ── History ──
+let historyOrigin = 'landing'; // track where history was opened from
+
+async function openHistory() {
+  historyOrigin = document.getElementById('app').style.display !== 'none' ? 'app' : 'landing';
+  document.getElementById('screen-landing').style.display = 'none';
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('history-page').style.display = 'block';
+  document.getElementById('history-list').innerHTML = '<div style="color:var(--muted);font-size:14px;padding:20px 0">Loading…</div>';
+  try {
+    const all = await fbGet('history');
+    if (!all) {
+      document.getElementById('history-list').innerHTML = '<div class="history-empty"><h3>No retros yet</h3><p>Complete a retrospective and it will appear here.</p></div>';
+      return;
+    }
+    const sorted = Object.entries(all).sort((a,b) => b[1].completedAt - a[1].completedAt);
+    document.getElementById('history-list').innerHTML = sorted.map(([id, r]) => {
+      const date = new Date(r.completedAt).toLocaleDateString(undefined, {weekday:'short',year:'numeric',month:'short',day:'numeric'});
+      const scoreColor = r.score ? getScoreColor(Math.round(parseFloat(r.score))) : '#888';
+      return `<div class="history-card" onclick="openDetail('${id}')">
+        <div class="history-icon">✦</div>
+        <div class="history-info">
+          <div class="history-name">${esc(r.title || 'Sprint Retro')}</div>
+          <div class="history-meta">
+            <span>${date}</span>
+            ${r.actions?.length ? `<span>${r.actions.length} action${r.actions.length!==1?'s':''}</span>` : ''}
+            ${r.carried?.length ? `<span>→ ${r.carried.length} carry forward</span>` : ''}
+          </div>
+        </div>
+        ${r.score ? `<div class="history-score" style="color:${scoreColor}">${r.score}</div>` : ''}
+        <div class="history-arrow">›</div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    document.getElementById('history-list').innerHTML = '<div style="color:var(--muted);font-size:14px">Couldn\'t load history. Check your connection.</div>';
+  }
+}
+
+function closeHistory() {
+  document.getElementById('history-page').style.display = 'none';
+  if (historyOrigin === 'app') {
+    document.getElementById('app').style.display = 'block';
+  } else {
+    document.getElementById('screen-landing').style.display = 'flex';
+  }
+}
+
+async function openDetail(id) {
+  document.getElementById('history-page').style.display = 'none';
+  document.getElementById('history-detail').style.display = 'block';
+  document.getElementById('history-detail-body').innerHTML = '<div style="color:var(--muted);font-size:14px">Loading…</div>';
+  try {
+    const r = await fbGet(`history/${id}`);
+    if (!r) return;
+    const date = new Date(r.completedAt).toLocaleDateString(undefined, {weekday:'long',year:'numeric',month:'long',day:'numeric'});
+    const scoreColor = r.score ? getScoreColor(Math.round(parseFloat(r.score))) : '#888';
+    const scoreBar = r.score ? `<div class="sum-score-bar-wrap"><div class="sum-score-bar" style="width:${parseFloat(r.score)/10*100}%;background:${scoreColor}"></div></div>` : '';
+
+    const renderList = (items, carry=false) => items.length
+      ? items.map(c=>`<div class="sum-item${c.carry?' carry':''}">
+          ${c.carry?'<span class="carry-arrow">→</span>':''}
+          <span>${esc(c.text||c)}</span>
+          ${c.votes?`<span class="votes">♥ ${c.votes}</span>`:''}
+        </div>`).join('')
+      : '<div class="sum-empty">Nothing added</div>';
+
+    document.getElementById('history-detail-body').innerHTML = `
+      <div class="summary-hero" style="margin-bottom:32px">
+        <div class="summary-check"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg></div>
+        <h1 style="font-family:var(--serif);font-size:32px;font-weight:400;margin-bottom:6px">${esc(r.title||'Sprint Retro')}</h1>
+        <p style="color:var(--muted);font-size:14px">${date}</p>
+      </div>
+      <div class="summary-grid">
+        <div class="sum-card sum-score-card">
+          <div class="sum-card-label">Overall sprint score</div>
+          ${r.score ? `
+            <div class="sum-score-display">
+              <span class="sum-score-num" style="color:${scoreColor}">${r.score}</span>
+              <span class="sum-score-denom">/10</span>
+            </div>
+            ${scoreBar}
+            <div style="font-size:12px;color:var(--muted)">${r.scoreCount} response${r.scoreCount!==1?'s':''}</div>
+          ` : '<div class="sum-empty">No scores submitted</div>'}
+        </div>
+        ${r.carried?.length ? `
+        <div class="sum-card sum-carry-card">
+          <div class="sum-card-label">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            Carrying into next sprint
+          </div>
+          <div class="sum-list">${r.carried.map(t=>`<div class="sum-item carry"><span class="carry-arrow">→</span><span>${esc(t)}</span></div>`).join('')}</div>
+        </div>` : ''}
+        <div class="sum-card">
+          <div class="sum-card-label">Action items</div>
+          <div class="sum-list">${renderList(r.actions||[])}</div>
+        </div>
+        <div class="sum-card">
+          <div class="sum-card-label" style="color:var(--well)">
+            <span style="width:8px;height:8px;border-radius:50%;background:var(--well);display:inline-block"></span>
+            What went well
+          </div>
+          <div class="sum-list">${renderList(r.well||[])}</div>
+        </div>
+        <div class="sum-card">
+          <div class="sum-card-label" style="color:var(--better)">
+            <span style="width:8px;height:8px;border-radius:50%;background:var(--better);display:inline-block"></span>
+            What could be better
+          </div>
+          <div class="sum-list">${renderList(r.better||[])}</div>
+        </div>
+      </div>`;
+  } catch(e) {
+    document.getElementById('history-detail-body').innerHTML = '<div style="color:var(--muted)">Couldn\'t load this retro.</div>';
+  }
+}
+
+function closeDetail() {
+  document.getElementById('history-detail').style.display = 'none';
+  document.getElementById('history-page').style.display = 'block';
+}
+
+function getScoreColor(v) {
+  return ['','#ef4444','#ef4444','#f97316','#f97316','#eab308','#eab308','#22c55e','#22c55e','#0ea5e9','#0ea5e9'][v] || '#888';
 }
 
 function reopenRetro() {
