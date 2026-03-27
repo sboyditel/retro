@@ -1189,6 +1189,7 @@ async function loadJiraProjects() {
   if (!saved) return;
   try { jiraCfg = JSON.parse(saved); } catch(e) { return; }
 
+  // Always show the field if credentials exist
   const field = document.getElementById('jira-project-field');
   const sel   = document.getElementById('host-jira-project');
   if (!field || !sel) return;
@@ -1197,7 +1198,7 @@ async function loadJiraProjects() {
 
   const data = await jiraFetch('/project/search?maxResults=50&orderBy=name');
   if (!data || !data.values) {
-    sel.innerHTML = '<option value="">Could not load projects</option>';
+    sel.innerHTML = '<option value="">⚠ Could not load — check Jira settings</option>';
     return;
   }
   sel.innerHTML = '<option value="">No project — skip Jira</option>';
