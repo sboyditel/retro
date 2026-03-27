@@ -905,6 +905,13 @@ header {
 
     <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);padding-bottom:4px;border-bottom:1px solid var(--border);margin-top:4px">Jira</div>
     <div class="field">
+      <label>Cloudflare Worker URL <span style="color:#b8b4ac;font-weight:400">(required for Jira)</span></label>
+      <input id="cf-worker-url" type="text" placeholder="https://jira-proxy.yourname.workers.dev" autocomplete="off"/>
+      <div style="font-size:11px;color:#b8b4ac;margin-top:4px">
+        Deploy a free proxy worker at <a href="https://cloudflare.com" target="_blank" style="color:var(--action)">cloudflare.com</a> to bypass browser CORS restrictions.
+      </div>
+    </div>
+    <div class="field">
       <label>Jira URL</label>
       <input id="jira-url" type="text" placeholder="https://yourcompany.atlassian.net" autocomplete="off"/>
     </div>
@@ -1193,6 +1200,7 @@ function loadJiraSettingsToForm() {
       document.getElementById('jira-url').value = cfg.url || '';
       document.getElementById('jira-email').value = cfg.email || '';
       document.getElementById('jira-token').value = cfg.token || '';
+      document.getElementById('cf-worker-url').value = cfg.workerUrl || '';
     } catch(e) {}
   }
   const key = localStorage.getItem('retro_anthropic_key');
@@ -1215,11 +1223,13 @@ function getAnthropicKey() {
 }
 
 async function saveJiraSettings() {
-  const url   = document.getElementById('jira-url').value.trim().replace(/\/$/, '');
-  const email = document.getElementById('jira-email').value.trim();
-  const token = document.getElementById('jira-token').value.trim();
-  if (!url || !email || !token) { document.getElementById('jira-status').textContent = 'Please fill in all fields.'; return; }
-  jiraCfg = { url, email, token };
+  const url       = document.getElementById('jira-url').value.trim().replace(/\/$/, '');
+  const email     = document.getElementById('jira-email').value.trim();
+  const token     = document.getElementById('jira-token').value.trim();
+  const workerUrl = document.getElementById('cf-worker-url').value.trim().replace(/\/$/, '');
+  if (!url || !email || !token) { document.getElementById('jira-status').textContent = 'Please fill in URL, email and token.'; return; }
+  if (!workerUrl) { document.getElementById('jira-status').textContent = 'Please add your Cloudflare Worker URL.'; return; }
+  jiraCfg = { url, email, token, workerUrl };
   localStorage.setItem('retro_jira', JSON.stringify(jiraCfg));
   document.getElementById('jira-status').textContent = 'Testing connection…';
   const ok = await testJiraConnection();
@@ -1237,32 +1247,28 @@ function jiraAuth() {
 }
 
 async function jiraFetchRaw(fullUrl) {
-  const proxies = [
-    u => u, // try direct first
-    u => `https://corsproxy.io/?${encodeURIComponent(u)}`,
-    u => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
-    u => `https://thingproxy.freeboard.io/fetch/${u}`,
-  ];
-  for (const proxy of proxies) {
-    try {
-      const proxyUrl = proxy(fullUrl);
-      const r = await fetch(proxyUrl, {
-        headers: {
-          'Authorization': jiraAuth(),
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-        }
-      });
-      const text = await r.text();
-      console.log(`Jira [${r.status}] ${proxyUrl.slice(0,80)}`, text.slice(0,200));
-      if (r.ok) {
-        try { return JSON.parse(text); } catch(e) { continue; }
-      }
-    } catch(e) {
-      console.warn('Jira proxy error:', e.message);
-    }
+  if (!jiraCfg?.workerUrl) {
+    console.error('No Cloudflare Worker URL configured');
+    return null;
   }
-  return null;
+  try {
+    const proxyUrl = `${jiraCfg.workerUrl}?url=${encodeURIComponent(fullUrl)}`;
+    const r = await fetch(proxyUrl, {
+      headers: {
+        'X-Jira-Auth': jiraAuth(),
+        'Accept': 'application/json',
+      }
+    });
+    const text = await r.text();
+    console.log(`Jira [${r.status}]:`, text.slice(0, 200));
+    if (r.ok && text.startsWith('{')) {
+      return JSON.parse(text);
+    }
+    return null;
+  } catch(e) {
+    console.error('Jira fetch error:', e.message);
+    return null;
+  }
 }
 
 async function jiraFetch(path) {
