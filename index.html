@@ -709,16 +709,9 @@ header {
   <div class="sprint-goal-bar" id="sprint-goal-bar" style="display:none">
     <span class="sprint-goal-label">Sprint Goal</span>
     <span class="sprint-goal-display" id="sprint-goal-display"></span>
-  </div>
-
-  <!-- Previous actions reminder -->
-  <div class="prev-actions-bar" id="prev-actions-bar" style="display:none">
-    <div class="prev-actions-icon">📋</div>
-    <div class="prev-actions-content">
-      <div class="prev-actions-title">Carry-forward items from last retro — check in on these:</div>
-      <div id="prev-actions-list"></div>
-    </div>
-    <button onclick="document.getElementById('prev-actions-bar').style.display='none'" style="background:none;border:none;cursor:pointer;color:#92710a;font-size:18px;flex-shrink:0">×</button>
+    <button id="prev-actions-btn" onclick="document.getElementById('prev-actions-overlay').classList.add('open')" style="display:none;margin-left:auto;font-family:var(--sans);font-size:12px;padding:4px 12px;border-radius:20px;border:1px solid #f5e6a3;background:#fffbf0;color:#92710a;cursor:pointer;white-space:nowrap">
+      📋 View last retro's actions
+    </button>
   </div>
 
   <!-- Sprint score bar -->
@@ -981,6 +974,20 @@ header {
   </div>
 </div>
 
+<div class="overlay" id="prev-actions-overlay">
+  <div class="ai-panel" style="max-width:680px">
+    <div class="ai-header">
+      <div class="ai-icon" style="background:linear-gradient(135deg,#f59e0b,#92710a)">📋</div>
+      <div>
+        <h2>Previous Retro — Action Items</h2>
+        <p style="font-size:13px;color:var(--muted);margin-top:2px" id="prev-actions-retro-name"></p>
+      </div>
+    </div>
+    <div id="prev-actions-modal-body" style="font-size:14px;line-height:1.6"></div>
+    <div class="ai-footer"><button class="btn" onclick="document.getElementById('prev-actions-overlay').classList.remove('open')">Close</button></div>
+  </div>
+</div>
+
 <div class="overlay" id="ai-overlay">
   <div class="ai-panel">
     <div class="ai-header">
@@ -1018,7 +1025,7 @@ PALETTE.forEach((c,i) => {
 });
 
 // State
-let me = null, roomKey = null, currentTeamId = '';
+let me = null, roomKey = null, currentTeamId = '', sessionId = '';
 let board = {well:[],better:[],action:[]};
 let presence = {};
 let lastBoardStr = '', lastPresStr = '';
@@ -1307,6 +1314,9 @@ async function joinAsHost() {
   if (!room) { document.getElementById('inp-room').focus(); return; }
   me = { id:'u'+Date.now()+Math.random().toString(36).slice(2), name, color: myColor };
   roomKey = 'retro-' + room;
+  // Generate a fresh session ID — this scopes cards so old sessions don't bleed in
+  sessionId = 's' + Date.now().toString(36);
+  await fbSet(`rooms/${roomKey}/sessionId`, sessionId);
   currentTeamId = teamId;
   const defaultName = room.replace(/-/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
   setRetroNameDisplay(retroName || defaultName);
@@ -1316,7 +1326,7 @@ async function joinAsHost() {
   showScreen(null);
   document.getElementById('app').style.display = 'block';
   startSync();
-  if (teamId) loadPreviousActions(teamId);
+  if (teamId) showPrevActionsModal(teamId);
   if (jiraProject) loadJiraSprintForBoard(jiraProject);
 }
 
@@ -1328,13 +1338,17 @@ async function joinAsParticipant() {
   if (!name) { document.getElementById('join-name').focus(); return; }
   me = { id:'u'+Date.now()+Math.random().toString(36).slice(2), name, color: myColorJoin };
   roomKey = 'retro-' + room;
+  // Read the session ID the host created — this scopes us to the correct board
+  try {
+    const sid = await fbGet(`rooms/${roomKey}/sessionId`);
+    sessionId = sid || '';
+  } catch(e) { sessionId = ''; }
   showScreen(null);
   document.getElementById('app').style.display = 'block';
   startSync();
-  // load team id for this room then show prev actions
   try {
     const teamId = await fbGet(`rooms/${roomKey}/teamId`);
-    if (teamId) { currentTeamId = teamId; loadPreviousActions(teamId); }
+    if (teamId) { currentTeamId = teamId; showPrevActionsModal(teamId); }
   } catch(e) {}
 }
 
@@ -1393,6 +1407,13 @@ async function fbDelete(path) {
   await fetch(fbUrl(path), { method:'DELETE' });
 }
 
+// Cards are scoped to a session so re-using a room code starts fresh
+function cardsPath() {
+  return sessionId
+    ? `rooms/${roomKey}/sessions/${sessionId}/cards`
+    : `rooms/${roomKey}/cards`;
+}
+
 async function saveRetroNameToStorage(name) {
   try { await fbSet(`rooms/${roomKey}/name`, name); } catch(e) {}
 }
@@ -1419,31 +1440,61 @@ async function loadSprintGoal() {
   } catch(e) {}
 }
 
-// ── Previous actions ──
-async function loadPreviousActions(teamId) {
+// ── Previous actions modal ──
+async function showPrevActionsModal(teamId) {
   try {
     const all = await fbGet('history');
     if (!all) return;
-    // find the most recent completed retro for this team
     const teamRetros = Object.values(all)
       .filter(r => r.teamId === teamId)
       .sort((a,b) => b.completedAt - a.completedAt);
     if (!teamRetros.length) return;
     const last = teamRetros[0];
-    const items = [
-      ...(last.carried || []).map(c => ({ text: typeof c === 'string' ? c : c.text, type: 'carry' })),
-      ...(last.actions || []).filter(c => !c.carry).map(c => ({ text: c.text, type: 'action', assignee: c.assignee }))
-    ];
-    if (!items.length) return;
-    const bar = document.getElementById('prev-actions-bar');
-    const list = document.getElementById('prev-actions-list');
-    list.innerHTML = items.slice(0, 8).map(i =>
-      `<span class="prev-action-item">
-        ${i.type === 'carry' ? '→' : '•'} ${esc(i.text)}
-        ${i.assignee ? `<span class="ai">(${esc(i.assignee)})</span>` : ''}
-      </span>`
-    ).join('');
-    bar.style.display = 'flex';
+    const date = new Date(last.completedAt).toLocaleDateString(undefined, {weekday:'short',year:'numeric',month:'short',day:'numeric'});
+
+    document.getElementById('prev-actions-retro-name').textContent = `${last.title || 'Last retro'} — ${date}`;
+
+    const rows = [];
+
+    // Carry forward — want to do
+    const wantTo = (last.carried||[]).filter(c => (typeof c === 'object') ? c.wantTo : false);
+    if (wantTo.length) {
+      rows.push(`<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--well);margin:12px 0 6px">👍 Want to continue</div>`);
+      wantTo.forEach(c => rows.push(`<div class="sum-item do-more" style="margin-bottom:4px"><span>${esc(typeof c==='string'?c:c.text)}</span></div>`));
+    }
+
+    // Carry forward — don't want
+    const dontWant = (last.carried||[]).filter(c => (typeof c === 'object') ? c.dontWant : false);
+    if (dontWant.length) {
+      rows.push(`<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#c0392b;margin:12px 0 6px">👎 Did not want to do</div>`);
+      dontWant.forEach(c => rows.push(`<div class="sum-item stop-doing" style="margin-bottom:4px"><span>${esc(typeof c==='string'?c:c.text)}</span></div>`));
+    }
+
+    // Carry forward — undecided
+    const undecided = (last.carried||[]).filter(c => typeof c === 'string' || (!c.wantTo && !c.dontWant));
+    if (undecided.length) {
+      rows.push(`<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--action);margin:12px 0 6px">→ Carried forward</div>`);
+      undecided.forEach(c => rows.push(`<div class="sum-item carry" style="margin-bottom:4px"><span>${esc(typeof c==='string'?c:c.text)}</span></div>`));
+    }
+
+    // All action items with owners
+    const actions = (last.actions||[]).filter(c => !c.carry);
+    if (actions.length) {
+      rows.push(`<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin:12px 0 6px">✓ Action items</div>`);
+      actions.forEach(c => rows.push(`
+        <div class="sum-item" style="margin-bottom:4px">
+          <span>${esc(c.text)}</span>
+          ${(c.owners||[]).length ? `<span style="display:inline-flex;gap:3px;margin-left:auto">${(c.owners||[]).map(o=>`<span class="assigned-badge"><div class="assigned-dot" style="background:${o.color||'#888'}">${esc((o.name||'?')[0].toUpperCase())}</div>${esc(o.name)}</span>`).join('')}</span>` : ''}
+        </div>`));
+    }
+
+    if (!rows.length) return;
+
+    document.getElementById('prev-actions-modal-body').innerHTML = rows.join('');
+    // Show the button in the sprint goal bar and open the modal
+    const btn = document.getElementById('prev-actions-btn');
+    if (btn) { btn.style.display = 'flex'; document.getElementById('sprint-goal-bar').style.display = 'flex'; }
+    document.getElementById('prev-actions-overlay').classList.add('open');
   } catch(e) {}
 }
 
@@ -1479,7 +1530,7 @@ async function tick() {
 
 async function loadBoard() {
   try {
-    const remote = await fbGet(`rooms/${roomKey}/cards`);
+    const remote = await fbGet(`${cardsPath()}`);
 
     // Also check legacy board path for old rooms
     let cardsObj = remote;
@@ -1492,7 +1543,7 @@ async function loadBoard() {
           (legacy[col] || []).forEach((c, idx) => { cardsObj[c.id] = {...c, col, order: idx}; });
         });
         // Write migrated data to new path
-        await fbSet(`rooms/${roomKey}/cards`, cardsObj);
+        await fbSet(`${cardsPath()}`, cardsObj);
       }
     }
 
@@ -1554,7 +1605,7 @@ async function saveBoard() {
         allCards[c.id] = { ...rest, col, order: idx };
       });
     });
-    await fbSet(`rooms/${roomKey}/cards`, allCards);
+    await fbSet(`${cardsPath()}`, allCards);
     lastBoardStr = JSON.stringify(allCards);
     setSyncState('ok');
   } catch(e) { setSyncState('error'); }
@@ -1597,7 +1648,7 @@ async function addCard(col) {
   confetti();
   try {
     setSyncState('syncing');
-    await fbSet(`rooms/${roomKey}/cards/${card.id}`, card);
+    await fbSet(`${cardsPath()}/${card.id}`, card);
     setSyncState('ok');
   } catch(e) { setSyncState('error'); toast('Card failed to save — try again'); }
 }
@@ -1608,7 +1659,7 @@ async function deleteCard(col, id) {
   if (card.author !== me.name) { toast('You can only delete your own cards'); return; }
   board[col] = board[col].filter(c=>c.id!==id);
   renderCol(col);
-  try { await fbDelete(`rooms/${roomKey}/cards/${id}`); } catch(e) {}
+  try { await fbDelete(`${cardsPath()}/${id}`); } catch(e) {}
 }
 
 function moveToAction(col, id) {
@@ -1716,8 +1767,8 @@ async function vote(col, id, delta) {
   renderCol(col);
   // Write just this card's votes directly — no full board write needed
   try {
-    await fbSet(`rooms/${roomKey}/cards/${id}/userVotes`, card.userVotes);
-    await fbSet(`rooms/${roomKey}/cards/${id}/votes`, card.votes);
+    await fbSet(`${cardsPath()}/${id}/userVotes`, card.userVotes);
+    await fbSet(`${cardsPath()}/${id}/votes`, card.votes);
   } catch(e) {}
   voteLocked = false;
 }
@@ -2400,6 +2451,7 @@ function openAI() {
   callAI();
 }
 function closeAI(){document.getElementById('ai-overlay').classList.remove('open');}
+document.getElementById('prev-actions-overlay').addEventListener('click',e=>{if(e.target===e.currentTarget)document.getElementById('prev-actions-overlay').classList.remove('open');});
 document.getElementById('ai-overlay').addEventListener('click',e=>{if(e.target===e.currentTarget)closeAI();});
 
 async function callAI() {
