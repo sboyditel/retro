@@ -1225,49 +1225,49 @@ async function loadJiraSprintForBoard(projectKey) {
   if (!projectKey || !jiraCfg) return;
   jiraProjectKey = projectKey;
 
-  // Show loading indicator in header
   const btn = document.getElementById('jira-board-btn');
   btn.style.display = 'flex';
-  btn.textContent = 'Loading sprint…';
+  btn.innerHTML = `<div style="width:14px;height:14px;border-radius:4px;background:linear-gradient(135deg,#0052cc,#2684ff);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="8" height="8" viewBox="0 0 32 32" fill="none"><path d="M22.4 15.1l-6.57-6.57-6.57 6.57 2.29 2.29 4.28-4.28 4.28 4.28 2.29-2.29z" fill="white"/></svg></div> Loading sprint…`;
 
-  // Get boards for this project using agile API
-  const boardData = await jiraAgileFetch(`/board?projectKeyOrId=${projectKey}&type=scrum&maxResults=10`);
-  if (!boardData || !boardData.values || !boardData.values.length) {
-    // Try kanban boards too
-    const kanbanData = await jiraAgileFetch(`/board?projectKeyOrId=${projectKey}&maxResults=10`);
-    if (!kanbanData || !kanbanData.values || !kanbanData.values.length) {
-      btn.textContent = 'No board found';
-      setTimeout(() => { btn.style.display = 'none'; }, 3000);
-      return;
-    }
+  // Try scrum boards first, then any board type
+  let boards = [];
+  const scrumData = await jiraAgileFetch(`/board?projectKeyOrId=${projectKey}&type=scrum&maxResults=10`);
+  if (scrumData?.values?.length) {
+    boards = scrumData.values;
+  } else {
+    const anyData = await jiraAgileFetch(`/board?projectKeyOrId=${projectKey}&maxResults=10`);
+    if (anyData?.values?.length) boards = anyData.values;
   }
 
-  const boards = boardData?.values || [];
-  if (!boards.length) { btn.style.display = 'none'; return; }
-  const boardId = boards[0].id;
-
-  // Get active sprint first, then recent closed
-  const activeData = await jiraAgileFetch(`/board/${boardId}/sprint?state=active&maxResults=1`);
-  const closedData = await jiraAgileFetch(`/board/${boardId}/sprint?state=closed&maxResults=5`);
-
-  const sprints = [
-    ...(activeData?.values || []),
-    ...(closedData?.values || []).sort((a,b) => new Date(b.endDate||0) - new Date(a.endDate||0))
-  ];
-
-  if (!sprints.length) {
-    btn.textContent = 'No sprints found';
-    setTimeout(() => { btn.style.display = 'none'; }, 3000);
+  if (!boards.length) {
+    toast('No Jira board found for this project — check project key');
+    btn.style.display = 'none';
     return;
   }
 
-  // Store board id and sprints for picker
+  const boardId = boards[0].id;
+  console.log('Jira board found:', boardId, boards[0].name);
+
+  // Fetch active and recent closed sprints
+  const activeData  = await jiraAgileFetch(`/board/${boardId}/sprint?state=active&maxResults=5`);
+  const closedData  = await jiraAgileFetch(`/board/${boardId}/sprint?state=closed&maxResults=10`);
+
+  const activeSprints = activeData?.values || [];
+  const closedSprints = (closedData?.values || []).sort((a,b) => new Date(b.endDate||0) - new Date(a.endDate||0)).slice(0,5);
+  const sprints = [...activeSprints, ...closedSprints];
+
+  console.log('Sprints found:', sprints.length, sprints.map(s=>s.name));
+
+  if (!sprints.length) {
+    toast('No sprints found for this board');
+    btn.style.display = 'none';
+    return;
+  }
+
   jiraSprintData = { boardId, sprints, sprint: sprints[0], issues: [] };
 
-  // Restore button
   btn.innerHTML = `<div style="width:14px;height:14px;border-radius:4px;background:linear-gradient(135deg,#0052cc,#2684ff);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="8" height="8" viewBox="0 0 32 32" fill="none"><path d="M22.4 15.1l-6.57-6.57-6.57 6.57 2.29 2.29 4.28-4.28 4.28 4.28 2.29-2.29z" fill="white"/></svg></div> Sprint Summary`;
 
-  // Auto-load the first (active) sprint
   await loadSprintIssues(sprints[0], boardId);
 }
 
