@@ -471,6 +471,27 @@ header {
 .history-arrow { color:var(--muted); font-size:18px; flex-shrink:0; }
 .history-empty { text-align:center; padding:60px 24px; color:var(--muted); font-size:14px; }
 .history-empty h3 { font-family:var(--serif); font-size:22px; font-weight:400; margin-bottom:8px; color:var(--text); }
+/* TICKETS */
+.ticket-row {
+  display:flex; align-items:flex-start; gap:10px; padding:10px 14px;
+  background:var(--surface); border:1px solid var(--border); border-radius:10px;
+  font-size:13px; transition:background .15s;
+}
+.ticket-row:hover { background:var(--bg); }
+.ticket-key { font-weight:600; color:var(--action); white-space:nowrap; font-size:12px; flex-shrink:0; min-width:70px; }
+.ticket-summary { flex:1; color:var(--text); line-height:1.4; }
+.ticket-status {
+  font-size:11px; font-weight:600; padding:2px 8px; border-radius:20px;
+  white-space:nowrap; flex-shrink:0;
+}
+.ticket-assignee { font-size:11px; color:var(--muted); white-space:nowrap; flex-shrink:0; }
+.filter-chip {
+  font-family:var(--sans); font-size:12px; font-weight:500; padding:4px 12px;
+  border-radius:20px; border:1.5px solid var(--border); background:var(--surface);
+  color:var(--muted); cursor:pointer; transition:all .15s;
+}
+.filter-chip.on { color:#fff; border-color:transparent; }
+
 /* JIRA */
 .jira-sprint-panel {
   background:var(--surface); border-bottom:1px solid var(--border);
@@ -532,8 +553,7 @@ header {
       </button>
     </div>
     <button onclick="showScreen('screen-jira')" style="background:none;border:1px solid var(--border);cursor:pointer;color:var(--muted);font-size:13px;padding:8px;border-radius:8px;font-family:var(--sans);width:100%;display:flex;align-items:center;justify-content:center;gap:6px">
-      <svg width="14" height="14" viewBox="0 0 32 32" fill="none"><path d="M15.83 0C7.09 0 0 7.09 0 15.83s7.09 15.83 15.83 15.83 15.83-7.09 15.83-15.83S24.57 0 15.83 0z" fill="#2684FF"/><path d="M22.4 15.1l-6.57-6.57-6.57 6.57 2.29 2.29 4.28-4.28 4.28 4.28 2.29-2.29z" fill="white"/><path d="M15.83 18.67l-2.29-2.29-2.29 2.29 2.29 2.29 2.29-2.29z" fill="white" opacity=".7"/></svg>
-      Jira Settings
+      ⚙️ Settings (Jira &amp; AI)
     </button>
   </div>
 </div>
@@ -868,14 +888,22 @@ header {
   <div class="join-card" style="max-width:480px">
     <div style="display:flex;align-items:center;gap:10px">
       <button onclick="showScreen('screen-landing')" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:20px;line-height:1;padding:0">←</button>
-      <div style="display:flex;align-items:center;gap:8px">
-        <div style="width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#0052cc,#2684ff);display:flex;align-items:center;justify-content:center">
-          <svg width="16" height="16" viewBox="0 0 32 32" fill="none"><path d="M22.4 15.1l-6.57-6.57-6.57 6.57 2.29 2.29 4.28-4.28 4.28 4.28 2.29-2.29z" fill="white"/><path d="M15.83 18.67l-2.29-2.29-2.29 2.29 2.29 2.29 2.29-2.29z" fill="white" opacity=".7"/></svg>
-        </div>
-        <h2 style="font-family:var(--serif);font-size:22px;font-weight:400">Jira Settings</h2>
+      <h2 style="font-family:var(--serif);font-size:22px;font-weight:400">Settings</h2>
+    </div>
+    <p style="margin-top:-8px;font-size:13px;color:var(--muted)">Your credentials are stored in your browser only — never sent anywhere except the respective services.</p>
+
+    <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);padding-bottom:4px;border-bottom:1px solid var(--border)">AI (Google Gemini)</div>
+    <div class="field">
+      <label>Gemini API Key</label>
+      <input id="anthropic-key" type="password" placeholder="AIza…" autocomplete="off"/>
+      <div style="font-size:11px;color:#b8b4ac;margin-top:4px">
+        Get a free key at <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--action)">aistudio.google.com</a> — no credit card needed.
       </div>
     </div>
-    <p style="margin-top:-8px;font-size:13px;color:var(--muted)">Connect to Jira to pull sprint summaries into your retros. Your credentials are stored in your browser only.</p>
+    <button class="join-btn" onclick="saveAnthropicKey()" style="margin-top:-8px">Save AI key</button>
+    <div id="anthropic-status" style="font-size:13px;color:var(--muted);text-align:center;min-height:16px;margin-top:-8px"></div>
+
+    <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);padding-bottom:4px;border-bottom:1px solid var(--border);margin-top:4px">Jira</div>
     <div class="field">
       <label>Jira URL</label>
       <input id="jira-url" type="text" placeholder="https://yourcompany.atlassian.net" autocomplete="off"/>
@@ -885,13 +913,13 @@ header {
       <input id="jira-email" type="email" placeholder="you@company.com" autocomplete="off"/>
     </div>
     <div class="field">
-      <label>API Token</label>
+      <label>Jira API Token</label>
       <input id="jira-token" type="password" placeholder="Your Jira API token" autocomplete="off"/>
       <div style="font-size:11px;color:#b8b4ac;margin-top:4px">
         Generate at <a href="https://id.atlassian.com/manage-profile/security/api-tokens" target="_blank" style="color:var(--action)">id.atlassian.com/manage-profile/security/api-tokens</a>
       </div>
     </div>
-    <button class="join-btn" onclick="saveJiraSettings()">Save &amp; load projects →</button>
+    <button class="join-btn" onclick="saveJiraSettings()">Save &amp; connect Jira →</button>
     <div id="jira-status" style="font-size:13px;color:var(--muted);text-align:center;min-height:20px"></div>
   </div>
 </div>
@@ -985,6 +1013,30 @@ header {
     </div>
     <div id="prev-actions-modal-body" style="font-size:14px;line-height:1.6"></div>
     <div class="ai-footer"><button class="btn" onclick="document.getElementById('prev-actions-overlay').classList.remove('open')">Close</button></div>
+  </div>
+</div>
+
+<!-- Jira tickets overlay -->
+<div class="overlay" id="tickets-overlay" style="align-items:center">
+  <div class="ai-panel" style="max-width:860px;border-radius:16px;max-height:85vh">
+    <div class="ai-header" style="margin-bottom:12px">
+      <div class="ai-icon" style="background:linear-gradient(135deg,#0052cc,#2684ff)">
+        <svg width="18" height="18" viewBox="0 0 32 32" fill="none"><path d="M22.4 15.1l-6.57-6.57-6.57 6.57 2.29 2.29 4.28-4.28 4.28 4.28 2.29-2.29z" fill="white"/></svg>
+      </div>
+      <div style="flex:1">
+        <h2 id="tickets-title">Sprint Tickets</h2>
+        <p style="font-size:13px;color:var(--muted);margin-top:2px" id="tickets-meta"></p>
+      </div>
+    </div>
+    <!-- Filter bar -->
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px" id="tickets-filter-bar"></div>
+    <!-- Search -->
+    <input id="tickets-search" type="text" placeholder="Search tickets…" 
+      style="font-family:var(--sans);font-size:14px;padding:8px 14px;border:1px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text);outline:none;width:100%;margin-bottom:16px"
+      oninput="renderTicketsList()"/>
+    <!-- Ticket list -->
+    <div id="tickets-list" style="display:flex;flex-direction:column;gap:8px;overflow-y:auto;max-height:52vh"></div>
+    <div class="ai-footer"><button class="btn" onclick="document.getElementById('tickets-overlay').classList.remove('open')">Close</button></div>
   </div>
 </div>
 
@@ -1135,13 +1187,31 @@ let jiraSprintData = null; // cached sprint issues
 
 function loadJiraSettingsToForm() {
   const saved = localStorage.getItem('retro_jira');
-  if (!saved) return;
-  try {
-    const cfg = JSON.parse(saved);
-    document.getElementById('jira-url').value = cfg.url || '';
-    document.getElementById('jira-email').value = cfg.email || '';
-    document.getElementById('jira-token').value = cfg.token || '';
-  } catch(e) {}
+  if (saved) {
+    try {
+      const cfg = JSON.parse(saved);
+      document.getElementById('jira-url').value = cfg.url || '';
+      document.getElementById('jira-email').value = cfg.email || '';
+      document.getElementById('jira-token').value = cfg.token || '';
+    } catch(e) {}
+  }
+  const key = localStorage.getItem('retro_anthropic_key');
+  if (key) {
+    document.getElementById('anthropic-key').value = key;
+    document.getElementById('anthropic-status').textContent = '✓ API key saved';
+  }
+}
+
+function saveAnthropicKey() {
+  const key = document.getElementById('anthropic-key').value.trim();
+  if (!key) { document.getElementById('anthropic-status').textContent = 'Enter a key first'; return; }
+  localStorage.setItem('retro_anthropic_key', key);
+  document.getElementById('anthropic-status').textContent = '✓ Saved!';
+  setTimeout(() => { document.getElementById('anthropic-status').textContent = ''; }, 2000);
+}
+
+function getAnthropicKey() {
+  return localStorage.getItem('retro_anthropic_key') || '';
 }
 
 async function saveJiraSettings() {
@@ -1320,7 +1390,10 @@ function showJiraSprint() {
     <div class="jira-stat"><div class="jira-stat-dot" style="background:#f59e0b"></div><strong>${inprog.length}</strong> In Progress</div>
     <div class="jira-stat"><div class="jira-stat-dot" style="background:#e2e0da"></div><strong>${todo.length}</strong> Not Started</div>
     <div class="jira-stat"><div class="jira-stat-dot" style="background:#5c7ef7"></div><strong>${issues.length}</strong> Total</div>
-    <div class="jira-stat"><div class="jira-stat-dot" style="background:#0e7a54"></div><strong>${Math.round(done.length/Math.max(issues.length,1)*100)}%</strong> Complete</div>`;
+    <div class="jira-stat"><div class="jira-stat-dot" style="background:#0e7a54"></div><strong>${Math.round(done.length/Math.max(issues.length,1)*100)}%</strong> Complete</div>
+    <button onclick="openTicketsOverlay()" style="font-family:var(--sans);font-size:12px;font-weight:500;padding:5px 12px;border-radius:8px;border:1px solid #2684ff;background:#e8f0fe;color:#0052cc;cursor:pointer;margin-left:auto">
+      🎫 View all tickets
+    </button>`;
 
   document.getElementById('jira-board-btn').style.display = 'flex';
   document.getElementById('jira-ai-result').innerHTML = '<div class="loading"><div class="dots"><span></span><span></span><span></span></div> Generating sprint summary…</div>';
@@ -1333,6 +1406,81 @@ async function switchSprint(sprintId) {
   if (!sprint) return;
   document.getElementById('jira-ai-result').innerHTML = '<div class="loading"><div class="dots"><span></span><span></span><span></span></div> Loading sprint…</div>';
   await loadSprintIssues(sprint, jiraSprintData.boardId);
+}
+
+// ── Tickets overlay ──
+let ticketFilter = 'all';
+
+function openTicketsOverlay() {
+  if (!jiraSprintData?.issues?.length) return;
+  ticketFilter = 'all';
+  const sprint = jiraSprintData.sprint;
+  document.getElementById('tickets-title').textContent = sprint.name + ' — Tickets';
+  document.getElementById('tickets-meta').textContent = `${jiraSprintData.issues.length} tickets`;
+  document.getElementById('tickets-search').value = '';
+  renderTicketsFilter();
+  renderTicketsList();
+  document.getElementById('tickets-overlay').classList.add('open');
+}
+
+function renderTicketsFilter() {
+  const issues = jiraSprintData?.issues || [];
+  const counts = { all: issues.length, done: 0, inprog: 0, todo: 0 };
+  issues.forEach(i => {
+    const cat = i.fields.status.statusCategory.key;
+    if (cat === 'done') counts.done++;
+    else if (cat === 'indeterminate') counts.inprog++;
+    else counts.todo++;
+  });
+  const filters = [
+    { key: 'all',    label: `All (${counts.all})`,              color: '#5c7ef7' },
+    { key: 'inprog', label: `In Progress (${counts.inprog})`,   color: '#f59e0b' },
+    { key: 'todo',   label: `Not Started (${counts.todo})`,     color: '#888' },
+    { key: 'done',   label: `Done (${counts.done})`,            color: '#22c55e' },
+  ];
+  document.getElementById('tickets-filter-bar').innerHTML = filters.map(f =>
+    `<button class="filter-chip${ticketFilter===f.key?' on':''}"
+      style="${ticketFilter===f.key?`background:${f.color}`:''}"
+      onclick="setTicketFilter('${f.key}')">${f.label}</button>`
+  ).join('');
+}
+
+function setTicketFilter(f) {
+  ticketFilter = f;
+  renderTicketsFilter();
+  renderTicketsList();
+}
+
+function renderTicketsList() {
+  const issues = jiraSprintData?.issues || [];
+  const search = (document.getElementById('tickets-search')?.value || '').toLowerCase();
+  const filtered = issues.filter(i => {
+    const cat = i.fields.status.statusCategory.key;
+    if (ticketFilter === 'done'   && cat !== 'done') return false;
+    if (ticketFilter === 'inprog' && cat !== 'indeterminate') return false;
+    if (ticketFilter === 'todo'   && cat !== 'new') return false;
+    if (search && !i.key.toLowerCase().includes(search) && !i.fields.summary.toLowerCase().includes(search)) return false;
+    return true;
+  });
+
+  if (!filtered.length) {
+    document.getElementById('tickets-list').innerHTML = '<div style="color:var(--muted);font-size:13px;text-align:center;padding:24px">No tickets match</div>';
+    return;
+  }
+
+  document.getElementById('tickets-list').innerHTML = filtered.map(i => {
+    const cat = i.fields.status.statusCategory.key;
+    const statusColor = cat === 'done' ? '#22c55e' : cat === 'indeterminate' ? '#f59e0b' : '#888';
+    const statusBg    = cat === 'done' ? '#f0fdf4' : cat === 'indeterminate' ? '#fffbf0' : '#f5f5f5';
+    const assignee = i.fields.assignee?.displayName || '—';
+    const jiraUrl = jiraCfg ? `${jiraCfg.url}/browse/${i.key}` : '#';
+    return `<div class="ticket-row">
+      <a href="${jiraUrl}" target="_blank" class="ticket-key" style="text-decoration:none">${esc(i.key)}</a>
+      <span class="ticket-summary">${esc(i.fields.summary)}</span>
+      <span class="ticket-status" style="background:${statusBg};color:${statusColor}">${esc(i.fields.status.name)}</span>
+      <span class="ticket-assignee">${esc(assignee)}</span>
+    </div>`;
+  }).join('');
 }
 
 async function generateJiraSummary(sprint, done, inprog, todo) {
@@ -1361,26 +1509,26 @@ Write a concise sprint summary in HTML using only <p> tags. Include:
 Keep it under 120 words. Be direct and specific. No markdown, no headers.`;
 
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
+    const apiKey = getAnthropicKey();
+    if (!apiKey) {
+      document.getElementById('jira-ai-result').innerHTML = '<p style="color:#c0392b;font-size:12px">No API key — go to ⚙️ Settings and add your Gemini API key.</p>';
+      return;
+    }
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'anthropic-dangerous-direct-browser-access': 'true'
-      },
-      body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:400, messages:[{role:'user',content:prompt}] })
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
     });
     const json = await res.json();
-    console.log('Jira AI response:', res.status, JSON.stringify(json).slice(0,300));
-    if (json.content?.length) {
-      document.getElementById('jira-ai-result').innerHTML = json.content.map(b=>b.text||'').join('');
+    if (json.candidates?.[0]?.content?.parts?.[0]?.text) {
+      document.getElementById('jira-ai-result').innerHTML = json.candidates[0].content.parts[0].text;
     } else if (json.error) {
-      document.getElementById('jira-ai-result').innerHTML = `<p style="color:#c0392b;font-size:12px">API error: ${esc(json.error.message||json.error.type||'unknown')}</p>`;
+      document.getElementById('jira-ai-result').innerHTML = `<p style="color:#c0392b;font-size:12px">API error: ${esc(json.error.message||'unknown')}</p>`;
     } else {
       document.getElementById('jira-ai-result').innerHTML = '<p style="color:var(--muted)">No summary generated.</p>';
     }
   } catch(e) {
-    console.error('Jira AI error:', e);
-    document.getElementById('jira-ai-result').innerHTML = `<p style="color:#c0392b;font-size:12px">Error: ${esc(String(e))}</p>`;
+    document.getElementById('jira-ai-result').innerHTML = '<p style="color:var(--muted)">Could not generate summary.</p>';
   }
 }
 
@@ -2530,10 +2678,11 @@ function openAI() {
 }
 function closeAI(){document.getElementById('ai-overlay').classList.remove('open');}
 document.getElementById('prev-actions-overlay').addEventListener('click',e=>{if(e.target===e.currentTarget)document.getElementById('prev-actions-overlay').classList.remove('open');});
+document.getElementById('tickets-overlay').addEventListener('click',e=>{if(e.target===e.currentTarget)document.getElementById('tickets-overlay').classList.remove('open');});
 document.getElementById('ai-overlay').addEventListener('click',e=>{if(e.target===e.currentTarget)closeAI();});
 
 async function callAI() {
-  const fmt=col=>board[col].map(c=>`• ${c.text} (${c.votes} votes, by ${c.author})`).join('\n')||'None added';
+  const fmt=col=>board[col].map(c=>`• ${c.text} (${c.votes} votes)`).join('\n')||'None added';
   const prompt=`You are a skilled Agile coach analysing a sprint retrospective. Here is the board:
 
 WHAT WENT WELL:\n${fmt('well')}
@@ -2547,10 +2696,26 @@ Respond ONLY with HTML in this format:
 <div class="ib b"><strong>Top recommended action</strong>Most impactful next step with concrete advice.</div>
 <p>1-2 sentences on team momentum or culture.</p>
 Be direct, specific, reference actual card content. No markdown.`;
+
+  const apiKey = getAnthropicKey();
+  if (!apiKey) {
+    document.getElementById('ai-body').innerHTML='<p style="color:#c0392b">No API key set — go to ⚙️ Settings from the landing screen and add your Gemini API key.</p>';
+    return;
+  }
   try {
-    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})});
-    const json=await res.json();
-    document.getElementById('ai-body').innerHTML=json.content?.map(b=>b.text||'').join('')||'No insights generated.';
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+    });
+    const json = await res.json();
+    if (json.candidates?.[0]?.content?.parts?.[0]?.text) {
+      document.getElementById('ai-body').innerHTML = json.candidates[0].content.parts[0].text;
+    } else if (json.error) {
+      document.getElementById('ai-body').innerHTML = `<p style="color:#c0392b">API error: ${esc(json.error.message||'unknown')}</p>`;
+    } else {
+      document.getElementById('ai-body').innerHTML = '<p style="color:var(--muted)">No insights generated.</p>';
+    }
   } catch(e) {
     document.getElementById('ai-body').innerHTML='<p style="color:var(--muted)">Couldn\'t reach the AI service. Check your connection and try again.</p>';
   }
