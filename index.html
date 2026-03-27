@@ -1573,8 +1573,8 @@ async function joinAsHost() {
   const defaultName = room.replace(/-/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
   setRetroNameDisplay(retroName || defaultName);
   if (retroName) saveRetroNameToStorage(retroName);
-  if (teamId) await fbSet(`rooms/${roomKey}/teamId`, teamId);
-  if (sprintGoal) { await fbSet(`rooms/${roomKey}/sprintGoal`, sprintGoal); setSprintGoal(sprintGoal); }
+  if (teamId) await fbSet(sessionPath('teamId'), teamId);
+  if (sprintGoal) { await fbSet(sessionPath('sprintGoal'), sprintGoal); setSprintGoal(sprintGoal); }
   showScreen(null);
   document.getElementById('app').style.display = 'block';
   startSync();
@@ -1608,7 +1608,7 @@ async function joinAsParticipant() {
 
   startSync();
   try {
-    const teamId = await fbGet(`rooms/${roomKey}/teamId`);
+    const teamId = await fbGet(sessionPath('teamId'));
     if (teamId) { currentTeamId = teamId; showPrevActionsModal(teamId); }
   } catch(e) {}
 }
@@ -1670,17 +1670,23 @@ async function fbDelete(path) {
 
 // Cards are scoped to a session so re-using a room code starts fresh
 function cardsPath() {
-  if (!sessionId) return `rooms/${roomKey}/sessions/_empty/cards`; // safe dead-end path
+  if (!sessionId) return `rooms/${roomKey}/sessions/_empty/cards`;
   return `rooms/${roomKey}/sessions/${sessionId}/cards`;
 }
 
+// All per-session data (scores, name, goal) scoped to session
+function sessionPath(key) {
+  if (!sessionId) return `rooms/${roomKey}/${key}`;
+  return `rooms/${roomKey}/sessions/${sessionId}/${key}`;
+}
+
 async function saveRetroNameToStorage(name) {
-  try { await fbSet(`rooms/${roomKey}/name`, name); } catch(e) {}
+  try { await fbSet(sessionPath('name'), name); } catch(e) {}
 }
 
 async function loadRetroName() {
   try {
-    const name = await fbGet(`rooms/${roomKey}/name`);
+    const name = await fbGet(sessionPath('name'));
     if (name) setRetroNameDisplay(name);
   } catch(e) {}
 }
@@ -1695,7 +1701,7 @@ function setSprintGoal(goal) {
 
 async function loadSprintGoal() {
   try {
-    const goal = await fbGet(`rooms/${roomKey}/sprintGoal`);
+    const goal = await fbGet(sessionPath('sprintGoal'));
     setSprintGoal(goal || '');
   } catch(e) {}
 }
@@ -2298,12 +2304,12 @@ function changeScore() {
 }
 
 async function saveScores() {
-  try { await fbSet(`rooms/${roomKey}/scores`, scores); } catch(e) {}
+  try { await fbSet(sessionPath('scores'), scores); } catch(e) {}
 }
 
 async function loadScores() {
   try {
-    const remote = await fbGet(`rooms/${roomKey}/scores`);
+    const remote = await fbGet(sessionPath('scores'));
     if (!remote) return;
     scores = remote;
     if (myScore !== null) scores[me.id] = { name: me.name, value: myScore };
