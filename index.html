@@ -474,7 +474,7 @@ header {
 /* JIRA */
 .jira-sprint-panel {
   background:var(--surface); border-bottom:1px solid var(--border);
-  padding:16px 24px; display:none;
+  padding:16px 24px;
 }
 .jira-sprint-header {
   display:flex; align-items:center; gap:10px; margin-bottom:12px;
@@ -692,7 +692,7 @@ header {
   </div>
 
   <!-- Jira sprint summary panel -->
-  <div class="jira-sprint-panel" id="jira-sprint-panel">
+  <div class="jira-sprint-panel" id="jira-sprint-panel" style="display:none">
     <div class="jira-sprint-header">
       <div class="jira-logo">
         <svg width="14" height="14" viewBox="0 0 32 32" fill="none"><path d="M22.4 15.1l-6.57-6.57-6.57 6.57 2.29 2.29 4.28-4.28 4.28 4.28 2.29-2.29z" fill="white"/><path d="M15.83 18.67l-2.29-2.29-2.29 2.29 2.29 2.29 2.29-2.29z" fill="white" opacity=".7"/></svg>
@@ -1773,7 +1773,7 @@ let dragId = null, dragCol = null, dragEl = null, indicatorEl = null;
 function bindDrag(el, col) {
   el.addEventListener('mousedown', e => {
     if (e.button !== 0) return;
-    if (e.target.closest('button')) return; // don't drag when clicking buttons
+    if (e.target.closest('button,input,textarea,select')) return;
     startDrag(e, el, col);
   });
 }
@@ -1971,7 +1971,9 @@ function renderCol(col, prevIds) {
             <div style="display:flex;gap:6px;align-items:center">
               <input id="owner-input-${card.id}" type="text" placeholder="Type a name…" maxlength="30"
                 style="font-family:var(--sans);font-size:12px;padding:4px 10px;border:1px solid var(--border);border-radius:20px;background:var(--bg);color:var(--text);outline:none;flex:1;min-width:0"
-                onkeydown="if(event.key==='Enter'){addOwnerByName('${card.id}');event.preventDefault()}"/>
+                onmousedown="event.stopPropagation()"
+                onclick="event.stopPropagation()"
+                onkeydown="event.stopPropagation();if(event.key==='Enter'){addOwnerByName('${card.id}');event.preventDefault()}"/>
               <button onclick="addOwnerByName('${card.id}')"
                 style="font-family:var(--sans);font-size:11px;padding:4px 10px;border-radius:20px;border:1px solid var(--border);background:var(--bg);cursor:pointer;color:var(--muted);white-space:nowrap">
                 + Add
