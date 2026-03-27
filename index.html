@@ -1370,9 +1370,17 @@ Keep it under 120 words. Be direct and specific. No markdown, no headers.`;
       body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:400, messages:[{role:'user',content:prompt}] })
     });
     const json = await res.json();
-    document.getElementById('jira-ai-result').innerHTML = json.content?.map(b=>b.text||'').join('') || 'No summary generated.';
+    console.log('Jira AI response:', res.status, JSON.stringify(json).slice(0,300));
+    if (json.content?.length) {
+      document.getElementById('jira-ai-result').innerHTML = json.content.map(b=>b.text||'').join('');
+    } else if (json.error) {
+      document.getElementById('jira-ai-result').innerHTML = `<p style="color:#c0392b;font-size:12px">API error: ${esc(json.error.message||json.error.type||'unknown')}</p>`;
+    } else {
+      document.getElementById('jira-ai-result').innerHTML = '<p style="color:var(--muted)">No summary generated.</p>';
+    }
   } catch(e) {
-    document.getElementById('jira-ai-result').innerHTML = '<p style="color:var(--muted)">Could not generate summary.</p>';
+    console.error('Jira AI error:', e);
+    document.getElementById('jira-ai-result').innerHTML = `<p style="color:#c0392b;font-size:12px">Error: ${esc(String(e))}</p>`;
   }
 }
 
