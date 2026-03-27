@@ -1338,13 +1338,22 @@ async function joinAsParticipant() {
   if (!name) { document.getElementById('join-name').focus(); return; }
   me = { id:'u'+Date.now()+Math.random().toString(36).slice(2), name, color: myColorJoin };
   roomKey = 'retro-' + room;
-  // Read the session ID the host created — this scopes us to the correct board
-  try {
-    const sid = await fbGet(`rooms/${roomKey}/sessionId`);
-    sessionId = sid || '';
-  } catch(e) { sessionId = ''; }
   showScreen(null);
   document.getElementById('app').style.display = 'block';
+  document.getElementById('app').innerHTML += ''; // force paint
+
+  // Read sessionId — retry up to 10s in case host hasn't created room yet
+  toast('Joining room…', 2000);
+  let tries = 0;
+  while (!sessionId && tries < 10) {
+    try {
+      const sid = await fbGet(`rooms/${roomKey}/sessionId`);
+      if (sid) sessionId = sid;
+    } catch(e) {}
+    if (!sessionId) { await new Promise(r => setTimeout(r, 1000)); tries++; }
+  }
+  if (!sessionId) { toast('Room not found — check the code and try again'); return; }
+
   startSync();
   try {
     const teamId = await fbGet(`rooms/${roomKey}/teamId`);
@@ -1409,9 +1418,8 @@ async function fbDelete(path) {
 
 // Cards are scoped to a session so re-using a room code starts fresh
 function cardsPath() {
-  return sessionId
-    ? `rooms/${roomKey}/sessions/${sessionId}/cards`
-    : `rooms/${roomKey}/cards`;
+  if (!sessionId) return `rooms/${roomKey}/sessions/_empty/cards`; // safe dead-end path
+  return `rooms/${roomKey}/sessions/${sessionId}/cards`;
 }
 
 async function saveRetroNameToStorage(name) {
@@ -1530,25 +1538,11 @@ async function tick() {
 
 async function loadBoard() {
   try {
+    // Only read from session-scoped path — never fall back to old paths
+    if (!sessionId) { renderAll(); return; }
     const remote = await fbGet(`${cardsPath()}`);
-
-    // Also check legacy board path for old rooms
-    let cardsObj = remote;
-    if (!cardsObj) {
-      const legacy = await fbGet(`rooms/${roomKey}/board`);
-      if (legacy) {
-        // Migrate legacy array format to flat cards object
-        cardsObj = {};
-        ['well','better','action'].forEach(col => {
-          (legacy[col] || []).forEach((c, idx) => { cardsObj[c.id] = {...c, col, order: idx}; });
-        });
-        // Write migrated data to new path
-        await fbSet(`${cardsPath()}`, cardsObj);
-      }
-    }
-
-    if (!cardsObj) { renderAll(); return; }
-    const s = JSON.stringify(cardsObj);
+    if (!remote) { renderAll(); return; }
+    const s = JSON.stringify(remote);
     if (s === lastBoardStr) return;
     lastBoardStr = s;
 
@@ -1556,7 +1550,7 @@ async function loadBoard() {
 
     // Rebuild sorted columns from flat object
     const newBoard = {well:[], better:[], action:[]};
-    Object.values(cardsObj).forEach(c => {
+    Object.values(remote).forEach(c => {
       const col = c.col || 'well';
       if (newBoard[col]) newBoard[col].push(c);
     });
