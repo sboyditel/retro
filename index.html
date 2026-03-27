@@ -1363,7 +1363,10 @@ Keep it under 120 words. Be direct and specific. No markdown, no headers.`;
   try {
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
       body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:400, messages:[{role:'user',content:prompt}] })
     });
     const json = await res.json();
@@ -2537,7 +2540,7 @@ Respond ONLY with HTML in this format:
 <p>1-2 sentences on team momentum or culture.</p>
 Be direct, specific, reference actual card content. No markdown.`;
   try {
-    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})});
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})});
     const json=await res.json();
     document.getElementById('ai-body').innerHTML=json.content?.map(b=>b.text||'').join('')||'No insights generated.';
   } catch(e) {
