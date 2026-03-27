@@ -1237,25 +1237,29 @@ function jiraAuth() {
 }
 
 async function jiraFetchRaw(fullUrl) {
-  // Try multiple CORS proxies in order
   const proxies = [
-    u => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
+    u => u, // try direct first
     u => `https://corsproxy.io/?${encodeURIComponent(u)}`,
-    u => `https://cors-anywhere.herokuapp.com/${u}`,
+    u => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
+    u => `https://thingproxy.freeboard.io/fetch/${u}`,
   ];
   for (const proxy of proxies) {
     try {
-      const r = await fetch(proxy(fullUrl), {
-        headers: { 'Authorization': jiraAuth(), 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+      const proxyUrl = proxy(fullUrl);
+      const r = await fetch(proxyUrl, {
+        headers: {
+          'Authorization': jiraAuth(),
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        }
       });
+      const text = await r.text();
+      console.log(`Jira [${r.status}] ${proxyUrl.slice(0,80)}`, text.slice(0,200));
       if (r.ok) {
-        const json = await r.json();
-        console.log('Jira fetch OK via proxy:', proxy(fullUrl).slice(0,60));
-        return json;
+        try { return JSON.parse(text); } catch(e) { continue; }
       }
-      console.warn('Jira proxy failed:', r.status, proxy(fullUrl).slice(0,60));
     } catch(e) {
-      console.warn('Jira proxy error:', e.message, proxy(fullUrl).slice(0,60));
+      console.warn('Jira proxy error:', e.message);
     }
   }
   return null;
