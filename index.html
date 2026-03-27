@@ -1227,42 +1227,54 @@ async function saveJiraSettings() {
     document.getElementById('jira-status').textContent = '✓ Connected! Redirecting…';
     setTimeout(() => showScreen('screen-host'), 800);
   } else {
-    document.getElementById('jira-status').textContent = '✗ Could not connect. Check your URL, email and token.';
+    document.getElementById('jira-status').innerHTML = '✗ Could not connect. Check:<br>• URL format: <code>https://yourco.atlassian.net</code><br>• Email is your Atlassian login email<br>• Token is from id.atlassian.com (not your password)<br>Check browser console for details.';
   }
 }
 
 function jiraAuth() {
   if (!jiraCfg) return '';
-  return 'Basic ' + btoa(jiraCfg.email + ':' + jiraCfg.token);
+  return 'Basic ' + btoa(unescape(encodeURIComponent(jiraCfg.email + ':' + jiraCfg.token)));
+}
+
+async function jiraFetchRaw(fullUrl) {
+  // Try multiple CORS proxies in order
+  const proxies = [
+    u => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
+    u => `https://corsproxy.io/?${encodeURIComponent(u)}`,
+    u => `https://cors-anywhere.herokuapp.com/${u}`,
+  ];
+  for (const proxy of proxies) {
+    try {
+      const r = await fetch(proxy(fullUrl), {
+        headers: { 'Authorization': jiraAuth(), 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+      });
+      if (r.ok) {
+        const json = await r.json();
+        console.log('Jira fetch OK via proxy:', proxy(fullUrl).slice(0,60));
+        return json;
+      }
+      console.warn('Jira proxy failed:', r.status, proxy(fullUrl).slice(0,60));
+    } catch(e) {
+      console.warn('Jira proxy error:', e.message, proxy(fullUrl).slice(0,60));
+    }
+  }
+  return null;
 }
 
 async function jiraFetch(path) {
   if (!jiraCfg) return null;
-  try {
-    const target = encodeURIComponent(jiraCfg.url + '/rest/api/3' + path);
-    const r = await fetch(`https://corsproxy.io/?${target}`, {
-      headers: { 'Authorization': jiraAuth(), 'Accept': 'application/json' }
-    });
-    if (!r.ok) return null;
-    return await r.json();
-  } catch(e) { return null; }
+  return jiraFetchRaw(jiraCfg.url + '/rest/api/3' + path);
 }
 
 async function jiraAgileFetch(path) {
   if (!jiraCfg) return null;
-  try {
-    const target = encodeURIComponent(jiraCfg.url + '/rest/agile/1.0' + path);
-    const r = await fetch(`https://corsproxy.io/?${target}`, {
-      headers: { 'Authorization': jiraAuth(), 'Accept': 'application/json' }
-    });
-    if (!r.ok) return null;
-    return await r.json();
-  } catch(e) { return null; }
+  return jiraFetchRaw(jiraCfg.url + '/rest/agile/1.0' + path);
 }
 
 async function testJiraConnection() {
   const data = await jiraFetch('/myself');
-  return !!(data && data.emailAddress);
+  console.log('Jira test result:', data);
+  return !!(data && (data.emailAddress || data.accountId));
 }
 
 async function loadJiraProjects() {
