@@ -390,7 +390,45 @@ header {
 @keyframes db { 0%,80%,100%{transform:scale(.6);opacity:.4}40%{transform:scale(1);opacity:1} }
 .ai-footer { margin-top:24px; display:flex; justify-content:flex-end; }
 
-/* ASSIGNEE */
+/* TEAMS */
+.team-chip {
+  display:flex; align-items:center; gap:8px; padding:10px 14px;
+  border:1px solid var(--border); border-radius:10px; background:var(--bg);
+  cursor:pointer; transition:all .15s; font-size:14px;
+}
+.team-chip:hover { border-color:#a5a09b; background:var(--surface); }
+.team-chip.selected { border-color:var(--text); background:var(--surface); font-weight:500; }
+.team-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+.team-select { font-family:var(--sans); font-size:14px; padding:10px 14px; border:1px solid var(--border); border-radius:10px; background:var(--bg); color:var(--text); outline:none; width:100%; cursor:pointer; }
+.team-select:focus { border-color:#a5a09b; }
+
+/* SPRINT GOAL */
+.sprint-goal-bar {
+  background:var(--surface); border-bottom:1px solid var(--border);
+  padding:10px 24px; display:flex; align-items:center; gap:10px;
+}
+.sprint-goal-label { font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:.5px; color:var(--muted); white-space:nowrap; }
+.sprint-goal-input {
+  font-family:var(--sans); font-size:14px; border:none; outline:none;
+  background:transparent; color:var(--text); flex:1; min-width:0;
+}
+.sprint-goal-input::placeholder { color:#b8b4ac; }
+.sprint-goal-display { font-size:14px; color:var(--text); flex:1; }
+
+/* PREVIOUS ACTIONS PANEL */
+.prev-actions-bar {
+  background:#fffbf0; border-bottom:1px solid #f5e6a3;
+  padding:12px 24px; display:flex; align-items:flex-start; gap:12px;
+}
+.prev-actions-icon { font-size:16px; flex-shrink:0; margin-top:1px; }
+.prev-actions-content { flex:1; }
+.prev-actions-title { font-size:13px; font-weight:600; color:#92710a; margin-bottom:6px; }
+.prev-action-item {
+  display:inline-flex; align-items:center; gap:5px; font-size:12px;
+  background:#fff; border:1px solid #f5e6a3; border-radius:20px;
+  padding:2px 10px; margin:2px 3px 2px 0; color:#92710a;
+}
+.prev-action-item .ai { font-size:10px; opacity:.6; }
 .assignee-row { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
 .assignee-row span { font-size:11px; color:var(--muted); }
 .assignee-opt {
@@ -433,6 +471,31 @@ header {
 .history-arrow { color:var(--muted); font-size:18px; flex-shrink:0; }
 .history-empty { text-align:center; padding:60px 24px; color:var(--muted); font-size:14px; }
 .history-empty h3 { font-family:var(--serif); font-size:22px; font-weight:400; margin-bottom:8px; color:var(--text); }
+/* JIRA */
+.jira-sprint-panel {
+  background:var(--surface); border-bottom:1px solid var(--border);
+  padding:16px 24px; display:none;
+}
+.jira-sprint-header {
+  display:flex; align-items:center; gap:10px; margin-bottom:12px;
+}
+.jira-logo {
+  width:24px; height:24px; border-radius:6px;
+  background:linear-gradient(135deg,#0052cc,#2684ff);
+  display:flex; align-items:center; justify-content:center; flex-shrink:0;
+}
+.jira-sprint-title { font-weight:600; font-size:14px; }
+.jira-sprint-meta { font-size:12px; color:var(--muted); margin-left:auto; }
+.jira-stats { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:12px; }
+.jira-stat {
+  display:flex; align-items:center; gap:6px; font-size:12px;
+  background:var(--bg); border:1px solid var(--border); border-radius:8px;
+  padding:5px 10px;
+}
+.jira-stat-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.jira-ai-body { font-size:14px; line-height:1.65; color:var(--text); }
+.jira-ai-body p { margin-bottom:10px; }
+
 .cp { position:fixed; pointer-events:none; z-index:999; animation:fall linear forwards; }
 @keyframes fall { 0%{transform:translateY(-40px) rotate(0deg);opacity:1}100%{transform:translateY(110vh) rotate(720deg);opacity:0} }
 </style>
@@ -460,8 +523,17 @@ header {
     <button class="join-btn" onclick="showScreen('screen-join')" style="background:var(--bg);color:var(--text);border:1px solid var(--border);box-shadow:none">
       Join a retro <span style="opacity:.6;font-weight:400;font-size:13px;margin-left:4px">— I have a code</span>
     </button>
-    <button onclick="openHistory()" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:13px;text-decoration:underline;padding:4px 0;font-family:var(--sans)">
-      View past retros
+    <div style="display:flex;gap:10px">
+      <button onclick="showScreen('screen-teams')" style="flex:1;background:none;border:1px solid var(--border);cursor:pointer;color:var(--muted);font-size:13px;padding:8px;border-radius:8px;font-family:var(--sans)">
+        👥 Manage Teams
+      </button>
+      <button onclick="openHistory()" style="flex:1;background:none;border:1px solid var(--border);cursor:pointer;color:var(--muted);font-size:13px;padding:8px;border-radius:8px;font-family:var(--sans)">
+        🕐 Past Retros
+      </button>
+    </div>
+    <button onclick="showScreen('screen-jira')" style="background:none;border:1px solid var(--border);cursor:pointer;color:var(--muted);font-size:13px;padding:8px;border-radius:8px;font-family:var(--sans);width:100%;display:flex;align-items:center;justify-content:center;gap:6px">
+      <svg width="14" height="14" viewBox="0 0 32 32" fill="none"><path d="M15.83 0C7.09 0 0 7.09 0 15.83s7.09 15.83 15.83 15.83 15.83-7.09 15.83-15.83S24.57 0 15.83 0z" fill="#2684FF"/><path d="M22.4 15.1l-6.57-6.57-6.57 6.57 2.29 2.29 4.28-4.28 4.28 4.28 2.29-2.29z" fill="white"/><path d="M15.83 18.67l-2.29-2.29-2.29 2.29 2.29 2.29 2.29-2.29z" fill="white" opacity=".7"/></svg>
+      Jira Settings
     </button>
   </div>
 </div>
@@ -482,6 +554,25 @@ header {
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:-4px">
       <button onclick="showScreen('screen-landing')" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:20px;line-height:1;padding:0">←</button>
       <h2>Create a retro</h2>
+    </div>
+    <div class="field" id="jira-project-field" style="display:none">
+      <label>Jira project <span style="color:#b8b4ac;font-weight:400">(optional — loads last sprint)</span></label>
+      <select id="host-jira-project" class="team-select">
+        <option value="">Select a project…</option>
+      </select>
+      <div style="font-size:11px;color:#b8b4ac;margin-top:4px">
+        Not seeing projects? <button onclick="showScreen('screen-jira')" style="background:none;border:none;color:var(--action);cursor:pointer;font-size:11px;font-family:var(--sans);padding:0;text-decoration:underline">Configure Jira</button>
+      </div>
+    </div>
+    <div class="field">
+      <label>Team <span style="color:#b8b4ac;font-weight:400">(optional)</span></label>
+      <select id="host-team" class="team-select">
+        <option value="">No team / general</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Sprint goal <span style="color:#b8b4ac;font-weight:400">(optional)</span></label>
+      <input id="host-sprint-goal" type="text" placeholder="e.g. Ship v2 login flow" maxlength="120" autocomplete="off"/>
     </div>
     <div class="field">
       <label>Retro name</label>
@@ -573,6 +664,12 @@ header {
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
       History
     </button>
+    <button class="btn" id="jira-board-btn" onclick="showJiraSprint()" style="display:none;align-items:center;gap:5px">
+      <div style="width:14px;height:14px;border-radius:4px;background:linear-gradient(135deg,#0052cc,#2684ff);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <svg width="8" height="8" viewBox="0 0 32 32" fill="none"><path d="M22.4 15.1l-6.57-6.57-6.57 6.57 2.29 2.29 4.28-4.28 4.28 4.28 2.29-2.29z" fill="white"/></svg>
+      </div>
+      Sprint Summary
+    </button>
     <button class="btn ai-btn" onclick="openAI()">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
       AI Insights
@@ -592,6 +689,36 @@ header {
     </div>
     <div class="spacer"></div>
     <div class="stat" style="font-size:12px;color:#b0aca5"><span id="s-online">1 online</span></div>
+  </div>
+
+  <!-- Jira sprint summary panel -->
+  <div class="jira-sprint-panel" id="jira-sprint-panel">
+    <div class="jira-sprint-header">
+      <div class="jira-logo">
+        <svg width="14" height="14" viewBox="0 0 32 32" fill="none"><path d="M22.4 15.1l-6.57-6.57-6.57 6.57 2.29 2.29 4.28-4.28 4.28 4.28 2.29-2.29z" fill="white"/><path d="M15.83 18.67l-2.29-2.29-2.29 2.29 2.29 2.29 2.29-2.29z" fill="white" opacity=".7"/></svg>
+      </div>
+      <span class="jira-sprint-title" id="jira-sprint-name">Sprint</span>
+      <span class="jira-sprint-meta" id="jira-sprint-dates"></span>
+      <button onclick="document.getElementById('jira-sprint-panel').style.display='none'" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:18px;margin-left:8px">×</button>
+    </div>
+    <div class="jira-stats" id="jira-stats"></div>
+    <div id="jira-ai-result" class="jira-ai-body"></div>
+  </div>
+
+  <!-- Sprint goal bar -->
+  <div class="sprint-goal-bar" id="sprint-goal-bar" style="display:none">
+    <span class="sprint-goal-label">Sprint Goal</span>
+    <span class="sprint-goal-display" id="sprint-goal-display"></span>
+  </div>
+
+  <!-- Previous actions reminder -->
+  <div class="prev-actions-bar" id="prev-actions-bar" style="display:none">
+    <div class="prev-actions-icon">📋</div>
+    <div class="prev-actions-content">
+      <div class="prev-actions-title">Carry-forward items from last retro — check in on these:</div>
+      <div id="prev-actions-list"></div>
+    </div>
+    <button onclick="document.getElementById('prev-actions-bar').style.display='none'" style="background:none;border:none;cursor:pointer;color:#92710a;font-size:18px;flex-shrink:0">×</button>
   </div>
 
   <!-- Sprint score bar -->
@@ -743,7 +870,59 @@ header {
   </div>
 </div>
 
+<!-- Jira settings screen -->
+<div id="screen-jira" style="display:none; min-height:100vh; background:var(--bg); align-items:center; justify-content:center;">
+  <div class="join-card" style="max-width:480px">
+    <div style="display:flex;align-items:center;gap:10px">
+      <button onclick="showScreen('screen-landing')" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:20px;line-height:1;padding:0">←</button>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#0052cc,#2684ff);display:flex;align-items:center;justify-content:center">
+          <svg width="16" height="16" viewBox="0 0 32 32" fill="none"><path d="M22.4 15.1l-6.57-6.57-6.57 6.57 2.29 2.29 4.28-4.28 4.28 4.28 2.29-2.29z" fill="white"/><path d="M15.83 18.67l-2.29-2.29-2.29 2.29 2.29 2.29 2.29-2.29z" fill="white" opacity=".7"/></svg>
+        </div>
+        <h2 style="font-family:var(--serif);font-size:22px;font-weight:400">Jira Settings</h2>
+      </div>
+    </div>
+    <p style="margin-top:-8px;font-size:13px;color:var(--muted)">Connect to Jira to pull sprint summaries into your retros. Your credentials are stored in your browser only.</p>
+    <div class="field">
+      <label>Jira URL</label>
+      <input id="jira-url" type="text" placeholder="https://yourcompany.atlassian.net" autocomplete="off"/>
+    </div>
+    <div class="field">
+      <label>Email</label>
+      <input id="jira-email" type="email" placeholder="you@company.com" autocomplete="off"/>
+    </div>
+    <div class="field">
+      <label>API Token</label>
+      <input id="jira-token" type="password" placeholder="Your Jira API token" autocomplete="off"/>
+      <div style="font-size:11px;color:#b8b4ac;margin-top:4px">
+        Generate at <a href="https://id.atlassian.com/manage-profile/security/api-tokens" target="_blank" style="color:var(--action)">id.atlassian.com/manage-profile/security/api-tokens</a>
+      </div>
+    </div>
+    <button class="join-btn" onclick="saveJiraSettings()">Save &amp; load projects →</button>
+    <div id="jira-status" style="font-size:13px;color:var(--muted);text-align:center;min-height:20px"></div>
+  </div>
+</div>
+
 <div class="toasts" id="toasts"></div>
+
+<!-- Teams screen -->
+<div id="screen-teams" style="display:none; min-height:100vh; background:var(--bg); align-items:center; justify-content:center;">
+  <div class="join-card" style="max-width:520px">
+    <div style="display:flex;align-items:center;gap:10px">
+      <button onclick="showScreen('screen-landing')" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:20px;line-height:1;padding:0">←</button>
+      <h2 style="font-family:var(--serif);font-size:22px;font-weight:400">Manage Teams</h2>
+    </div>
+    <p style="margin-top:-8px">Create teams so retros are organised by team and history is separated.</p>
+    <div id="teams-list" style="display:flex;flex-direction:column;gap:8px"></div>
+    <div style="border-top:1px solid var(--border);padding-top:16px">
+      <div style="font-size:13px;font-weight:500;color:var(--muted);margin-bottom:8px">Create a new team</div>
+      <div class="field">
+        <input id="new-team-name" type="text" placeholder="Team name e.g. Platform Team" maxlength="40" autocomplete="off"/>
+      </div>
+      <button class="join-btn" style="margin-top:4px" onclick="createTeam()">Create team →</button>
+    </div>
+  </div>
+</div>
 
 <!-- History page -->
 <div id="history-page" style="display:none; min-height:100vh; background:var(--bg);">
@@ -839,7 +1018,7 @@ PALETTE.forEach((c,i) => {
 });
 
 // State
-let me = null, roomKey = null;
+let me = null, roomKey = null, currentTeamId = '';
 let board = {well:[],better:[],action:[]};
 let presence = {};
 let lastBoardStr = '', lastPresStr = '';
@@ -873,31 +1052,276 @@ function copyCode() {
 
 // ── Screen navigation ──
 function showScreen(id) {
-  ['screen-landing','screen-host','screen-join','history-page','history-detail'].forEach(s => {
+  ['screen-landing','screen-host','screen-join','screen-teams','screen-jira','history-page','history-detail'].forEach(s => {
     const el = document.getElementById(s);
     if (el) el.style.display = s === id ? 'flex' : 'none';
   });
+  if (id === 'screen-host') { populateTeamDropdown(); loadJiraProjects(); }
+  if (id === 'screen-teams') renderTeamsList();
+  if (id === 'screen-jira') loadJiraSettingsToForm();
+}
+
+// ── Teams ──
+let teams = {}; // id → { name, color }
+const TEAM_COLORS = ['#5c7ef7','#0e7a54','#764ba2','#e07b30','#d4516c','#0891b2','#65a30d','#9b4f00'];
+
+async function loadTeams() {
+  try {
+    const remote = await fbGet('teams');
+    if (remote) teams = remote;
+  } catch(e) {}
+}
+
+async function createTeam() {
+  const name = document.getElementById('new-team-name').value.trim();
+  if (!name) { document.getElementById('new-team-name').focus(); return; }
+  const id = 't' + Date.now().toString(36);
+  const color = TEAM_COLORS[Object.keys(teams).length % TEAM_COLORS.length];
+  teams[id] = { name, color };
+  await fbSet(`teams/${id}`, { name, color });
+  document.getElementById('new-team-name').value = '';
+  renderTeamsList();
+  populateTeamDropdown();
+}
+
+async function deleteTeam(id) {
+  if (!confirm('Delete this team? Past retros will not be deleted.')) return;
+  delete teams[id];
+  await fetch(fbUrl(`teams/${id}`), { method:'DELETE' });
+  renderTeamsList();
+  populateTeamDropdown();
+}
+
+function renderTeamsList() {
+  const list = document.getElementById('teams-list');
+  const entries = Object.entries(teams);
+  if (!entries.length) {
+    list.innerHTML = '<div style="font-size:13px;color:#b0aca5;font-style:italic">No teams yet — create one below.</div>';
+    return;
+  }
+  list.innerHTML = entries.map(([id, t]) => `
+    <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:10px">
+      <div style="width:10px;height:10px;border-radius:50%;background:${t.color};flex-shrink:0"></div>
+      <span style="flex:1;font-size:14px">${esc(t.name)}</span>
+      <button onclick="deleteTeam('${id}')" style="background:none;border:none;cursor:pointer;color:#b0aca5;font-size:12px">Delete</button>
+    </div>`).join('');
+}
+
+function populateTeamDropdown() {
+  const sel = document.getElementById('host-team');
+  if (!sel) return;
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">No team / general</option>';
+  Object.entries(teams).forEach(([id, t]) => {
+    const opt = document.createElement('option');
+    opt.value = id;
+    opt.textContent = t.name;
+    if (id === cur) opt.selected = true;
+    sel.appendChild(opt);
+  });
+}
+
+// ── Jira ──
+let jiraCfg = null; // { url, email, token }
+let jiraProjectKey = ''; // selected project key
+let jiraSprintData = null; // cached sprint issues
+
+function loadJiraSettingsToForm() {
+  const saved = localStorage.getItem('retro_jira');
+  if (!saved) return;
+  try {
+    const cfg = JSON.parse(saved);
+    document.getElementById('jira-url').value = cfg.url || '';
+    document.getElementById('jira-email').value = cfg.email || '';
+    document.getElementById('jira-token').value = cfg.token || '';
+  } catch(e) {}
+}
+
+async function saveJiraSettings() {
+  const url   = document.getElementById('jira-url').value.trim().replace(/\/$/, '');
+  const email = document.getElementById('jira-email').value.trim();
+  const token = document.getElementById('jira-token').value.trim();
+  if (!url || !email || !token) { document.getElementById('jira-status').textContent = 'Please fill in all fields.'; return; }
+  jiraCfg = { url, email, token };
+  localStorage.setItem('retro_jira', JSON.stringify(jiraCfg));
+  document.getElementById('jira-status').textContent = 'Testing connection…';
+  const ok = await testJiraConnection();
+  if (ok) {
+    document.getElementById('jira-status').textContent = '✓ Connected! Redirecting…';
+    setTimeout(() => showScreen('screen-host'), 800);
+  } else {
+    document.getElementById('jira-status').textContent = '✗ Could not connect. Check your URL, email and token.';
+  }
+}
+
+function jiraAuth() {
+  if (!jiraCfg) return '';
+  return 'Basic ' + btoa(jiraCfg.email + ':' + jiraCfg.token);
+}
+
+async function jiraFetch(path) {
+  if (!jiraCfg) return null;
+  try {
+    // Use a CORS proxy since Jira Cloud blocks direct browser requests
+    const target = encodeURIComponent(jiraCfg.url + '/rest/api/3' + path);
+    const r = await fetch(`https://corsproxy.io/?${target}`, {
+      headers: { 'Authorization': jiraAuth(), 'Accept': 'application/json' }
+    });
+    if (!r.ok) return null;
+    return await r.json();
+  } catch(e) { return null; }
+}
+
+async function testJiraConnection() {
+  const data = await jiraFetch('/myself');
+  return !!(data && data.emailAddress);
+}
+
+async function loadJiraProjects() {
+  const saved = localStorage.getItem('retro_jira');
+  if (!saved) return;
+  try { jiraCfg = JSON.parse(saved); } catch(e) { return; }
+
+  const field = document.getElementById('jira-project-field');
+  const sel   = document.getElementById('host-jira-project');
+  if (!field || !sel) return;
+  field.style.display = 'flex';
+  sel.innerHTML = '<option value="">Loading projects…</option>';
+
+  const data = await jiraFetch('/project/search?maxResults=50&orderBy=name');
+  if (!data || !data.values) {
+    sel.innerHTML = '<option value="">Could not load projects</option>';
+    return;
+  }
+  sel.innerHTML = '<option value="">No project — skip Jira</option>';
+  data.values.forEach(p => {
+    const opt = document.createElement('option');
+    opt.value = p.key;
+    opt.textContent = `${p.name} (${p.key})`;
+    sel.appendChild(opt);
+  });
+}
+
+async function loadJiraSprintForBoard(projectKey) {
+  if (!projectKey || !jiraCfg) return;
+  jiraProjectKey = projectKey;
+  // Get active or last completed sprint
+  const boardData = await jiraFetch(`/board?projectKeyOrId=${projectKey}&type=scrum`);
+  if (!boardData || !boardData.values || !boardData.values.length) return;
+  const boardId = boardData.values[0].id;
+
+  const sprintData = await jiraFetch(`/board/${boardId}/sprint?state=active,closed&maxResults=5`);
+  if (!sprintData || !sprintData.values || !sprintData.values.length) return;
+  // Pick active sprint, or most recent closed one
+  const sprint = sprintData.values.find(s => s.state === 'active') ||
+                 sprintData.values.sort((a,b) => new Date(b.endDate||0) - new Date(a.endDate||0))[0];
+  if (!sprint) return;
+
+  const issues = await jiraFetch(`/board/${boardId}/sprint/${sprint.id}/issue?maxResults=100&fields=summary,status,assignee,priority,issuetype`);
+  if (!issues) return;
+
+  jiraSprintData = { sprint, issues: issues.issues || [], boardId };
+
+  // Store project key on the board for participants
+  await fbSet(`rooms/${roomKey}/jiraProject`, projectKey);
+
+  showJiraSprint();
+}
+
+function showJiraSprint() {
+  if (!jiraSprintData) return;
+  const { sprint, issues } = jiraSprintData;
+
+  const panel = document.getElementById('jira-sprint-panel');
+  document.getElementById('jira-sprint-name').textContent = sprint.name;
+  const start = sprint.startDate ? new Date(sprint.startDate).toLocaleDateString(undefined,{month:'short',day:'numeric'}) : '';
+  const end   = sprint.endDate   ? new Date(sprint.endDate).toLocaleDateString(undefined,{month:'short',day:'numeric'}) : '';
+  document.getElementById('jira-sprint-dates').textContent = start && end ? `${start} – ${end}` : '';
+
+  const done   = issues.filter(i => i.fields.status.statusCategory.key === 'done');
+  const inprog = issues.filter(i => i.fields.status.statusCategory.key === 'indeterminate');
+  const todo   = issues.filter(i => i.fields.status.statusCategory.key === 'new');
+
+  document.getElementById('jira-stats').innerHTML = `
+    <div class="jira-stat"><div class="jira-stat-dot" style="background:#22c55e"></div><strong>${done.length}</strong> Done</div>
+    <div class="jira-stat"><div class="jira-stat-dot" style="background:#f59e0b"></div><strong>${inprog.length}</strong> In Progress</div>
+    <div class="jira-stat"><div class="jira-stat-dot" style="background:#e2e0da"></div><strong>${todo.length}</strong> Not Started</div>
+    <div class="jira-stat"><div class="jira-stat-dot" style="background:#5c7ef7"></div><strong>${issues.length}</strong> Total</div>
+    <div class="jira-stat"><div class="jira-stat-dot" style="background:#0e7a54"></div><strong>${Math.round(done.length/Math.max(issues.length,1)*100)}%</strong> Complete</div>`;
+
+  panel.style.display = 'block';
+  document.getElementById('jira-board-btn').style.display = 'flex';
+
+  // Generate AI summary
+  document.getElementById('jira-ai-result').innerHTML = '<div class="loading"><div class="dots"><span></span><span></span><span></span></div> Generating sprint summary…</div>';
+  generateJiraSummary(sprint, done, inprog, todo);
+}
+
+async function generateJiraSummary(sprint, done, inprog, todo) {
+  const fmtIssues = arr => arr.slice(0,15).map(i => `- ${i.fields.summary} [${i.fields.status.name}]`).join('\n') || 'None';
+  const prompt = `You are an Agile coach summarising a Jira sprint for a team retrospective.
+
+Sprint: ${sprint.name}
+Total issues: ${done.length + inprog.length + todo.length}
+Done: ${done.length} | In Progress: ${inprog.length} | Not started: ${todo.length}
+Completion: ${Math.round(done.length/Math.max(done.length+inprog.length+todo.length,1)*100)}%
+
+Completed issues:
+${fmtIssues(done)}
+
+In Progress:
+${fmtIssues(inprog)}
+
+Not Started / Carried:
+${fmtIssues(todo)}
+
+Write a concise sprint summary in HTML using only <p> tags. Include:
+1. One sentence on overall sprint health and completion rate.
+2. One sentence on what was achieved (reference actual issue titles briefly).
+3. One sentence on what didn't get done and any patterns.
+4. One practical recommendation for the retrospective discussion.
+Keep it under 120 words. Be direct and specific. No markdown, no headers.`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:400, messages:[{role:'user',content:prompt}] })
+    });
+    const json = await res.json();
+    document.getElementById('jira-ai-result').innerHTML = json.content?.map(b=>b.text||'').join('') || 'No summary generated.';
+  } catch(e) {
+    document.getElementById('jira-ai-result').innerHTML = '<p style="color:var(--muted)">Could not generate summary.</p>';
+  }
 }
 
 // ── Host join ──
-function joinAsHost() {
+async function joinAsHost() {
   const name = document.getElementById('host-name').value.trim();
   const room = document.getElementById('inp-room').value.trim().replace(/\s+/g,'-').toLowerCase() || 'default';
   const retroName = document.getElementById('host-retro-name').value.trim();
+  const sprintGoal = document.getElementById('host-sprint-goal').value.trim();
+  const teamId = document.getElementById('host-team').value;
+  const jiraProject = document.getElementById('host-jira-project')?.value || '';
   if (!name) { document.getElementById('host-name').focus(); return; }
   if (!room) { document.getElementById('inp-room').focus(); return; }
   me = { id:'u'+Date.now()+Math.random().toString(36).slice(2), name, color: myColor };
   roomKey = 'retro-' + room;
+  currentTeamId = teamId;
   const defaultName = room.replace(/-/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
   setRetroNameDisplay(retroName || defaultName);
   if (retroName) saveRetroNameToStorage(retroName);
+  if (teamId) await fbSet(`rooms/${roomKey}/teamId`, teamId);
+  if (sprintGoal) { await fbSet(`rooms/${roomKey}/sprintGoal`, sprintGoal); setSprintGoal(sprintGoal); }
   showScreen(null);
   document.getElementById('app').style.display = 'block';
   startSync();
+  if (teamId) loadPreviousActions(teamId);
+  if (jiraProject) loadJiraSprintForBoard(jiraProject);
 }
 
 // ── Participant join ──
-function joinAsParticipant() {
+async function joinAsParticipant() {
   const name = document.getElementById('join-name').value.trim();
   const room = document.getElementById('join-room').value.trim().replace(/\s+/g,'-').toLowerCase();
   if (!room) { document.getElementById('join-room').focus(); return; }
@@ -907,6 +1331,11 @@ function joinAsParticipant() {
   showScreen(null);
   document.getElementById('app').style.display = 'block';
   startSync();
+  // load team id for this room then show prev actions
+  try {
+    const teamId = await fbGet(`rooms/${roomKey}/teamId`);
+    if (teamId) { currentTeamId = teamId; loadPreviousActions(teamId); }
+  } catch(e) {}
 }
 
 // keyboard nav
@@ -954,6 +1383,16 @@ async function fbSet(path, data) {
   return r;
 }
 
+async function fbPatch(path, data) {
+  const r = await fetch(fbUrl(path), { method:'PATCH', body: JSON.stringify(data), headers:{'Content-Type':'application/json'} });
+  if (!r.ok) console.error('Firebase patch failed:', path, r.status, await r.text());
+  return r;
+}
+
+async function fbDelete(path) {
+  await fetch(fbUrl(path), { method:'DELETE' });
+}
+
 async function saveRetroNameToStorage(name) {
   try { await fbSet(`rooms/${roomKey}/name`, name); } catch(e) {}
 }
@@ -965,6 +1404,49 @@ async function loadRetroName() {
   } catch(e) {}
 }
 
+// ── Sprint goal ──
+function setSprintGoal(goal) {
+  const bar = document.getElementById('sprint-goal-bar');
+  const display = document.getElementById('sprint-goal-display');
+  if (goal) { display.textContent = goal; bar.style.display = 'flex'; }
+  else { bar.style.display = 'none'; }
+}
+
+async function loadSprintGoal() {
+  try {
+    const goal = await fbGet(`rooms/${roomKey}/sprintGoal`);
+    setSprintGoal(goal || '');
+  } catch(e) {}
+}
+
+// ── Previous actions ──
+async function loadPreviousActions(teamId) {
+  try {
+    const all = await fbGet('history');
+    if (!all) return;
+    // find the most recent completed retro for this team
+    const teamRetros = Object.values(all)
+      .filter(r => r.teamId === teamId)
+      .sort((a,b) => b.completedAt - a.completedAt);
+    if (!teamRetros.length) return;
+    const last = teamRetros[0];
+    const items = [
+      ...(last.carried || []).map(c => ({ text: typeof c === 'string' ? c : c.text, type: 'carry' })),
+      ...(last.actions || []).filter(c => !c.carry).map(c => ({ text: c.text, type: 'action', assignee: c.assignee }))
+    ];
+    if (!items.length) return;
+    const bar = document.getElementById('prev-actions-bar');
+    const list = document.getElementById('prev-actions-list');
+    list.innerHTML = items.slice(0, 8).map(i =>
+      `<span class="prev-action-item">
+        ${i.type === 'carry' ? '→' : '•'} ${esc(i.text)}
+        ${i.assignee ? `<span class="ai">(${esc(i.assignee)})</span>` : ''}
+      </span>`
+    ).join('');
+    bar.style.display = 'flex';
+  } catch(e) {}
+}
+
 // Sync — optimised for ~25 concurrent users
 // Board: poll every 4s. Presence: write-only ping every 8s, read every 8s (staggered).
 // Scores: poll every 10s. Name: poll every 15s.
@@ -973,13 +1455,14 @@ async function loadRetroName() {
 let tickCount = 0;
 
 function startSync() {
-  pingPresence();  // write my presence immediately
+  pingPresence();
   loadBoard();
   loadRetroName();
   loadScores();
+  loadSprintGoal();
   initScoreBar();
-  setInterval(tick, 4000);       // board every 4s
-  setInterval(pingPresence, 8000); // presence ping every 8s
+  setInterval(tick, 4000);
+  setInterval(pingPresence, 8000);
 }
 
 async function tick() {
@@ -996,21 +1479,45 @@ async function tick() {
 
 async function loadBoard() {
   try {
-    const remote = await fbGet(`rooms/${roomKey}/board`);
-    if (!remote) { renderAll(); return; }
-    const s = JSON.stringify(remote);
+    const remote = await fbGet(`rooms/${roomKey}/cards`);
+
+    // Also check legacy board path for old rooms
+    let cardsObj = remote;
+    if (!cardsObj) {
+      const legacy = await fbGet(`rooms/${roomKey}/board`);
+      if (legacy) {
+        // Migrate legacy array format to flat cards object
+        cardsObj = {};
+        ['well','better','action'].forEach(col => {
+          (legacy[col] || []).forEach((c, idx) => { cardsObj[c.id] = {...c, col, order: idx}; });
+        });
+        // Write migrated data to new path
+        await fbSet(`rooms/${roomKey}/cards`, cardsObj);
+      }
+    }
+
+    if (!cardsObj) { renderAll(); return; }
+    const s = JSON.stringify(cardsObj);
     if (s === lastBoardStr) return;
     lastBoardStr = s;
+
     const prevIds = {well:board.well.map(c=>c.id),better:board.better.map(c=>c.id),action:board.action.map(c=>c.id)};
-    board = remote;
+
+    // Rebuild sorted columns from flat object
+    const newBoard = {well:[], better:[], action:[]};
+    Object.values(cardsObj).forEach(c => {
+      const col = c.col || 'well';
+      if (newBoard[col]) newBoard[col].push(c);
+    });
     ['well','better','action'].forEach(col => {
-      if (!Array.isArray(board[col])) board[col] = [];
-      board[col].forEach(c => {
+      newBoard[col].sort((a,b) => (a.order||0) - (b.order||0) || (a.ts||0) - (b.ts||0));
+      newBoard[col].forEach(c => {
         if (!c.userVotes) c.userVotes = {};
         c.votes = cardTotal(c);
         c.mine = (c.userVotes[me.id] || 0) > 0;
       });
     });
+    board = newBoard;
     renderAll(prevIds);
     setSyncState('ok');
   } catch(e) { setSyncState('error'); }
@@ -1039,11 +1546,16 @@ async function pingPresence() {
 async function saveBoard() {
   setSyncState('syncing');
   try {
-    const strip = cards => cards.map(c => { const {mine, ...rest} = c; return rest; });
-    const clean = { well: strip(board.well), better: strip(board.better), action: strip(board.action) };
-    const s = JSON.stringify(clean);
-    await fbSet(`rooms/${roomKey}/board`, clean);
-    lastBoardStr = s;
+    // Flatten all columns into a single object keyed by card id
+    const allCards = {};
+    ['well','better','action'].forEach(col => {
+      board[col].forEach((c, idx) => {
+        const {mine, ...rest} = c;
+        allCards[c.id] = { ...rest, col, order: idx };
+      });
+    });
+    await fbSet(`rooms/${roomKey}/cards`, allCards);
+    lastBoardStr = JSON.stringify(allCards);
     setSyncState('ok');
   } catch(e) { setSyncState('error'); }
 }
@@ -1071,25 +1583,32 @@ function renderPresence() {
 }
 
 // Board mutations
-function addCard(col) {
+async function addCard(col) {
   const ta = document.getElementById('ta-'+col);
   const text = ta.value.trim();
   if (!text) return;
-  const card = {id:'c'+Date.now()+Math.random().toString(36).slice(2), text, author:me.name, color:me.color, votes:0, ts:Date.now()};
-  board[col].push(card);
+  const card = {
+    id: 'c'+Date.now()+Math.random().toString(36).slice(2),
+    text, author: me.name, color: me.color,
+    votes: 0, userVotes: {}, ts: Date.now(), col
+  };
+  // Write directly to this card's own path — no read needed, no conflict
   hideForm(col);
-  renderCol(col, {[col]:board[col].map(c=>c.id).filter(id=>id!==card.id)});
-  saveBoard();
   confetti();
+  try {
+    setSyncState('syncing');
+    await fbSet(`rooms/${roomKey}/cards/${card.id}`, card);
+    setSyncState('ok');
+  } catch(e) { setSyncState('error'); toast('Card failed to save — try again'); }
 }
 
-function deleteCard(col, id) {
+async function deleteCard(col, id) {
   const card = board[col].find(c=>c.id===id);
   if (!card) return;
   if (card.author !== me.name) { toast('You can only delete your own cards'); return; }
   board[col] = board[col].filter(c=>c.id!==id);
   renderCol(col);
-  saveBoard();
+  try { await fbDelete(`rooms/${roomKey}/cards/${id}`); } catch(e) {}
 }
 
 function moveToAction(col, id) {
@@ -1130,12 +1649,36 @@ function setCarryIntent(id, intent) {
   saveBoard();
 }
 
-function assignCard(id, name, color) {
+function toggleOwner(id, name, color) {
   const card = board.action.find(c=>c.id===id);
   if (!card) return;
-  // toggle off if same person clicked again
-  if (card.assignee === name) { card.assignee = ''; card.assigneeColor = ''; }
-  else { card.assignee = name; card.assigneeColor = color; }
+  if (!card.owners) card.owners = [];
+  const idx = card.owners.findIndex(o => o.name === name);
+  if (idx >= 0) card.owners.splice(idx, 1);
+  else card.owners.push({ name, color });
+  renderCol('action');
+  saveBoard();
+}
+
+function addOwnerByName(id) {
+  const input = document.getElementById('owner-input-' + id);
+  if (!input) return;
+  const name = input.value.trim();
+  if (!name) return;
+  const card = board.action.find(c=>c.id===id);
+  if (!card) return;
+  if (!card.owners) card.owners = [];
+  if (card.owners.some(o => o.name === name)) { input.value = ''; return; }
+  card.owners.push({ name, color: '#888' });
+  input.value = '';
+  renderCol('action');
+  saveBoard();
+}
+
+function removeOwner(id, name) {
+  const card = board.action.find(c=>c.id===id);
+  if (!card || !card.owners) return;
+  card.owners = card.owners.filter(o => o.name !== name);
   renderCol('action');
   saveBoard();
 }
@@ -1152,7 +1695,7 @@ function cardTotal(card) {
 }
 
 let voteLocked = false;
-function vote(col, id, delta) {
+async function vote(col, id, delta) {
   if (voteLocked) return;
   const card = board[col].find(c=>c.id===id);
   if (!card) return;
@@ -1171,7 +1714,12 @@ function vote(col, id, delta) {
   card.mine = (card.userVotes[me.id] || 0) > 0;
   voteLocked = true;
   renderCol(col);
-  saveBoard().finally(() => { voteLocked = false; });
+  // Write just this card's votes directly — no full board write needed
+  try {
+    await fbSet(`rooms/${roomKey}/cards/${id}/userVotes`, card.userVotes);
+    await fbSet(`rooms/${roomKey}/cards/${id}/votes`, card.votes);
+  } catch(e) {}
+  voteLocked = false;
 }
 
 // ── Drag and drop (pointer events) ──
@@ -1362,22 +1910,39 @@ function renderCol(col, prevIds) {
             <button class="label-btn domore${card.carryYes?' on':''}" onclick="setCarryIntent('${card.id}','yes')">👍 Yes</button>
             <button class="label-btn stop${card.carryNo?' on':''}" onclick="setCarryIntent('${card.id}','no')">👎 No</button>
           </div>` : ''}
-          <div class="assignee-row">
-            <span>Assign:</span>
-            ${Object.values(presence).map(u => `
-              <div class="assignee-opt${card.assignee===u.name?' selected':''}"
-                style="background:${u.color}"
-                title="${esc(u.name)}"
-                onclick="assignCard('${card.id}','${esc(u.name)}','${u.color}')">
-                ${esc(u.name[0].toUpperCase())}
-              </div>
-              <span style="font-size:11px;color:var(--muted);margin-right:6px">${esc(u.name)}</span>`).join('')}
-            ${card.assignee ? `<button onclick="assignCard('${card.id}','','')" style="background:none;border:none;font-size:10px;color:#b0aca5;cursor:pointer;padding:0 2px" title="Clear assignment">✕ clear</button>` : ''}
-          </div>
-          ${card.assignee ? `<div class="assigned-badge">
-            <div class="assigned-dot" style="background:${card.assigneeColor||'#888'}">${esc((card.assignee||'?')[0].toUpperCase())}</div>
-            ${esc(card.assignee)}
-          </div>` : ''}` : ''}
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <span style="font-size:11px;color:var(--muted);font-weight:500">Owners:</span>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center">
+              ${Object.values(presence).map(u => {
+                const owners = card.owners || [];
+                const isOn = owners.some(o => o.name === u.name);
+                return `<button onclick="toggleOwner('${card.id}','${esc(u.name)}','${u.color}')"
+                  style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px 3px 4px;border-radius:20px;border:1.5px solid ${isOn ? u.color : 'var(--border)'};background:${isOn ? u.color+'22' : 'var(--bg)'};cursor:pointer;font-size:12px;font-weight:500;color:${isOn ? u.color : 'var(--muted)'};font-family:var(--sans);transition:all .15s">
+                  <span style="width:18px;height:18px;border-radius:50%;background:${u.color};display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;flex-shrink:0">${esc(u.name[0].toUpperCase())}</span>
+                  ${esc(u.name)}
+                </button>`;
+              }).join('')}
+            </div>
+            <div style="display:flex;gap:6px;align-items:center">
+              <input id="owner-input-${card.id}" type="text" placeholder="Type a name…" maxlength="30"
+                style="font-family:var(--sans);font-size:12px;padding:4px 10px;border:1px solid var(--border);border-radius:20px;background:var(--bg);color:var(--text);outline:none;flex:1;min-width:0"
+                onkeydown="if(event.key==='Enter'){addOwnerByName('${card.id}');event.preventDefault()}"/>
+              <button onclick="addOwnerByName('${card.id}')"
+                style="font-family:var(--sans);font-size:11px;padding:4px 10px;border-radius:20px;border:1px solid var(--border);background:var(--bg);cursor:pointer;color:var(--muted);white-space:nowrap">
+                + Add
+              </button>
+            </div>
+            ${(card.owners||[]).length ? `
+            <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:2px">
+              <span style="font-size:11px;color:var(--muted);align-self:center">Assigned to:</span>
+              ${(card.owners||[]).map(o => `
+                <span style="display:inline-flex;align-items:center;gap:4px;background:${o.color||'#888'}22;border:1px solid ${o.color||'#888'};border-radius:20px;padding:2px 6px 2px 3px;font-size:11px;font-weight:500;color:${o.color||'#888'}">
+                  <span style="width:14px;height:14px;border-radius:50%;background:${o.color||'#888'};display:inline-flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:#fff">${esc((o.name||'?')[0].toUpperCase())}</span>
+                  ${esc(o.name)}
+                  <button onclick="removeOwner('${card.id}','${esc(o.name)}')" style="background:none;border:none;cursor:pointer;color:${o.color||'#888'};font-size:12px;line-height:1;padding:0 0 0 2px;opacity:.6">×</button>
+                </span>`).join('')}
+            </div>` : ''}
+          </div>` : ''}
         </div>`;
       bindDrag(div, col);
       wrap.appendChild(div);
@@ -1402,6 +1967,10 @@ function updateStats() {
 // ── Sprint score ──
 let scores = {};   // uid → { name, value }
 let myScore = null;
+let historyOrigin = 'landing';
+
+// Load teams on page start
+loadTeams().then(() => populateTeamDropdown());
 const SCORE_COLORS = ['','#ef4444','#ef4444','#f97316','#f97316','#eab308','#eab308','#22c55e','#22c55e','#0ea5e9','#0ea5e9'];
 
 function scoreColor(v) { return SCORE_COLORS[v] || '#888'; }
@@ -1464,12 +2033,14 @@ async function saveToHistory() {
       title,
       completedAt: Date.now(),
       roomKey,
+      teamId: currentTeamId || '',
+      teamName: currentTeamId && teams[currentTeamId] ? teams[currentTeamId].name : '',
       score: avg,
       scoreCount: vals.length,
       carried:       board.action.filter(c=>c.carry).map(c=>({text:c.text, wantTo:!!c.carryYes, dontWant:!!c.carryNo})),
       doMore:        board.action.filter(c=>c.doMore).map(c=>c.text),
       stopDoing:     board.action.filter(c=>c.stopDoing).map(c=>c.text),
-      actions: board.action.map(c=>({text:c.text,votes:c.votes,carry:!!c.carry,carryYes:!!c.carryYes,carryNo:!!c.carryNo,doMore:!!c.doMore,stopDoing:!!c.stopDoing,assignee:c.assignee||''})),
+      actions: board.action.map(c=>({text:c.text,votes:c.votes,carry:!!c.carry,carryYes:!!c.carryYes,carryNo:!!c.carryNo,doMore:!!c.doMore,stopDoing:!!c.stopDoing,owners:c.owners||[]})),
       well:   board.well.map(c=>({text:c.text,votes:c.votes})),
       better: board.better.map(c=>({text:c.text,votes:c.votes})),
     };
@@ -1481,7 +2052,7 @@ async function saveToHistory() {
 }
 
 // ── History ──
-let historyOrigin = 'landing'; // track where history was opened from
+let historyTeamFilter = '';
 
 async function openHistory() {
   historyOrigin = document.getElementById('app').style.display !== 'none' ? 'app' : 'landing';
@@ -1489,33 +2060,68 @@ async function openHistory() {
   document.getElementById('app').style.display = 'none';
   document.getElementById('history-page').style.display = 'block';
   document.getElementById('history-list').innerHTML = '<div style="color:var(--muted);font-size:14px;padding:20px 0">Loading…</div>';
+  await loadTeams();
+  renderHistoryPage();
+}
+
+async function renderHistoryPage() {
   try {
     const all = await fbGet('history');
+    // Build team filter chips
+    const teamChips = Object.entries(teams).map(([id, t]) =>
+      `<button onclick="setHistoryFilter('${id}')" style="display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:20px;border:1.5px solid ${historyTeamFilter===id?t.color:'var(--border)'};background:${historyTeamFilter===id?t.color+'22':'var(--surface)'};color:${historyTeamFilter===id?t.color:'var(--muted)'};cursor:pointer;font-size:12px;font-weight:500;font-family:var(--sans)">
+        <span style="width:8px;height:8px;border-radius:50%;background:${t.color};display:inline-block"></span>${esc(t.name)}
+      </button>`).join('');
+    const filterHtml = Object.keys(teams).length ? `
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px;align-items:center">
+        <button onclick="setHistoryFilter('')" style="padding:4px 12px;border-radius:20px;border:1.5px solid ${!historyTeamFilter?'var(--text)':'var(--border)'};background:${!historyTeamFilter?'var(--bg)':'var(--surface)'};color:${!historyTeamFilter?'var(--text)':'var(--muted)'};cursor:pointer;font-size:12px;font-family:var(--sans)">All teams</button>
+        ${teamChips}
+      </div>` : '';
+
     if (!all) {
-      document.getElementById('history-list').innerHTML = '<div class="history-empty"><h3>No retros yet</h3><p>Complete a retrospective and it will appear here.</p></div>';
+      document.getElementById('history-list').innerHTML = filterHtml + '<div class="history-empty"><h3>No retros yet</h3><p>Complete a retrospective and it will appear here.</p></div>';
       return;
     }
-    const sorted = Object.entries(all).sort((a,b) => b[1].completedAt - a[1].completedAt);
-    document.getElementById('history-list').innerHTML = sorted.map(([id, r]) => {
+    let sorted = Object.entries(all).sort((a,b) => b[1].completedAt - a[1].completedAt);
+    if (historyTeamFilter) sorted = sorted.filter(([,r]) => r.teamId === historyTeamFilter);
+
+    if (!sorted.length) {
+      document.getElementById('history-list').innerHTML = filterHtml + '<div class="history-empty"><h3>No retros for this team</h3><p>Complete a retro for this team and it will appear here.</p></div>';
+      return;
+    }
+
+    document.getElementById('history-list').innerHTML = filterHtml + sorted.map(([id, r]) => {
       const date = new Date(r.completedAt).toLocaleDateString(undefined, {weekday:'short',year:'numeric',month:'short',day:'numeric'});
-      const scoreColor = r.score ? getScoreColor(Math.round(parseFloat(r.score))) : '#888';
-      return `<div class="history-card" onclick="openDetail('${id}')">
-        <div class="history-icon">✦</div>
-        <div class="history-info">
-          <div class="history-name">${esc(r.title || 'Sprint Retro')}</div>
+      const sc = r.score ? getScoreColor(Math.round(parseFloat(r.score))) : '#888';
+      const teamTag = r.teamName ? `<span style="font-size:10px;background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:1px 7px;color:var(--muted)">${esc(r.teamName)}</span>` : '';
+      return `<div class="history-card" style="position:relative">
+        <div class="history-icon" onclick="openDetail('${id}')">✦</div>
+        <div class="history-info" onclick="openDetail('${id}')" style="cursor:pointer">
+          <div class="history-name">${esc(r.title || 'Sprint Retro')} ${teamTag}</div>
           <div class="history-meta">
             <span>${date}</span>
             ${r.actions?.length ? `<span>${r.actions.length} action${r.actions.length!==1?'s':''}</span>` : ''}
-            ${r.carried?.length ? `<span>→ ${r.carried.length} carry forward</span>` : ''}
+            ${r.carried?.length ? `<span>→ ${r.carried.length} carry</span>` : ''}
           </div>
         </div>
-        ${r.score ? `<div class="history-score" style="color:${scoreColor}">${r.score}</div>` : ''}
-        <div class="history-arrow">›</div>
+        ${r.score ? `<div class="history-score" style="color:${sc};cursor:pointer" onclick="openDetail('${id}')">${r.score}</div>` : ''}
+        <button onclick="deleteHistory('${id}')" title="Archive" style="background:none;border:none;cursor:pointer;color:#c5c2bb;font-size:18px;padding:4px 6px;border-radius:6px;transition:all .15s" onmouseover="this.style.color='#c0392b';this.style.background='#fde8e8'" onmouseout="this.style.color='#c5c2bb';this.style.background='none'">🗑</button>
       </div>`;
     }).join('');
   } catch(e) {
-    document.getElementById('history-list').innerHTML = '<div style="color:var(--muted);font-size:14px">Couldn\'t load history. Check your connection.</div>';
+    document.getElementById('history-list').innerHTML = '<div style="color:var(--muted);font-size:14px">Couldn\'t load history.</div>';
   }
+}
+
+function setHistoryFilter(teamId) {
+  historyTeamFilter = teamId;
+  renderHistoryPage();
+}
+
+async function deleteHistory(id) {
+  if (!confirm('Archive this retro? It will be removed from the list.')) return;
+  await fetch(fbUrl(`history/${id}`), { method:'DELETE' });
+  renderHistoryPage();
 }
 
 function closeHistory() {
@@ -1542,7 +2148,7 @@ async function openDetail(id) {
       ? items.map(c=>`<div class="sum-item${c.carry?' carry':''}${c.doMore?' do-more':''}${c.stopDoing?' stop-doing':''}">
           ${c.carry?'<span class="carry-arrow">→</span>':''}
           <span>${esc(c.text||c)}</span>
-          ${c.assignee?`<span class="assigned-badge" style="margin-left:auto"><div class="assigned-dot" style="background:${c.assigneeColor||'#888'}">${esc((c.assignee||'?')[0].toUpperCase())}</div>${esc(c.assignee)}</span>`:''}
+          ${(c.owners||[]).length ? `<span style="display:inline-flex;gap:3px;margin-left:auto;flex-wrap:wrap">${(c.owners||[]).map(o=>`<span class="assigned-badge"><div class="assigned-dot" style="background:${o.color||'#888'}">${esc((o.name||'?')[0].toUpperCase())}</div>${esc(o.name)}</span>`).join('')}</span>` : ''}
           ${c.votes?`<span class="votes">♥ ${c.votes}</span>`:''}
         </div>`).join('')
       : '<div class="sum-empty">Nothing added</div>';
@@ -1701,7 +2307,7 @@ function renderSummary() {
       <div class="sum-item${c.carry?' carry':''}${c.doMore?' do-more':''}${c.stopDoing?' stop-doing':''}">
         ${c.carry ? '<span class="carry-arrow">→</span>' : ''}
         <span>${esc(c.text)}</span>
-        ${c.assignee ? `<span class="assigned-badge" style="margin-left:auto"><div class="assigned-dot" style="background:${c.assigneeColor||'#888'}">${esc((c.assignee||'?')[0].toUpperCase())}</div>${esc(c.assignee)}</span>` : ''}
+        ${(c.owners||[]).length ? `<span style="display:inline-flex;gap:3px;margin-left:auto;flex-wrap:wrap">${(c.owners||[]).map(o=>`<span class="assigned-badge"><div class="assigned-dot" style="background:${o.color||'#888'}">${esc((o.name||'?')[0].toUpperCase())}</div>${esc(o.name)}</span>`).join('')}</span>` : ''}
         ${c.votes ? `<span class="votes">♥ ${c.votes}</span>` : ''}
       </div>`).join('');
   } else {
