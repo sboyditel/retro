@@ -2199,8 +2199,6 @@ function renderCol(col, prevIds) {
           ${col === 'action' ? `
           <div class="action-labels">
             <button class="label-btn carry${card.carry?' on':''}" onclick="setLabel('${card.id}','carry')">→ Carry forward</button>
-            <button class="label-btn domore${card.doMore?' on':''}" onclick="setLabel('${card.id}','doMore')">✓ Do more</button>
-            <button class="label-btn stop${card.stopDoing?' on':''}" onclick="setLabel('${card.id}','stopDoing')">✕ Stop doing</button>
           </div>
           ${card.carry ? `<div class="action-labels">
             <span style="font-size:11px;color:var(--muted)">Want to do this?</span>
@@ -2746,40 +2744,59 @@ Be direct, specific, reference actual card content. No markdown.`;
 // Export
 function exportRetro() {
   const badge = document.getElementById('badge-text').textContent.replace('✦ ', '');
-  const divider = '='.repeat(badge.length);
-  let t = badge + '\n' + divider + '\n';
-  t += 'Completed: ' + new Date().toLocaleDateString(undefined, {weekday:'long',year:'numeric',month:'long',day:'numeric'}) + '\n';
-  t += 'Participants: ' + Object.values(presence).map(u=>u.name).join(', ') + '\n\n';
-
-  // Sprint score
+  const date = new Date().toLocaleDateString(undefined, {weekday:'long',year:'numeric',month:'long',day:'numeric'});
   const vals = Object.values(scores).map(s => s.value);
-  if (vals.length) {
-    const avg = (vals.reduce((a,b)=>a+b,0) / vals.length).toFixed(1);
-    t += 'SPRINT SCORE\n' + '-'.repeat(20) + '\n';
-    t += `Overall: ${avg}/10 (${vals.length} response${vals.length!==1?'s':''})\n`;
-    t += '\n';
-  }
-
-  // Carry forward
+  const avg = vals.length ? (vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(1) : null;
+  const scoreColor = avg ? getScoreColor(Math.round(parseFloat(avg))) : '#888';
   const carried = board.action.filter(c => c.carry);
-  if (carried.length) {
-    t += 'CARRYING INTO NEXT SPRINT\n' + '-'.repeat(20) + '\n';
-    carried.forEach(c => t += `→ ${c.text}\n`);
-    t += '\n';
-  }
 
-  // Board sections
-  t += 'WHAT WENT WELL\n' + '-'.repeat(20) + '\n';
-  board.well.forEach(c => t += `• ${c.text} (${c.votes} votes)\n`);
-  t += '\nWHAT COULD BE BETTER\n' + '-'.repeat(20) + '\n';
-  board.better.forEach(c => t += `• ${c.text} (${c.votes} votes)\n`);
-  t += '\nACTION ITEMS\n' + '-'.repeat(20) + '\n';
-  board.action.forEach(c => t += `${c.carry ? '→' : '•'} ${c.text} (${c.votes} votes)${c.carry ? ' [carry forward]' : ''}\n`);
+  const sectionHtml = (title, color, items) => items.length ? `
+    <div style="margin-bottom:20px">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:${color};margin-bottom:8px;padding-bottom:4px;border-bottom:2px solid ${color}">${title}</div>
+      ${items.map(c=>`<div style="padding:8px 10px;background:#f8f7f4;border-radius:6px;margin-bottom:6px;font-size:13px;display:flex;gap:8px;align-items:flex-start">
+        <span style="flex:1">${esc(c.text)}</span>
+        ${c.votes?`<span style="font-size:11px;color:#888;white-space:nowrap">♥ ${c.votes}</span>`:''}
+        ${(c.owners||[]).length?`<span style="font-size:11px;color:#888;white-space:nowrap">${c.owners.map(o=>o.name).join(', ')}</span>`:''}
+      </div>`).join('')}
+    </div>` : '';
 
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([t], {type:'text/plain'}));
-  a.download = badge.replace(/\s+/g,'-').toLowerCase() + '.txt';
-  a.click();
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+    <title>${esc(badge)}</title>
+    <style>
+      body{font-family:'Helvetica Neue',Arial,sans-serif;color:#1a1917;margin:0;padding:32px;font-size:14px;line-height:1.5}
+      h1{font-size:26px;font-weight:400;margin:0 0 4px}
+      .meta{font-size:12px;color:#888;margin-bottom:24px}
+      .score{display:inline-block;font-size:48px;font-weight:300;color:${scoreColor};line-height:1}
+      .score-row{background:#f8f7f4;border-radius:10px;padding:16px 20px;margin-bottom:24px;display:flex;align-items:center;gap:16px}
+      .score-bar{height:8px;background:#e2e0da;border-radius:8px;overflow:hidden;flex:1}
+      .score-fill{height:100%;background:${scoreColor};border-radius:8px;width:${avg?parseFloat(avg)/10*100:0}%}
+      @media print{body{padding:16px}@page{margin:1cm}}
+    </style>
+  </head><body>
+    <h1>${esc(badge)}</h1>
+    <div class="meta">${date} &nbsp;·&nbsp; ${Object.values(presence).map(u=>esc(u.name)).join(', ')}</div>
+    ${avg ? `<div class="score-row">
+      <div><div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:#888;margin-bottom:4px">Sprint Score</div>
+      <span class="score">${avg}</span><span style="font-size:18px;color:#888">/10</span></div>
+      <div class="score-bar"><div class="score-fill"></div></div>
+      <div style="font-size:12px;color:#888">${vals.length} response${vals.length!==1?'s':''}</div>
+    </div>` : ''}
+    ${carried.length ? `<div style="background:#e8f0ff;border-radius:10px;padding:16px 20px;margin-bottom:24px">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#2d4fc0;margin-bottom:8px">→ Carrying into next sprint</div>
+      ${carried.map(c=>`<div style="padding:6px 0;font-size:13px;border-bottom:1px solid #c8d4f5">${esc(c.text)}</div>`).join('')}
+    </div>` : ''}
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+      <div>${sectionHtml('What went well','#0e7a54',board.well)}</div>
+      <div>${sectionHtml('What could be better','#9b4f00',board.better)}</div>
+    </div>
+    ${sectionHtml('Action items','#2d4fc0',board.action)}
+  </body></html>`;
+
+  const win = window.open('', '_blank');
+  win.document.write(html);
+  win.document.close();
+  win.focus();
+  setTimeout(() => win.print(), 500);
 }
 
 // Confetti
