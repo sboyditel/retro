@@ -1169,8 +1169,19 @@ function jiraAuth() {
 async function jiraFetch(path) {
   if (!jiraCfg) return null;
   try {
-    // Use a CORS proxy since Jira Cloud blocks direct browser requests
     const target = encodeURIComponent(jiraCfg.url + '/rest/api/3' + path);
+    const r = await fetch(`https://corsproxy.io/?${target}`, {
+      headers: { 'Authorization': jiraAuth(), 'Accept': 'application/json' }
+    });
+    if (!r.ok) return null;
+    return await r.json();
+  } catch(e) { return null; }
+}
+
+async function jiraAgileFetch(path) {
+  if (!jiraCfg) return null;
+  try {
+    const target = encodeURIComponent(jiraCfg.url + '/rest/agile/1.0' + path);
     const r = await fetch(`https://corsproxy.io/?${target}`, {
       headers: { 'Authorization': jiraAuth(), 'Accept': 'application/json' }
     });
@@ -1213,38 +1224,92 @@ async function loadJiraProjects() {
 async function loadJiraSprintForBoard(projectKey) {
   if (!projectKey || !jiraCfg) return;
   jiraProjectKey = projectKey;
-  // Get active or last completed sprint
-  const boardData = await jiraFetch(`/board?projectKeyOrId=${projectKey}&type=scrum`);
-  if (!boardData || !boardData.values || !boardData.values.length) return;
-  const boardId = boardData.values[0].id;
 
-  const sprintData = await jiraFetch(`/board/${boardId}/sprint?state=active,closed&maxResults=5`);
-  if (!sprintData || !sprintData.values || !sprintData.values.length) return;
-  // Pick active sprint, or most recent closed one
-  const sprint = sprintData.values.find(s => s.state === 'active') ||
-                 sprintData.values.sort((a,b) => new Date(b.endDate||0) - new Date(a.endDate||0))[0];
-  if (!sprint) return;
+  // Show loading indicator in header
+  const btn = document.getElementById('jira-board-btn');
+  btn.style.display = 'flex';
+  btn.textContent = 'Loading sprint…';
 
-  const issues = await jiraFetch(`/board/${boardId}/sprint/${sprint.id}/issue?maxResults=100&fields=summary,status,assignee,priority,issuetype`);
-  if (!issues) return;
+  // Get boards for this project using agile API
+  const boardData = await jiraAgileFetch(`/board?projectKeyOrId=${projectKey}&type=scrum&maxResults=10`);
+  if (!boardData || !boardData.values || !boardData.values.length) {
+    // Try kanban boards too
+    const kanbanData = await jiraAgileFetch(`/board?projectKeyOrId=${projectKey}&maxResults=10`);
+    if (!kanbanData || !kanbanData.values || !kanbanData.values.length) {
+      btn.textContent = 'No board found';
+      setTimeout(() => { btn.style.display = 'none'; }, 3000);
+      return;
+    }
+  }
 
-  jiraSprintData = { sprint, issues: issues.issues || [], boardId };
+  const boards = boardData?.values || [];
+  if (!boards.length) { btn.style.display = 'none'; return; }
+  const boardId = boards[0].id;
 
-  // Store project key on the board for participants
-  await fbSet(`rooms/${roomKey}/jiraProject`, projectKey);
+  // Get active sprint first, then recent closed
+  const activeData = await jiraAgileFetch(`/board/${boardId}/sprint?state=active&maxResults=1`);
+  const closedData = await jiraAgileFetch(`/board/${boardId}/sprint?state=closed&maxResults=5`);
 
+  const sprints = [
+    ...(activeData?.values || []),
+    ...(closedData?.values || []).sort((a,b) => new Date(b.endDate||0) - new Date(a.endDate||0))
+  ];
+
+  if (!sprints.length) {
+    btn.textContent = 'No sprints found';
+    setTimeout(() => { btn.style.display = 'none'; }, 3000);
+    return;
+  }
+
+  // Store board id and sprints for picker
+  jiraSprintData = { boardId, sprints, sprint: sprints[0], issues: [] };
+
+  // Restore button
+  btn.innerHTML = `<div style="width:14px;height:14px;border-radius:4px;background:linear-gradient(135deg,#0052cc,#2684ff);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="8" height="8" viewBox="0 0 32 32" fill="none"><path d="M22.4 15.1l-6.57-6.57-6.57 6.57 2.29 2.29 4.28-4.28 4.28 4.28 2.29-2.29z" fill="white"/></svg></div> Sprint Summary`;
+
+  // Auto-load the first (active) sprint
+  await loadSprintIssues(sprints[0], boardId);
+}
+
+async function loadSprintIssues(sprint, boardId) {
+  const btn = document.getElementById('jira-board-btn');
+  btn.innerHTML = `<div style="width:14px;height:14px;border-radius:4px;background:linear-gradient(135deg,#0052cc,#2684ff);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="8" height="8" viewBox="0 0 32 32" fill="none"><path d="M22.4 15.1l-6.57-6.57-6.57 6.57 2.29 2.29 4.28-4.28 4.28 4.28 2.29-2.29z" fill="white"/></svg></div> Loading…`;
+
+  const issues = await jiraAgileFetch(`/board/${boardId}/sprint/${sprint.id}/issue?maxResults=100&fields=summary,status,assignee,priority,issuetype`);
+
+  if (jiraSprintData) {
+    jiraSprintData.sprint = sprint;
+    jiraSprintData.issues = issues?.issues || [];
+  }
+
+  btn.innerHTML = `<div style="width:14px;height:14px;border-radius:4px;background:linear-gradient(135deg,#0052cc,#2684ff);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="8" height="8" viewBox="0 0 32 32" fill="none"><path d="M22.4 15.1l-6.57-6.57-6.57 6.57 2.29 2.29 4.28-4.28 4.28 4.28 2.29-2.29z" fill="white"/></svg></div> Sprint Summary`;
   showJiraSprint();
 }
 
 function showJiraSprint() {
   if (!jiraSprintData) return;
-  const { sprint, issues } = jiraSprintData;
+  const { sprint, issues, sprints, boardId } = jiraSprintData;
 
   const panel = document.getElementById('jira-sprint-panel');
-  document.getElementById('jira-sprint-name').textContent = sprint.name;
+  panel.style.display = 'block';
+
   const start = sprint.startDate ? new Date(sprint.startDate).toLocaleDateString(undefined,{month:'short',day:'numeric'}) : '';
   const end   = sprint.endDate   ? new Date(sprint.endDate).toLocaleDateString(undefined,{month:'short',day:'numeric'}) : '';
-  document.getElementById('jira-sprint-dates').textContent = start && end ? `${start} – ${end}` : '';
+
+  // Sprint picker if multiple sprints available
+  const sprintPicker = sprints && sprints.length > 1 ? `
+    <select onchange="switchSprint(this.value)" style="font-family:var(--sans);font-size:12px;padding:3px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);cursor:pointer;margin-left:8px">
+      ${sprints.map(s => `<option value="${s.id}" ${s.id===sprint.id?'selected':''}>${s.name}${s.state==='active'?' (active)':''}</option>`).join('')}
+    </select>` : '';
+
+  document.getElementById('jira-sprint-panel').querySelector('.jira-sprint-header').innerHTML = `
+    <div class="jira-logo">
+      <svg width="14" height="14" viewBox="0 0 32 32" fill="none"><path d="M22.4 15.1l-6.57-6.57-6.57 6.57 2.29 2.29 4.28-4.28 4.28 4.28 2.29-2.29z" fill="white"/><path d="M15.83 18.67l-2.29-2.29-2.29 2.29 2.29 2.29 2.29-2.29z" fill="white" opacity=".7"/></svg>
+    </div>
+    <span class="jira-sprint-title">${esc(sprint.name)}</span>
+    ${sprintPicker}
+    <span class="jira-sprint-meta">${start && end ? `${start} – ${end}` : ''}</span>
+    <button onclick="document.getElementById('jira-sprint-panel').style.display='none'" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:18px;margin-left:8px">×</button>`;
 
   const done   = issues.filter(i => i.fields.status.statusCategory.key === 'done');
   const inprog = issues.filter(i => i.fields.status.statusCategory.key === 'indeterminate');
@@ -1257,12 +1322,17 @@ function showJiraSprint() {
     <div class="jira-stat"><div class="jira-stat-dot" style="background:#5c7ef7"></div><strong>${issues.length}</strong> Total</div>
     <div class="jira-stat"><div class="jira-stat-dot" style="background:#0e7a54"></div><strong>${Math.round(done.length/Math.max(issues.length,1)*100)}%</strong> Complete</div>`;
 
-  panel.style.display = 'block';
   document.getElementById('jira-board-btn').style.display = 'flex';
-
-  // Generate AI summary
   document.getElementById('jira-ai-result').innerHTML = '<div class="loading"><div class="dots"><span></span><span></span><span></span></div> Generating sprint summary…</div>';
   generateJiraSummary(sprint, done, inprog, todo);
+}
+
+async function switchSprint(sprintId) {
+  if (!jiraSprintData) return;
+  const sprint = jiraSprintData.sprints.find(s => s.id == sprintId);
+  if (!sprint) return;
+  document.getElementById('jira-ai-result').innerHTML = '<div class="loading"><div class="dots"><span></span><span></span><span></span></div> Loading sprint…</div>';
+  await loadSprintIssues(sprint, jiraSprintData.boardId);
 }
 
 async function generateJiraSummary(sprint, done, inprog, todo) {
