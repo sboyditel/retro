@@ -1708,12 +1708,14 @@ async function loadSprintGoal() {
 
 // ── Previous actions modal ──
 async function showPrevActionsModal(teamId) {
+  if (!teamId) return; // no team = no previous actions to show
   try {
     const all = await fbGet('history');
     if (!all) return;
     const teamRetros = Object.values(all)
       .filter(r => r.teamId === teamId)
       .sort((a,b) => b.completedAt - a.completedAt);
+    console.log(`showPrevActionsModal: teamId=${teamId}, found ${teamRetros.length} retros`);
     if (!teamRetros.length) return;
     const last = teamRetros[0];
     const date = new Date(last.completedAt).toLocaleDateString(undefined, {weekday:'short',year:'numeric',month:'short',day:'numeric'});
@@ -2329,6 +2331,10 @@ async function completeRetro() {
 
 async function saveToHistory() {
   try {
+    // Make sure we have the teamId from session in case it wasn't set locally
+    if (!currentTeamId) {
+      try { currentTeamId = await fbGet(sessionPath('teamId')) || ''; } catch(e) {}
+    }
     const title = document.getElementById('badge-text').textContent.replace('✦ ', '');
     const vals = Object.values(scores).map(s => s.value);
     const avg = vals.length ? (vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(1) : null;
@@ -2340,14 +2346,14 @@ async function saveToHistory() {
       teamName: currentTeamId && teams[currentTeamId] ? teams[currentTeamId].name : '',
       score: avg,
       scoreCount: vals.length,
-      carried:       board.action.filter(c=>c.carry).map(c=>({text:c.text, wantTo:!!c.carryYes, dontWant:!!c.carryNo})),
-      doMore:        board.action.filter(c=>c.doMore).map(c=>c.text),
-      stopDoing:     board.action.filter(c=>c.stopDoing).map(c=>c.text),
+      carried:   board.action.filter(c=>c.carry).map(c=>({text:c.text, wantTo:!!c.carryYes, dontWant:!!c.carryNo})),
+      doMore:    board.action.filter(c=>c.doMore).map(c=>c.text),
+      stopDoing: board.action.filter(c=>c.stopDoing).map(c=>c.text),
       actions: board.action.map(c=>({text:c.text,votes:c.votes,carry:!!c.carry,carryYes:!!c.carryYes,carryNo:!!c.carryNo,doMore:!!c.doMore,stopDoing:!!c.stopDoing,owners:c.owners||[]})),
       well:   board.well.map(c=>({text:c.text,votes:c.votes})),
       better: board.better.map(c=>({text:c.text,votes:c.votes})),
     };
-    // Use a safe key: r + timestamp in base36
+    console.log('Saving history with teamId:', snapshot.teamId, 'teamName:', snapshot.teamName);
     const historyId = 'r' + Date.now().toString(36);
     await fbSet(`history/${historyId}`, snapshot);
     console.log('History saved:', historyId);
