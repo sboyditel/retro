@@ -555,6 +555,7 @@ header {
     <button onclick="showScreen('screen-jira')" style="background:none;border:1px solid var(--border);cursor:pointer;color:var(--muted);font-size:13px;padding:8px;border-radius:8px;font-family:var(--sans);width:100%;display:flex;align-items:center;justify-content:center;gap:6px">
       ⚙️ Settings (Jira &amp; AI)
     </button>
+    <div id="fb-status" style="font-size:11px;text-align:center;color:#b0aca5;margin-top:-8px">Checking database…</div>
   </div>
 </div>
 
@@ -1648,13 +1649,21 @@ async function saveRetroName() {
 const FB = 'https://retro-34ce1-default-rtdb.firebaseio.com';
 function fbUrl(path) { return `${FB}/${path}.json`; }
 async function fbGet(path) {
-  const r = await fetch(fbUrl(path));
-  if (!r.ok) return null;
-  return await r.json();
+  const url = fbUrl(path);
+  try {
+    const r = await fetch(url);
+    const text = await r.text();
+    console.log(`fbGet [${r.status}] ${path}:`, text.slice(0, 100));
+    if (!r.ok) return null;
+    return JSON.parse(text);
+  } catch(e) {
+    console.error(`fbGet ERROR ${path}:`, e.message);
+    return null;
+  }
 }
 async function fbSet(path, data) {
   const r = await fetch(fbUrl(path), { method:'PUT', body: JSON.stringify(data), headers:{'Content-Type':'application/json'} });
-  if (!r.ok) console.error('Firebase write failed:', path, r.status, await r.text());
+  if (!r.ok) console.error('Firebase SET failed:', path, r.status, await r.text());
   return r;
 }
 
@@ -1815,7 +1824,7 @@ async function loadBoard() {
       if (newBoard[col]) newBoard[col].push(c);
     });
     ['well','better','action'].forEach(col => {
-      newBoard[col].sort((a,b) => (a.order||0) - (b.order||0) || (a.ts||0) - (b.ts||0));
+      newBoard[col].sort((a,b) => (b.votes||0) - (a.votes||0) || (a.order||0) - (b.order||0) || (a.ts||0) - (b.ts||0));
       newBoard[col].forEach(c => {
         if (!c.userVotes) c.userVotes = {};
         c.votes = cardTotal(c);
@@ -2018,6 +2027,8 @@ async function vote(col, id, delta) {
   card.votes = cardTotal(card);
   card.mine = (card.userVotes[me.id] || 0) > 0;
   voteLocked = true;
+  // Sort column by votes descending
+  board[col].sort((a, b) => b.votes - a.votes);
   renderCol(col);
   // Write just this card's votes directly — no full board write needed
   try {
@@ -2276,6 +2287,28 @@ let historyOrigin = 'landing';
 
 // Load teams on page start
 loadTeams().then(() => populateTeamDropdown());
+
+// Quick Firebase connectivity test
+(async () => {
+  const statusEl = document.getElementById('fb-status');
+  try {
+    const testVal = 'test-' + Date.now();
+    await fbSet('_ping', testVal);
+    const back = await fbGet('_ping');
+    await fetch(fbUrl('_ping'), { method:'DELETE' });
+
+    const history = await fbGet('history');
+    const teams   = await fbGet('teams');
+    const histCount  = history  ? Object.keys(history).length  : 0;
+    const teamsCount = teams    ? Object.keys(teams).length    : 0;
+
+    console.log('Firebase ✓ Connected — history:', histCount, 'teams:', teamsCount);
+    if (statusEl) statusEl.textContent = `✓ DB connected — ${histCount} retros, ${teamsCount} teams`;
+  } catch(e) {
+    console.error('Firebase test failed:', e);
+    if (statusEl) statusEl.textContent = '✗ DB connection failed — ' + e.message;
+  }
+})();
 const SCORE_COLORS = ['','#ef4444','#ef4444','#f97316','#f97316','#eab308','#eab308','#22c55e','#22c55e','#0ea5e9','#0ea5e9'];
 
 function scoreColor(v) { return SCORE_COLORS[v] || '#888'; }
@@ -2370,7 +2403,7 @@ async function openHistory() {
   document.getElementById('history-page').style.display = 'block';
   document.getElementById('history-list').innerHTML = '<div style="color:var(--muted);font-size:14px;padding:20px 0">Loading…</div>';
   await loadTeams();
-  renderHistoryPage();
+  await renderHistoryPage();
 }
 
 async function renderHistoryPage() {
