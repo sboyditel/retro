@@ -753,7 +753,9 @@ header {
 
   <div class="board">
     <div class="column col-well">
-      <div class="col-header"><div class="dot"></div>What went well<div class="cnt" id="cnt-well">0</div><div class="vote-pips" id="pips-well"></div></div>
+      <div class="col-header"><div class="dot"></div>What went well<div class="cnt" id="cnt-well">0</div><div class="vote-pips" id="pips-well"></div>
+        <button onclick="sortByVotes('well')" title="Sort by votes" style="font-family:var(--sans);font-size:11px;padding:2px 8px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--muted);cursor:pointer;margin-left:4px;white-space:nowrap">↓ votes</button>
+      </div>
       <div id="cards-well"></div>
       <div class="add-area" id="area-well" onclick="showForm('well')">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>Add a card
@@ -768,7 +770,9 @@ header {
     </div>
 
     <div class="column col-better">
-      <div class="col-header"><div class="dot"></div>What could be better<div class="cnt" id="cnt-better">0</div><div class="vote-pips" id="pips-better"></div></div>
+      <div class="col-header"><div class="dot"></div>What could be better<div class="cnt" id="cnt-better">0</div><div class="vote-pips" id="pips-better"></div>
+        <button onclick="sortByVotes('better')" title="Sort by votes" style="font-family:var(--sans);font-size:11px;padding:2px 8px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--muted);cursor:pointer;margin-left:4px;white-space:nowrap">↓ votes</button>
+      </div>
       <div id="cards-better"></div>
       <div class="add-area" id="area-better" onclick="showForm('better')">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>Add a card
@@ -783,7 +787,9 @@ header {
     </div>
 
     <div class="column col-action">
-      <div class="col-header"><div class="dot"></div>Action items<div class="cnt" id="cnt-action">0</div><div class="vote-pips" id="pips-action"></div></div>
+      <div class="col-header"><div class="dot"></div>Action items<div class="cnt" id="cnt-action">0</div><div class="vote-pips" id="pips-action"></div>
+        <button onclick="sortByVotes('action')" title="Sort by votes" style="font-family:var(--sans);font-size:11px;padding:2px 8px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--muted);cursor:pointer;margin-left:4px;white-space:nowrap">↓ votes</button>
+      </div>
       <div id="cards-action"></div>
       <div class="add-area" id="area-action" onclick="showForm('action')">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>Add a card
@@ -1824,7 +1830,7 @@ async function loadBoard() {
       if (newBoard[col]) newBoard[col].push(c);
     });
     ['well','better','action'].forEach(col => {
-      newBoard[col].sort((a,b) => (b.votes||0) - (a.votes||0) || (a.order||0) - (b.order||0) || (a.ts||0) - (b.ts||0));
+      newBoard[col].sort((a,b) => (a.order||0) - (b.order||0) || (a.ts||0) - (b.ts||0));
       newBoard[col].forEach(c => {
         if (!c.userVotes) c.userVotes = {};
         c.votes = cardTotal(c);
@@ -2035,8 +2041,6 @@ async function vote(col, id, delta) {
   card.votes = cardTotal(card);
   card.mine = (card.userVotes[me.id] || 0) > 0;
   voteLocked = true;
-  // Re-render immediately with correct state before write
-  board[col].sort((a, b) => (b.votes||0) - (a.votes||0));
   renderCol(col);
   try {
     await fbSet(`${cardsPath()}/${id}/userVotes`, card.userVotes);
@@ -2047,6 +2051,13 @@ async function vote(col, id, delta) {
 
 // ── Drag and drop (pointer events) ──
 let dragId = null, dragCol = null, dragEl = null, indicatorEl = null;
+
+function sortByVotes(col) {
+  board[col].sort((a, b) => (b.votes||0) - (a.votes||0));
+  renderCol(col);
+  saveBoard();
+  toast('Sorted by votes');
+}
 
 function bindDrag(el, col) {
   el.addEventListener('mousedown', e => {
