@@ -2011,8 +2011,15 @@ function cardTotal(card) {
 let voteLocked = false;
 async function vote(col, id, delta) {
   if (voteLocked) return;
-  // Find card strictly by id
-  const card = board[col].find(c => c.id === id);
+  // Find card strictly by id across all cols in case col param is stale
+  let card = board[col]?.find(c => c.id === id);
+  if (!card) {
+    // Fallback: search all columns
+    for (const c of ['well','better','action']) {
+      card = board[c]?.find(x => x.id === id);
+      if (card) { col = c; break; }
+    }
+  }
   if (!card) return;
   if (!card.userVotes) card.userVotes = {};
   const cur = card.userVotes[me.id] || 0;
@@ -2028,14 +2035,13 @@ async function vote(col, id, delta) {
   card.votes = cardTotal(card);
   card.mine = (card.userVotes[me.id] || 0) > 0;
   voteLocked = true;
-  // Write to Firebase first, then sort and re-render
+  // Re-render immediately with correct state before write
+  board[col].sort((a, b) => (b.votes||0) - (a.votes||0));
+  renderCol(col);
   try {
     await fbSet(`${cardsPath()}/${id}/userVotes`, card.userVotes);
     await fbSet(`${cardsPath()}/${id}/votes`, card.votes);
   } catch(e) {}
-  // Sort after write so DOM reflects final state
-  board[col].sort((a, b) => (b.votes||0) - (a.votes||0));
-  renderCol(col);
   voteLocked = false;
 }
 
@@ -2203,12 +2209,12 @@ function renderCol(col, prevIds) {
         <div style="display:flex;flex-direction:column;gap:8px;margin-top:12px">
           <div style="display:flex;align-items:center;gap:8px">
             <div class="vote-stepper${myCount>0?' active':''}${exhausted&&!canRemove?' exhausted':''}">
-              <button class="vstep minus" onclick="vote('${col}','${card.id}',-1)" ${canRemove?'':'disabled'}>−</button>
+              <button class="vstep minus" data-col="${col}" data-id="${card.id}" data-delta="-1" onclick="vote(this.dataset.col,this.dataset.id,-1)" ${canRemove?'':'disabled'}>−</button>
               <span class="vcount">
                 <svg class="heart${myCount>0?' filled':''}" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke-width="2"/></svg>
                 ${card.votes}${myCount>0?`<sup class="my-badge">${myCount}</sup>`:''}
               </span>
-              <button class="vstep plus" onclick="vote('${col}','${card.id}',1)" ${canAdd?'':'disabled'}>+</button>
+              <button class="vstep plus" data-col="${col}" data-id="${card.id}" data-delta="1" onclick="vote(this.dataset.col,this.dataset.id,1)" ${canAdd?'':'disabled'}>+</button>
             </div>
             ${col !== 'action' ? `<button class="move-btn" onclick="moveToAction('${col}','${card.id}')" title="Move to action items">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
