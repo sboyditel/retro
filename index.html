@@ -2011,7 +2011,8 @@ function cardTotal(card) {
 let voteLocked = false;
 async function vote(col, id, delta) {
   if (voteLocked) return;
-  const card = board[col].find(c=>c.id===id);
+  // Find card strictly by id
+  const card = board[col].find(c => c.id === id);
   if (!card) return;
   if (!card.userVotes) card.userVotes = {};
   const cur = card.userVotes[me.id] || 0;
@@ -2027,14 +2028,14 @@ async function vote(col, id, delta) {
   card.votes = cardTotal(card);
   card.mine = (card.userVotes[me.id] || 0) > 0;
   voteLocked = true;
-  // Sort column by votes descending
-  board[col].sort((a, b) => b.votes - a.votes);
-  renderCol(col);
-  // Write just this card's votes directly — no full board write needed
+  // Write to Firebase first, then sort and re-render
   try {
     await fbSet(`${cardsPath()}/${id}/userVotes`, card.userVotes);
     await fbSet(`${cardsPath()}/${id}/votes`, card.votes);
   } catch(e) {}
+  // Sort after write so DOM reflects final state
+  board[col].sort((a, b) => (b.votes||0) - (a.votes||0));
+  renderCol(col);
   voteLocked = false;
 }
 
