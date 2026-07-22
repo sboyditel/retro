@@ -2242,6 +2242,7 @@ function renderCol(col, prevIds) {
       div.innerHTML = `
         ${canDel ? `<button class="del-btn" onclick="deleteCard('${col}','${card.id}')">×</button>` : ''}
         ${labelTag}
+        ${card.gifUrl ? `<img src="${card.gifUrl}" style="width:100%;border-radius:8px;margin-bottom:8px;display:block"/>` : ''}
         <div class="card-text">${esc(card.text)}</div>
         <div style="display:flex;flex-direction:column;gap:8px;margin-top:12px">
           <div style="display:flex;align-items:center;gap:8px">
@@ -2753,6 +2754,7 @@ function renderScoreBar() {
   ).join('');
 }
 
+const GIPHY_KEY = 'CkNlYJKuTPco6TI9K8bFbmBLZCdU5WnS';
 const EMOJI_CATS = {
   '😊': ['😀','😃','😄','😁','😆','😅','😂','🤣','😊','😇','🙂','😉','😌','😍','🥰','😘','😋','😛','😝','😜','🤪','😎','🤩','🥳','😏','😒','😞','😔','😟','😕','🙁','😣','😖','😫','😩','🥺','😢','😭','😤','😠','😡','🤬','🤯','😳','🥵','🥶','😱','😨','😰','😥','😓','🤗','🤔','🫠','🤭','🤫','🤥','😶','😐','😑','😬','🙄','😯','😦','😧','😮','😲','🥱','😴','🤤','😪','😵','🤐','🥴','🤢','🤧','🥵','😷','🤒','🤕','🤑','🤠'],
   '👍': ['👍','👎','👌','🤌','🤏','✌️','🤞','🤟','🤘','🤙','👈','👉','👆','👇','☝️','👋','🤚','🖐','✋','🖖','💪','🦾','🙌','👐','🤲','🤝','🙏','✍️','💅','🫶','💪','🫵','🫱','🫲','👏','🤜','🤛','👊','✊','🤞','🖖','🤙','💁','🙋','🤦','🤷','🧏','💆','💇','🚶','🧍','🧎','🏃','💃','🕺','👫','👬','👭','🧑','👱','👼','🎅','🤶','🦸','🦹','🧙','🧝','🧛','🧟','🧞','🧜','🧚'],
@@ -2768,14 +2770,30 @@ function buildEmojiPicker(col) {
   container.dataset.built = '1';
 
   let activeCat = EMOJI_CAT_KEYS[0];
+  let gifSearch = '';
+  let gifTimer = null;
 
   function renderTabs() {
-    return `<div class="emoji-tabs">${EMOJI_CAT_KEYS.map(k =>
-      `<button class="emoji-tab${k===activeCat?' active':''}" onmousedown="event.preventDefault()" onclick="switchEmojiCat('${col}','${k}')">${k}</button>`
-    ).join('')}</div>`;
+    return `<div class="emoji-tabs">
+      ${EMOJI_CAT_KEYS.map(k =>
+        `<button class="emoji-tab${k===activeCat?' active':''}" onmousedown="event.preventDefault()" onclick="switchEmojiCat('${col}','${k}')">${k}</button>`
+      ).join('')}
+      <button class="emoji-tab${activeCat==='gif'?' active':''}" onmousedown="event.preventDefault()" onclick="switchEmojiCat('${col}','gif')" style="font-size:11px;font-weight:600;letter-spacing:.5px">GIF</button>
+    </div>`;
   }
 
   function renderGrid() {
+    if (activeCat === 'gif') {
+      return `<div style="padding:6px;display:flex;flex-direction:column;gap:6px">
+        <input id="gif-search-${col}" type="text" placeholder="Search GIFs…" value="${gifSearch}"
+          style="font-family:var(--sans);font-size:13px;padding:5px 10px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);outline:none;width:100%"
+          onmousedown="event.stopPropagation()"
+          oninput="searchGifs('${col}',this.value)"/>
+        <div id="gif-grid-${col}" style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px;max-height:150px;overflow-y:auto">
+          <div style="grid-column:1/-1;text-align:center;font-size:12px;color:var(--muted);padding:12px">Type to search GIFs</div>
+        </div>
+      </div>`;
+    }
     return `<div class="emoji-grid">${EMOJI_CATS[activeCat].map(e =>
       `<button class="emoji-cell" onmousedown="event.preventDefault();insertEmoji('${col}','${e}')">${e}</button>`
     ).join('')}</div>`;
@@ -2785,22 +2803,62 @@ function buildEmojiPicker(col) {
     container.innerHTML = renderTabs() + renderGrid();
   }
 
-  window[`switchEmojiCat_${col}`] = (cat) => { activeCat = cat; render(); };
-  render();
-
-  // expose globally for onclick
-  window.switchEmojiCat = (col, cat) => {
-    const c = document.getElementById('epicker-' + col);
-    if (!c) return;
-    c.querySelectorAll('.emoji-tab').forEach(t => t.classList.remove('active'));
-    const tabs = c.querySelectorAll('.emoji-tab');
-    const idx = EMOJI_CAT_KEYS.indexOf(cat);
-    if (tabs[idx]) tabs[idx].classList.add('active');
-    const grid = c.querySelector('.emoji-grid');
-    if (grid) grid.innerHTML = EMOJI_CATS[cat].map(e =>
-      `<button class="emoji-cell" onmousedown="event.preventDefault();insertEmoji('${col}','${e}')">${e}</button>`
-    ).join('');
+  window.switchEmojiCat = (c, cat) => {
+    const el = document.getElementById('epicker-' + c);
+    if (!el) return;
+    if (c === col) activeCat = cat;
+    render();
+    if (cat === 'gif') {
+      setTimeout(() => {
+        const inp = document.getElementById(`gif-search-${c}`);
+        if (inp) inp.focus();
+      }, 50);
+    } else {
+      document.getElementById('ta-' + c)?.focus();
+    }
   };
+
+  window.searchGifs = async (c, query) => {
+    if (c === col) gifSearch = query;
+    const grid = document.getElementById(`gif-grid-${c}`);
+    if (!grid) return;
+    if (!query.trim()) {
+      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;font-size:12px;color:var(--muted);padding:12px">Type to search GIFs</div>';
+      return;
+    }
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;font-size:12px;color:var(--muted);padding:12px">Searching…</div>';
+    try {
+      const res = await fetch(`https://api.giphy.com/v1/gifs/search?api_key=${GIPHY_KEY}&q=${encodeURIComponent(query)}&limit=12&rating=g`);
+      const data = await res.json();
+      if (!data.data?.length) {
+        grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;font-size:12px;color:var(--muted);padding:12px">No GIFs found</div>';
+        return;
+      }
+      grid.innerHTML = data.data.map(g => {
+        const url = g.images.fixed_height_small.url;
+        const orig = g.images.original.url;
+        return `<img src="${url}" onclick="insertGif('${c}','${orig}')"
+          style="width:100%;border-radius:6px;cursor:pointer;border:2px solid transparent;transition:border-color .15s"
+          onmouseover="this.style.borderColor='var(--action)'" onmouseout="this.style.borderColor='transparent'"/>`;
+      }).join('');
+    } catch(e) {
+      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;font-size:12px;color:var(--muted);padding:12px">Failed to load GIFs</div>';
+    }
+  };
+
+  window.insertGif = (c, url) => {
+    const card = {
+      id: 'c'+Date.now()+Math.random().toString(36).slice(2),
+      text: '', gifUrl: url, author: me.name, color: me.color,
+      votes: 0, userVotes: {}, ts: Date.now(), col: c
+    };
+    hideForm(c);
+    confetti();
+    setSyncState('syncing');
+    fbSet(`${cardsPath()}/${card.id}`, card).then(() => setSyncState('ok'));
+  };
+
+  render();
 }
 
 function insertEmoji(col, emoji) {
@@ -2824,6 +2882,8 @@ function hideForm(col) {
   document.getElementById('area-'+col).style.display='';
   document.getElementById('form-'+col).classList.remove('open');
   document.getElementById('ta-'+col).value='';
+  const picker = document.getElementById('epicker-'+col);
+  if (picker) { picker.innerHTML=''; picker.dataset.built=''; }
 }
 ['well','better','action'].forEach(col=>{
   document.getElementById('ta-'+col).addEventListener('keydown',e=>{
