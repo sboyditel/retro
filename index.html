@@ -1084,7 +1084,7 @@ header {
 </div>
 
 <div class="overlay" id="sound-overlay" style="align-items:center">
-  <div class="ai-panel" style="max-width:420px;border-radius:20px;padding:28px 32px">
+  <div class="ai-panel" style="max-width:420px;border-radius:20px;padding:28px 32px" onclick="event.stopPropagation()">
     <div class="ai-header" style="margin-bottom:20px">
       <div style="font-size:32px">🔴</div>
       <div>
@@ -3078,10 +3078,18 @@ function getAudioCtx() {
 }
 
 async function playSound(name) {
+  console.log('playSound called:', name);
   try {
     const ctx = getAudioCtx();
     if (ctx.state === 'suspended') await ctx.resume();
-    console.log('Audio ctx state:', ctx.state, 'playing:', name);
+    console.log('Audio ctx state after resume:', ctx.state, '| playing:', name);
+    // Quick test tone first to verify audio works
+    const testOsc = ctx.createOscillator();
+    const testGain = ctx.createGain();
+    testOsc.connect(testGain); testGain.connect(ctx.destination);
+    testGain.gain.setValueAtTime(0.001, ctx.currentTime); // near silent test
+    testOsc.start(); testOsc.stop(ctx.currentTime + 0.01);
+
     const fns = {
       easy:     () => playChord(ctx, [523,659,784,1047], 0.4, 'sine'),
       airhorn:  () => playAirhorn(ctx),
@@ -3095,9 +3103,10 @@ async function playSound(name) {
       winning:  () => playWinning(ctx),
     };
     fns[name]?.();
+    console.log('Sound played:', name);
   } catch(e) {
     console.error('Audio error:', e);
-    toast('Could not play sound: ' + e.message);
+    toast('Audio error: ' + e.message);
     return;
   }
   if (roomKey && sessionId) fbSet(`rooms/${roomKey}/soundEvent`, { sound: name, by: me.name, ts: Date.now() });
@@ -3106,13 +3115,17 @@ async function playSound(name) {
 }
 
 function playTone(ctx, freq, start, dur, type='sine', vol=0.3) {
-  const osc = ctx.createOscillator();
-  const gain = ctx.createGain();
-  osc.connect(gain); gain.connect(ctx.destination);
-  osc.type = type; osc.frequency.value = freq;
-  gain.gain.setValueAtTime(vol, start);
-  gain.gain.exponentialRampToValueAtTime(0.001, start + dur);
-  osc.start(start); osc.stop(start + dur + 0.05);
+  try {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, start);
+    gain.gain.setValueAtTime(vol, start);
+    gain.gain.linearRampToValueAtTime(0, start + dur);
+    osc.start(start);
+    osc.stop(start + dur + 0.01);
+  } catch(e) { console.error('playTone error:', e); }
 }
 function playChord(ctx, freqs, dur, type) {
   const t = ctx.currentTime;
