@@ -526,7 +526,14 @@ header {
 .jira-ai-body { font-size:14px; line-height:1.65; color:var(--text); }
 .jira-ai-body p { margin-bottom:10px; }
 
-.cp { position:fixed; pointer-events:none; z-index:999; animation:fall linear forwards; }
+.sound-btn {
+  font-family:var(--sans); font-size:13px; font-weight:500;
+  padding:12px 10px; border-radius:10px; border:1.5px solid var(--border);
+  background:var(--bg); color:var(--text); cursor:pointer;
+  transition:all .15s; text-align:center;
+}
+.sound-btn:hover { background:var(--text); color:#fff; border-color:var(--text); transform:scale(1.03); }
+.sound-btn:active { transform:scale(0.97); } pointer-events:none; z-index:999; animation:fall linear forwards; }
 @keyframes fall { 0%{transform:translateY(-40px) rotate(0deg);opacity:1}100%{transform:translateY(110vh) rotate(720deg);opacity:0} }
 </style>
 </head>
@@ -704,6 +711,7 @@ header {
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
       AI Insights
     </button>
+    <button class="btn" onclick="openSoundPicker()" title="Play a sound" style="font-size:18px;padding:6px 10px">🔴</button>
   </header>
 
   <div class="stats-bar">
@@ -1066,7 +1074,30 @@ header {
   </div>
 </div>
 
-<div class="overlay" id="ai-overlay">
+<div class="overlay" id="sound-overlay" style="align-items:center">
+  <div class="ai-panel" style="max-width:420px;border-radius:20px;padding:28px 32px">
+    <div class="ai-header" style="margin-bottom:20px">
+      <div style="font-size:32px">🔴</div>
+      <div>
+        <h2 style="font-family:var(--serif);font-size:20px;font-weight:400">Easy Button</h2>
+        <p style="font-size:13px;color:var(--muted);margin-top:2px">Pick a sound to play for everyone</p>
+      </div>
+      <button onclick="closeSoundPicker()" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:22px;margin-left:auto">×</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <button class="sound-btn" onclick="playSound('easy')">👏 That was easy!</button>
+      <button class="sound-btn" onclick="playSound('airhorn')">📯 Air horn</button>
+      <button class="sound-btn" onclick="playSound('applause')">🎉 Applause</button>
+      <button class="sound-btn" onclick="playSound('sad')">😢 Sad trombone</button>
+      <button class="sound-btn" onclick="playSound('tada')">🎺 Ta-da!</button>
+      <button class="sound-btn" onclick="playSound('drums')">🥁 Drum roll</button>
+      <button class="sound-btn" onclick="playSound('crickets')">🦗 Crickets</button>
+      <button class="sound-btn" onclick="playSound('ding')">🔔 Ding!</button>
+      <button class="sound-btn" onclick="playSound('fail')">💥 Fail</button>
+      <button class="sound-btn" onclick="playSound('winning')">🏆 Winning!</button>
+    </div>
+  </div>
+</div>
   <div class="ai-panel">
     <div class="ai-header">
       <div class="ai-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg></div>
@@ -1833,6 +1864,8 @@ async function tick() {
   if (tickCount % 3 === 0) await loadScores();
   // Load name every 4th tick (16s)
   if (tickCount % 4 === 0) await loadRetroName();
+  // Check for sound events every tick
+  await checkSoundEvent();
 }
 
 async function loadBoard() {
@@ -3021,7 +3054,56 @@ function confetti(){
   });
 }
 
-function esc(s=''){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function openSoundPicker() { document.getElementById('sound-overlay').classList.add('open'); }
+function closeSoundPicker() { document.getElementById('sound-overlay').classList.remove('open'); }
+document.getElementById('sound-overlay').addEventListener('click', e => { if(e.target===e.currentTarget) closeSoundPicker(); });
+
+const SOUND_URLS = {
+  easy:     'https://www.myinstants.com/media/sounds/that-was-easy.mp3',
+  airhorn:  'https://www.myinstants.com/media/sounds/air-horn-club-sample.mp3',
+  applause: 'https://www.myinstants.com/media/sounds/applause.mp3',
+  sad:      'https://www.myinstants.com/media/sounds/sad-trombone.mp3',
+  tada:     'https://www.myinstants.com/media/sounds/ta-da.mp3',
+  drums:    'https://www.myinstants.com/media/sounds/drum-roll.mp3',
+  crickets: 'https://www.myinstants.com/media/sounds/crickets.mp3',
+  ding:     'https://www.myinstants.com/media/sounds/store-door-chime.mp3',
+  fail:     'https://www.myinstants.com/media/sounds/fart-with-reverb.mp3',
+  winning:  'https://www.myinstants.com/media/sounds/mlg-airhorn.mp3',
+};
+
+let currentAudio = null;
+function playSound(name) {
+  if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; }
+  const url = SOUND_URLS[name];
+  if (!url) return;
+  currentAudio = new Audio(url);
+  currentAudio.volume = 0.7;
+  currentAudio.play().catch(() => toast('Could not play sound — browser blocked audio'));
+  if (roomKey && sessionId) {
+    fbSet(`rooms/${roomKey}/soundEvent`, { sound: name, by: me.name, ts: Date.now() });
+  }
+  closeSoundPicker();
+  toast(`${me.name} played a sound 🔊`);
+}
+
+let lastSoundTs = 0;
+async function checkSoundEvent() {
+  try {
+    const evt = await fbGet(`rooms/${roomKey}/soundEvent`);
+    if (!evt || evt.ts <= lastSoundTs) return;
+    if (evt.by === me.name) return;
+    lastSoundTs = evt.ts;
+    if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; }
+    const url = SOUND_URLS[evt.sound];
+    if (!url) return;
+    currentAudio = new Audio(url);
+    currentAudio.volume = 0.7;
+    currentAudio.play().catch(() => {});
+    toast(`🔊 ${evt.by} played a sound`);
+  } catch(e) {}
+}
+
+function esc(s='') { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 </script>
 </body>
 </html>
