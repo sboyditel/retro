@@ -3077,10 +3077,11 @@ function getAudioCtx() {
   return audioCtx;
 }
 
-function playSound(name) {
+async function playSound(name) {
   try {
     const ctx = getAudioCtx();
-    if (ctx.state === 'suspended') ctx.resume();
+    if (ctx.state === 'suspended') await ctx.resume();
+    console.log('Audio ctx state:', ctx.state, 'playing:', name);
     const fns = {
       easy:     () => playChord(ctx, [523,659,784,1047], 0.4, 'sine'),
       airhorn:  () => playAirhorn(ctx),
@@ -3094,7 +3095,11 @@ function playSound(name) {
       winning:  () => playWinning(ctx),
     };
     fns[name]?.();
-  } catch(e) { toast('Could not play sound'); }
+  } catch(e) {
+    console.error('Audio error:', e);
+    toast('Could not play sound: ' + e.message);
+    return;
+  }
   if (roomKey && sessionId) fbSet(`rooms/${roomKey}/soundEvent`, { sound: name, by: me.name, ts: Date.now() });
   closeSoundPicker();
   toast(`${me.name} played a sound 🔊`);
@@ -3188,9 +3193,9 @@ async function checkSoundEvent() {
     if (evt.by === me.name) return;
     lastSoundTs = evt.ts;
     const ctx = getAudioCtx();
-    if (ctx.state === 'suspended') ctx.resume();
+    if (ctx.state === 'suspended') await ctx.resume();
     const fns = {
-      easy: () => playChord(ctx, [523,659,784,1047], 0.4, 'sine'),
+      easy: () => playChord(ctx,[523,659,784,1047],0.4,'sine'),
       airhorn: () => playAirhorn(ctx), applause: () => playApplause(ctx),
       sad: () => playSadTrombone(ctx), tada: () => playTada(ctx),
       drums: () => playDrumRoll(ctx), crickets: () => playCrickets(ctx),
