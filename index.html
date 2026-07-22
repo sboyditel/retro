@@ -766,10 +766,10 @@ header {
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>Add a card
       </div>
       <div class="add-form" id="form-well">
-        <textarea id="ta-well" rows="3" placeholder="What helped the team succeed?"></textarea>
-        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:4px">
+        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px;padding-bottom:6px;border-bottom:1px solid var(--border)">
           <span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('well','👍')">👍</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('well','🎉')">🎉</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('well','🚀')">🚀</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('well','✅')">✅</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('well','💪')">💪</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('well','⭐')">⭐</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('well','🙌')">🙌</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('well','💡')">💡</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('well','🔥')">🔥</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('well','😊')">😊</span>
         </div>
+        <textarea id="ta-well" rows="3" placeholder="What helped the team succeed?"></textarea>
         <div class="form-row">
           <button class="sbtn ok" onclick="addCard('well')">Add card</button>
           <button class="sbtn" onclick="hideForm('well')">Cancel</button>
@@ -786,10 +786,10 @@ header {
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>Add a card
       </div>
       <div class="add-form" id="form-better">
-        <textarea id="ta-better" rows="3" placeholder="What caused friction or blockers?"></textarea>
-        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:4px">
+        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px;padding-bottom:6px;border-bottom:1px solid var(--border)">
           <span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('better','😤')">😤</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('better','🐛')">🐛</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('better','🚧')">🚧</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('better','⚠️')">⚠️</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('better','🔧')">🔧</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('better','😕')">😕</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('better','🐌')">🐌</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('better','💬')">💬</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('better','🤔')">🤔</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('better','❌')">❌</span>
         </div>
+        <textarea id="ta-better" rows="3" placeholder="What caused friction or blockers?"></textarea>
         <div class="form-row">
           <button class="sbtn ok" onclick="addCard('better')">Add card</button>
           <button class="sbtn" onclick="hideForm('better')">Cancel</button>
@@ -806,10 +806,10 @@ header {
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>Add a card
       </div>
       <div class="add-form" id="form-action">
-        <textarea id="ta-action" rows="3" placeholder="What should the team do next sprint?"></textarea>
-        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:4px">
+        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px;padding-bottom:6px;border-bottom:1px solid var(--border)">
           <span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('action','📌')">📌</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('action','✏️')">✏️</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('action','🎯')">🎯</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('action','📅')">📅</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('action','👤')">👤</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('action','🔄')">🔄</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('action','📢')">📢</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('action','🛠️')">🛠️</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('action','📊')">📊</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('action','🤝')">🤝</span>
         </div>
+        <textarea id="ta-action" rows="3" placeholder="What should the team do next sprint?"></textarea>
         <div class="form-row">
           <button class="sbtn ok" onclick="addCard('action')">Add card</button>
           <button class="sbtn" onclick="hideForm('action')">Cancel</button>
@@ -1362,11 +1362,11 @@ async function loadJiraSprintForBoard(projectKey) {
   console.log('Jira board found:', boardId, boards[0].name);
 
   // Fetch active and recent closed sprints
-  const activeData  = await jiraAgileFetch(`/board/${boardId}/sprint?state=active&maxResults=5`);
-  const closedData  = await jiraAgileFetch(`/board/${boardId}/sprint?state=closed&maxResults=10`);
+  const activeData  = await jiraAgileFetch(`/board/${boardId}/sprint?state=active&maxResults=10`);
+  const closedData  = await jiraAgileFetch(`/board/${boardId}/sprint?state=closed&maxResults=50`);
 
   const activeSprints = activeData?.values || [];
-  const closedSprints = (closedData?.values || []).sort((a,b) => new Date(b.endDate||0) - new Date(a.endDate||0)).slice(0,5);
+  const closedSprints = (closedData?.values || []).sort((a,b) => new Date(b.endDate||0) - new Date(a.endDate||0)).slice(0,20);
   const sprints = [...activeSprints, ...closedSprints];
 
   console.log('Sprints found:', sprints.length, sprints.map(s=>s.name));
@@ -1411,7 +1411,7 @@ function showJiraSprint() {
 
   // Sprint picker if multiple sprints available
   const sprintPicker = sprints && sprints.length > 1 ? `
-    <select onchange="switchSprint(this.value)" style="font-family:var(--sans);font-size:12px;padding:3px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);cursor:pointer;margin-left:8px">
+    <select onchange="switchSprint(this.value)" style="font-family:var(--sans);font-size:12px;padding:3px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);cursor:pointer;margin-left:8px;max-width:200px">
       ${sprints.map(s => `<option value="${s.id}" ${s.id===sprint.id?'selected':''}>${s.name}${s.state==='active'?' (active)':''}</option>`).join('')}
     </select>` : '';
 
