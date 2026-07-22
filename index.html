@@ -1083,9 +1083,10 @@ header {
   </div>
 </div>
 
-<div class="overlay" id="sound-overlay" style="align-items:center">
-  <div class="ai-panel" style="max-width:420px;border-radius:20px;padding:28px 32px" onclick="event.stopPropagation()">
-    <div class="ai-header" style="margin-bottom:20px">
+<div id="sound-modal" style="display:none;position:fixed;inset:0;z-index:300;align-items:center;justify-content:center">
+  <div onclick="closeSoundPicker()" style="position:absolute;inset:0;background:rgba(0,0,0,.35)"></div>
+  <div style="position:relative;background:var(--surface);border-radius:20px;padding:28px 32px;max-width:420px;width:90%;box-shadow:0 8px 40px rgba(0,0,0,.2);z-index:1">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
       <div style="font-size:32px">🔴</div>
       <div>
         <h2 style="font-family:var(--serif);font-size:20px;font-weight:400">Easy Button</h2>
@@ -3065,9 +3066,15 @@ function confetti(){
   });
 }
 
-function openSoundPicker() { document.getElementById('sound-overlay').classList.add('open'); }
-function closeSoundPicker() { document.getElementById('sound-overlay').classList.remove('open'); }
-document.getElementById('sound-overlay').addEventListener('click', e => { if(e.target===e.currentTarget) closeSoundPicker(); });
+function openSoundPicker() {
+  const m = document.getElementById('sound-modal');
+  m.style.display = 'flex';
+}
+function closeSoundPicker() {
+  const m = document.getElementById('sound-modal');
+  m.style.display = 'none';
+}
+document.getElementById('sound-overlay')?.addEventListener('click', e => { if(e.target===e.currentTarget) closeSoundPicker(); });
 
 const SOUND_URLS = {};
 
