@@ -358,10 +358,14 @@ header {
 .add-form.open { display:flex; }
 .add-form textarea { font-family:var(--sans); font-size:14px; border:none; outline:none; resize:none; width:100%; background:transparent; color:var(--text); line-height:1.55; }
 .form-row { display:flex; gap:8px; }
-.emoji-btn {
-  font-size:18px; cursor:pointer; padding:2px 4px; border-radius:6px;
-  transition:background .1s; user-select:none; line-height:1.4;
-}
+.emoji-picker { border:1px solid var(--border); border-radius:10px; overflow:hidden; background:var(--surface); }
+.emoji-tabs { display:flex; border-bottom:1px solid var(--border); background:var(--bg); }
+.emoji-tab { flex:1; padding:6px; border:none; background:transparent; font-size:16px; cursor:pointer; transition:background .1s; }
+.emoji-tab.active { background:var(--text); }
+.emoji-grid { display:grid; grid-template-columns:repeat(9,1fr); gap:1px; padding:6px; max-height:150px; overflow-y:auto; }
+.emoji-cell { background:none; border:none; font-size:20px; cursor:pointer; padding:4px; border-radius:6px; line-height:1.3; transition:background .1s; }
+.emoji-cell:hover { background:var(--border); }
+.emoji-btn { font-size:20px; cursor:pointer; padding:4px 6px; border-radius:6px; transition:background .1s; user-select:none; line-height:1.3; display:inline-block; }
 .emoji-btn:hover { background:var(--border); }
 .sbtn { font-family:var(--sans); font-size:12px; font-weight:500; padding:5px 12px; border-radius:7px; border:1px solid var(--border); background:var(--bg); cursor:pointer; color:var(--text); transition:all .15s; }
 .sbtn.ok { background:var(--text); color:#fff; border-color:transparent; }
@@ -766,12 +770,7 @@ header {
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>Add a card
       </div>
       <div class="add-form" id="form-well">
-        <div style="display:flex;flex-direction:column;gap:4px">
-          <span style="font-size:11px;color:var(--muted);font-weight:500">Add emoji</span>
-          <div style="display:flex;flex-wrap:wrap;gap:2px">
-            <span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('well','👍')">👍</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('well','🎉')">🎉</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('well','🚀')">🚀</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('well','✅')">✅</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('well','💪')">💪</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('well','⭐')">⭐</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('well','🙌')">🙌</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('well','💡')">💡</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('well','🔥')">🔥</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('well','😊')">😊</span>
-          </div>
-        </div>
+        <div class="emoji-picker" id="epicker-well"></div>
         <textarea id="ta-well" rows="3" placeholder="What helped the team succeed?"></textarea>
         <div class="form-row">
           <button class="sbtn ok" onclick="addCard('well')">Add card</button>
@@ -789,12 +788,7 @@ header {
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>Add a card
       </div>
       <div class="add-form" id="form-better">
-        <div style="display:flex;flex-direction:column;gap:4px">
-          <span style="font-size:11px;color:var(--muted);font-weight:500">Add emoji</span>
-          <div style="display:flex;flex-wrap:wrap;gap:2px">
-            <span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('better','😤')">😤</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('better','🐛')">🐛</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('better','🚧')">🚧</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('better','⚠️')">⚠️</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('better','🔧')">🔧</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('better','😕')">😕</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('better','🐌')">🐌</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('better','💬')">💬</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('better','🤔')">🤔</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('better','❌')">❌</span>
-          </div>
-        </div>
+        <div class="emoji-picker" id="epicker-better"></div>
         <textarea id="ta-better" rows="3" placeholder="What caused friction or blockers?"></textarea>
         <div class="form-row">
           <button class="sbtn ok" onclick="addCard('better')">Add card</button>
@@ -812,12 +806,7 @@ header {
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>Add a card
       </div>
       <div class="add-form" id="form-action">
-        <div style="display:flex;flex-direction:column;gap:4px">
-          <span style="font-size:11px;color:var(--muted);font-weight:500">Add emoji</span>
-          <div style="display:flex;flex-wrap:wrap;gap:2px">
-            <span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('action','📌')">📌</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('action','✏️')">✏️</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('action','🎯')">🎯</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('action','📅')">📅</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('action','👤')">👤</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('action','🔄')">🔄</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('action','📢')">📢</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('action','🛠️')">🛠️</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('action','📊')">📊</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('action','🤝')">🤝</span>
-          </div>
-        </div>
+        <div class="emoji-picker" id="epicker-action"></div>
         <textarea id="ta-action" rows="3" placeholder="What should the team do next sprint?"></textarea>
         <div class="form-row">
           <button class="sbtn ok" onclick="addCard('action')">Add card</button>
@@ -1387,10 +1376,10 @@ async function loadJiraSprintForBoard(projectKey) {
 
   const activeSprints = await fetchAllSprints(boardId, 'active');
   const closedSprints = await fetchAllSprints(boardId, 'closed');
-  const sortedClosed = closedSprints.sort((a,b) => new Date(b.endDate||0) - new Date(a.endDate||0));
+  // Sort by sprint ID descending (highest = newest) as most reliable sort
+  const sortedClosed = closedSprints.sort((a,b) => b.id - a.id);
   const sprints = [...activeSprints, ...sortedClosed];
-
-  console.log('Sprints found:', sprints.length, sprints.map(s=>s.name));
+  console.log('Sprints found:', sprints.length, sprints.map(s=>s.name+':'+s.id));
 
   if (!sprints.length) {
     toast('No sprints found for this board');
@@ -1865,7 +1854,7 @@ async function loadBoard() {
       if (newBoard[col]) newBoard[col].push(c);
     });
     ['well','better','action'].forEach(col => {
-      newBoard[col].sort((a,b) => (a.order||0) - (b.order||0) || (a.ts||0) - (b.ts||0));
+      newBoard[col].sort((a,b) => (b.votes||0) - (a.votes||0) || (a.ts||0) - (b.ts||0));
       newBoard[col].forEach(c => {
         if (!c.userVotes) c.userVotes = {};
         c.votes = cardTotal(c);
@@ -2081,6 +2070,8 @@ async function vote(col, id, delta) {
     await fbSet(`${cardsPath()}/${id}/userVotes`, card.userVotes);
     await fbSet(`${cardsPath()}/${id}/votes`, card.votes);
   } catch(e) {}
+  board[col].sort((a,b) => (b.votes||0) - (a.votes||0) || (a.ts||0) - (b.ts||0));
+  renderCol(col);
   voteLocked = false;
 }
 
@@ -2762,6 +2753,56 @@ function renderScoreBar() {
   ).join('');
 }
 
+const EMOJI_CATS = {
+  '😊': ['😀','😃','😄','😁','😆','😅','😂','🤣','😊','😇','🙂','😉','😌','😍','🥰','😘','😋','😛','😝','😜','🤪','😎','🤩','🥳','😏','😒','😞','😔','😟','😕','🙁','😣','😖','😫','😩','🥺','😢','😭','😤','😠','😡','🤬','🤯','😳','🥵','🥶','😱','😨','😰','😥','😓','🤗','🤔','🫠','🤭','🤫','🤥','😶','😐','😑','😬','🙄','😯','😦','😧','😮','😲','🥱','😴','🤤','😪','😵','🤐','🥴','🤢','🤧','🥵','😷','🤒','🤕','🤑','🤠'],
+  '👍': ['👍','👎','👌','🤌','🤏','✌️','🤞','🤟','🤘','🤙','👈','👉','👆','👇','☝️','👋','🤚','🖐','✋','🖖','💪','🦾','🙌','👐','🤲','🤝','🙏','✍️','💅','🫶','💪','🫵','🫱','🫲','👏','🤜','🤛','👊','✊','🤞','🖖','🤙','💁','🙋','🤦','🤷','🧏','💆','💇','🚶','🧍','🧎','🏃','💃','🕺','👫','👬','👭','🧑','👱','👼','🎅','🤶','🦸','🦹','🧙','🧝','🧛','🧟','🧞','🧜','🧚'],
+  '💡': ['💡','🔦','🕯️','💰','💳','💎','⚖️','🔑','🗝️','🔒','🔓','🚪','🛋️','🪑','🧹','🧺','🧻','🪣','🧼','🧽','🧯','🛒','🔧','🪛','🔨','⛏','🪚','🔩','🗜️','⚙️','🧲','💣','🔪','🛡️','🪝','🧲','🔭','🔬','🩺','💊','💉','🩹','🩼','🦯','🦽','🦼','🪄','🔮','🧿','🎱','🪬','🧸','🪆','🖼️','🧩','🎨','🖌️','🖍️','📝','✏️','🔐','📌','📍','📎','🗂️','📁','📂','📊','📈','📉','📋','📅','📆','📇','📓','📔','📒','📕','📗','📘','📙','📚','📖','🔖','🏷️','💼'],
+  '✅': ['✅','❌','⚠️','🚫','🔞','📵','❗','❕','❓','❔','‼️','⁉️','🔅','🔆','📶','🛜','🔋','🪫','💻','🖥️','⌨️','🖱️','💾','💿','📀','📱','☎️','📞','📟','📠','📺','📻','🧭','⏰','⌚','⏱️','⏲️','🕐','🕑','🕒','🕓','🕔','🕕','🕖','🕗','🕘','🕙','🕚','🕛','🌡️','⛅','🌈','🌊','🌀','🌁','🌫️','🌬️','🌩️','🌨️','🌧️','⛈️','🌦️','🌥️','☁️','⛅','🌤️','🌞','🌝','🌛','🌜','🌚','🌕','🌖','🌗','🌘','🌑','🌒','🌓','🌔'],
+  '🚀': ['🚀','✈️','🛸','🛩️','🚁','🛶','⛵','🚢','🚂','🚃','🚄','🚅','🚆','🚇','🚈','🚉','🚊','🚝','🚞','🚋','🚌','🚍','🚎','🏎️','🚓','🚑','🚒','🚐','🛻','🚚','🚛','🚜','🏍️','🛵','🛺','🚲','🛴','🛹','🛼','🚏','🛣️','🛤️','⛽','🚨','🚥','🚦','🛑','🚧','⚓','🛟','⛵','🚤','🛥️','🛳️','⛴️','🚀','🛸','🚁','🛶','⛽'],
+};
+const EMOJI_CAT_KEYS = Object.keys(EMOJI_CATS);
+
+function buildEmojiPicker(col) {
+  const container = document.getElementById('epicker-' + col);
+  if (!container || container.dataset.built) return;
+  container.dataset.built = '1';
+
+  let activeCat = EMOJI_CAT_KEYS[0];
+
+  function renderTabs() {
+    return `<div class="emoji-tabs">${EMOJI_CAT_KEYS.map(k =>
+      `<button class="emoji-tab${k===activeCat?' active':''}" onmousedown="event.preventDefault()" onclick="switchEmojiCat('${col}','${k}')">${k}</button>`
+    ).join('')}</div>`;
+  }
+
+  function renderGrid() {
+    return `<div class="emoji-grid">${EMOJI_CATS[activeCat].map(e =>
+      `<button class="emoji-cell" onmousedown="event.preventDefault();insertEmoji('${col}','${e}')">${e}</button>`
+    ).join('')}</div>`;
+  }
+
+  function render() {
+    container.innerHTML = renderTabs() + renderGrid();
+  }
+
+  window[`switchEmojiCat_${col}`] = (cat) => { activeCat = cat; render(); };
+  render();
+
+  // expose globally for onclick
+  window.switchEmojiCat = (col, cat) => {
+    const c = document.getElementById('epicker-' + col);
+    if (!c) return;
+    c.querySelectorAll('.emoji-tab').forEach(t => t.classList.remove('active'));
+    const tabs = c.querySelectorAll('.emoji-tab');
+    const idx = EMOJI_CAT_KEYS.indexOf(cat);
+    if (tabs[idx]) tabs[idx].classList.add('active');
+    const grid = c.querySelector('.emoji-grid');
+    if (grid) grid.innerHTML = EMOJI_CATS[cat].map(e =>
+      `<button class="emoji-cell" onmousedown="event.preventDefault();insertEmoji('${col}','${e}')">${e}</button>`
+    ).join('');
+  };
+}
+
 function insertEmoji(col, emoji) {
   const ta = document.getElementById('ta-' + col);
   if (!ta) return;
@@ -2776,6 +2817,7 @@ function insertEmoji(col, emoji) {
 function showForm(col) {
   document.getElementById('area-'+col).style.display='none';
   document.getElementById('form-'+col).classList.add('open');
+  buildEmojiPicker(col);
   document.getElementById('ta-'+col).focus();
 }
 function hideForm(col) {
