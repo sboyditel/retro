@@ -358,6 +358,11 @@ header {
 .add-form.open { display:flex; }
 .add-form textarea { font-family:var(--sans); font-size:14px; border:none; outline:none; resize:none; width:100%; background:transparent; color:var(--text); line-height:1.55; }
 .form-row { display:flex; gap:8px; }
+.emoji-btn {
+  font-size:18px; cursor:pointer; padding:2px 4px; border-radius:6px;
+  transition:background .1s; user-select:none; line-height:1.4;
+}
+.emoji-btn:hover { background:var(--border); }
 .sbtn { font-family:var(--sans); font-size:12px; font-weight:500; padding:5px 12px; border-radius:7px; border:1px solid var(--border); background:var(--bg); cursor:pointer; color:var(--text); transition:all .15s; }
 .sbtn.ok { background:var(--text); color:#fff; border-color:transparent; }
 .sbtn:hover { background:var(--border); }
@@ -762,6 +767,9 @@ header {
       </div>
       <div class="add-form" id="form-well">
         <textarea id="ta-well" rows="3" placeholder="What helped the team succeed?"></textarea>
+        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:4px">
+          <span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('well','👍')">👍</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('well','🎉')">🎉</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('well','🚀')">🚀</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('well','✅')">✅</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('well','💪')">💪</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('well','⭐')">⭐</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('well','🙌')">🙌</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('well','💡')">💡</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('well','🔥')">🔥</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('well','😊')">😊</span>
+        </div>
         <div class="form-row">
           <button class="sbtn ok" onclick="addCard('well')">Add card</button>
           <button class="sbtn" onclick="hideForm('well')">Cancel</button>
@@ -779,6 +787,9 @@ header {
       </div>
       <div class="add-form" id="form-better">
         <textarea id="ta-better" rows="3" placeholder="What caused friction or blockers?"></textarea>
+        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:4px">
+          <span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('better','😤')">😤</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('better','🐛')">🐛</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('better','🚧')">🚧</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('better','⚠️')">⚠️</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('better','🔧')">🔧</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('better','😕')">😕</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('better','🐌')">🐌</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('better','💬')">💬</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('better','🤔')">🤔</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('better','❌')">❌</span>
+        </div>
         <div class="form-row">
           <button class="sbtn ok" onclick="addCard('better')">Add card</button>
           <button class="sbtn" onclick="hideForm('better')">Cancel</button>
@@ -796,6 +807,9 @@ header {
       </div>
       <div class="add-form" id="form-action">
         <textarea id="ta-action" rows="3" placeholder="What should the team do next sprint?"></textarea>
+        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:4px">
+          <span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('action','📌')">📌</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('action','✏️')">✏️</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('action','🎯')">🎯</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('action','📅')">📅</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('action','👤')">👤</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('action','🔄')">🔄</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('action','📢')">📢</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('action','🛠️')">🛠️</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('action','📊')">📊</span><span class="emoji-btn" onmousedown="event.preventDefault();insertEmoji('action','🤝')">🤝</span>
+        </div>
         <div class="form-row">
           <button class="sbtn ok" onclick="addCard('action')">Add card</button>
           <button class="sbtn" onclick="hideForm('action')">Cancel</button>
@@ -2727,6 +2741,16 @@ function renderScoreBar() {
   ).join('');
 }
 
+function insertEmoji(col, emoji) {
+  const ta = document.getElementById('ta-' + col);
+  if (!ta) return;
+  const start = ta.selectionStart ?? ta.value.length;
+  const end = ta.selectionEnd ?? ta.value.length;
+  ta.value = ta.value.slice(0, start) + emoji + ta.value.slice(end);
+  ta.selectionStart = ta.selectionEnd = start + emoji.length;
+  ta.focus();
+}
+
 // Forms
 function showForm(col) {
   document.getElementById('area-'+col).style.display='none';
@@ -2859,7 +2883,8 @@ function exportRetro() {
   win.document.write(html);
   win.document.close();
   win.focus();
-  setTimeout(() => win.print(), 500);
+  win.onload = () => setTimeout(() => win.print(), 300);
+  setTimeout(() => win.print(), 1500); // fallback if onload already fired
 }
 
 // Confetti
