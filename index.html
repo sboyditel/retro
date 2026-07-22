@@ -711,7 +711,16 @@ header {
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
       AI Insights
     </button>
-    <button class="btn" onclick="openSoundPicker()" title="Play a sound" style="font-size:18px;padding:6px 10px">🔴</button>
+    <button onclick="openSoundPicker()" title="Easy Button — play a sound" style="background:none;border:none;cursor:pointer;padding:0;margin-left:4px;flex-shrink:0">
+      <div style="position:relative;width:44px;height:44px">
+        <!-- silver base -->
+        <div style="position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:42px;height:14px;background:linear-gradient(180deg,#d0d0d0,#a0a0a0);border-radius:50%;"></div>
+        <!-- red dome -->
+        <div style="position:absolute;top:0;left:50%;transform:translateX(-50%);width:38px;height:36px;background:radial-gradient(circle at 38% 32%,#ff6b6b,#cc1111 60%,#8b0000);border-radius:50% 50% 48% 48%;box-shadow:0 4px 8px rgba(0,0,0,.35),inset 0 -3px 6px rgba(0,0,0,.2);display:flex;align-items:center;justify-content:center">
+          <span style="color:#fff;font-size:9px;font-weight:900;font-family:Arial,sans-serif;letter-spacing:-.3px;text-shadow:0 1px 2px rgba(0,0,0,.5);user-select:none">easy</span>
+        </div>
+      </div>
+    </button>
   </header>
 
   <div class="stats-bar">
@@ -1098,6 +1107,8 @@ header {
     </div>
   </div>
 </div>
+
+<div class="overlay" id="ai-overlay">
   <div class="ai-panel">
     <div class="ai-header">
       <div class="ai-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg></div>
@@ -3058,18 +3069,101 @@ function openSoundPicker() { document.getElementById('sound-overlay').classList.
 function closeSoundPicker() { document.getElementById('sound-overlay').classList.remove('open'); }
 document.getElementById('sound-overlay').addEventListener('click', e => { if(e.target===e.currentTarget) closeSoundPicker(); });
 
-const SOUND_URLS = {
-  easy:     'https://www.myinstants.com/media/sounds/that-was-easy.mp3',
-  airhorn:  'https://www.myinstants.com/media/sounds/air-horn-club-sample.mp3',
-  applause: 'https://www.myinstants.com/media/sounds/applause.mp3',
-  sad:      'https://www.myinstants.com/media/sounds/sad-trombone.mp3',
-  tada:     'https://www.myinstants.com/media/sounds/ta-da.mp3',
-  drums:    'https://www.myinstants.com/media/sounds/drum-roll.mp3',
-  crickets: 'https://www.myinstants.com/media/sounds/crickets.mp3',
-  ding:     'https://www.myinstants.com/media/sounds/store-door-chime.mp3',
-  fail:     'https://www.myinstants.com/media/sounds/fart-with-reverb.mp3',
-  winning:  'https://www.myinstants.com/media/sounds/mlg-airhorn.mp3',
-};
+const SOUND_URLS = {};
+
+let audioCtx = null;
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+
+function playSound(name) {
+  try {
+    const ctx = getAudioCtx();
+    if (ctx.state === 'suspended') ctx.resume();
+    const fns = {
+      easy:     () => playChord(ctx, [523,659,784,1047], 0.4, 'sine'),
+      airhorn:  () => playAirhorn(ctx),
+      applause: () => playApplause(ctx),
+      sad:      () => playSadTrombone(ctx),
+      tada:     () => playTada(ctx),
+      drums:    () => playDrumRoll(ctx),
+      crickets: () => playCrickets(ctx),
+      ding:     () => playDing(ctx),
+      fail:     () => playFail(ctx),
+      winning:  () => playWinning(ctx),
+    };
+    fns[name]?.();
+  } catch(e) { toast('Could not play sound'); }
+  if (roomKey && sessionId) fbSet(`rooms/${roomKey}/soundEvent`, { sound: name, by: me.name, ts: Date.now() });
+  closeSoundPicker();
+  toast(`${me.name} played a sound 🔊`);
+}
+
+function playTone(ctx, freq, start, dur, type='sine', vol=0.3) {
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.connect(gain); gain.connect(ctx.destination);
+  osc.type = type; osc.frequency.value = freq;
+  gain.gain.setValueAtTime(vol, start);
+  gain.gain.exponentialRampToValueAtTime(0.001, start + dur);
+  osc.start(start); osc.stop(start + dur + 0.05);
+}
+function playChord(ctx, freqs, dur, type) {
+  const t = ctx.currentTime;
+  freqs.forEach((f,i) => playTone(ctx, f, t + i*0.08, dur, type, 0.25));
+}
+function playAirhorn(ctx) {
+  const t = ctx.currentTime;
+  [220,233,246].forEach((f,i) => playTone(ctx, f, t+i*0.03, 1.2, 'sawtooth', 0.4));
+}
+function playApplause(ctx) {
+  for (let i = 0; i < 40; i++) {
+    const buf = ctx.createBuffer(1, ctx.sampleRate * 0.05, ctx.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let j = 0; j < d.length; j++) d[j] = (Math.random()*2-1)*0.3;
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    const gain = ctx.createGain();
+    gain.gain.value = Math.random() * 0.5 + 0.2;
+    src.connect(gain); gain.connect(ctx.destination);
+    src.start(ctx.currentTime + i * 0.04);
+  }
+}
+function playSadTrombone(ctx) {
+  const t = ctx.currentTime;
+  [[466,0],[440,0.3],[415,0.6],[392,0.9]].forEach(([f,d]) => playTone(ctx, f, t+d, 0.35, 'sawtooth', 0.35));
+}
+function playTada(ctx) {
+  const t = ctx.currentTime;
+  [[523,0],[659,0.1],[784,0.2],[1047,0.35]].forEach(([f,d]) => playTone(ctx, f, t+d, 0.3, 'triangle', 0.3));
+}
+function playDrumRoll(ctx) {
+  for (let i = 0; i < 20; i++) {
+    const t = ctx.currentTime + i * 0.06;
+    playTone(ctx, 120, t, 0.05, 'square', 0.3);
+  }
+}
+function playCrickets(ctx) {
+  for (let i = 0; i < 30; i++) {
+    const t = ctx.currentTime + i * 0.08;
+    playTone(ctx, 3800 + Math.random()*400, t, 0.04, 'sine', 0.05);
+    playTone(ctx, 4200 + Math.random()*400, t + 0.02, 0.04, 'sine', 0.05);
+  }
+}
+function playDing(ctx) {
+  const t = ctx.currentTime;
+  playTone(ctx, 1760, t, 1.5, 'sine', 0.4);
+  playTone(ctx, 2637, t, 1.2, 'sine', 0.2);
+}
+function playFail(ctx) {
+  const t = ctx.currentTime;
+  [[392,0],[349,0.25],[311,0.5],[277,0.75]].forEach(([f,d]) => playTone(ctx, f, t+d, 0.3, 'sawtooth', 0.3));
+}
+function playWinning(ctx) {
+  const t = ctx.currentTime;
+  [[523,0],[659,0.1],[784,0.2],[1047,0.3],[784,0.4],[1047,0.5],[1319,0.6]].forEach(([f,d]) => playTone(ctx, f, t+d, 0.25, 'triangle', 0.3));
+}
 
 let currentAudio = null;
 function playSound(name) {
@@ -3093,12 +3187,16 @@ async function checkSoundEvent() {
     if (!evt || evt.ts <= lastSoundTs) return;
     if (evt.by === me.name) return;
     lastSoundTs = evt.ts;
-    if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; }
-    const url = SOUND_URLS[evt.sound];
-    if (!url) return;
-    currentAudio = new Audio(url);
-    currentAudio.volume = 0.7;
-    currentAudio.play().catch(() => {});
+    const ctx = getAudioCtx();
+    if (ctx.state === 'suspended') ctx.resume();
+    const fns = {
+      easy: () => playChord(ctx, [523,659,784,1047], 0.4, 'sine'),
+      airhorn: () => playAirhorn(ctx), applause: () => playApplause(ctx),
+      sad: () => playSadTrombone(ctx), tada: () => playTada(ctx),
+      drums: () => playDrumRoll(ctx), crickets: () => playCrickets(ctx),
+      ding: () => playDing(ctx), fail: () => playFail(ctx), winning: () => playWinning(ctx),
+    };
+    fns[evt.sound]?.();
     toast(`🔊 ${evt.by} played a sound`);
   } catch(e) {}
 }
