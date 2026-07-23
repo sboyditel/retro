@@ -1904,7 +1904,8 @@ async function joinAsHost() {
   if (tb) { tb.style.display = 'flex'; tb.style.alignItems = 'center'; tb.style.justifyContent = 'center'; }
   const hc = document.getElementById('timer-host-controls');
   if (hc) { hc.style.display = 'flex'; }
-  document.getElementById('timer-next-btn').style.display = '';
+  const tnb = document.getElementById('timer-next-btn');
+  if (tnb) tnb.style.display = '';
   startSync();
   initMyStats();
   if (teamId) showPrevActionsModal(teamId);
