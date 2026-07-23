@@ -4833,7 +4833,9 @@ async function searchYouTubeMusic(query) {
     if (!res.ok) {
       const errBody = await res.text().catch(() => '');
       console.error(`searchYouTubeMusic: YouTube API HTTP ${res.status}`, errBody);
-      container.innerHTML = '<div style="font-size:12px;color:var(--muted);text-align:center;padding:12px">Search failed — try pasting the YouTube URL below instead</div>';
+      let reason = `HTTP ${res.status}`;
+      try { reason = JSON.parse(errBody)?.error?.message || reason; } catch(e) {}
+      container.innerHTML = `<div style="font-size:12px;color:#c0392b;text-align:center;padding:12px">Search failed: ${esc(reason)}<br><span style="color:var(--muted)">Try pasting the YouTube URL below instead</span></div>`;
       return;
     }
     const data = await res.json();
