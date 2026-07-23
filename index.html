@@ -772,7 +772,7 @@ header {
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
       History
     </button>
-    <button class="btn" id="jira-board-btn" onclick="showJiraSprint()" style="display:none;gap:5px">
+    <button class="btn" id="jira-board-btn" onclick="openJiraSprintPanel()" style="display:none;gap:5px">
       <div style="width:14px;height:14px;border-radius:4px;background:linear-gradient(135deg,#0052cc,#2684ff);display:flex;align-items:center;justify-content:center;flex-shrink:0">
         <svg width="8" height="8" viewBox="0 0 32 32" fill="none"><path d="M22.4 15.1l-6.57-6.57-6.57 6.57 2.29 2.29 4.28-4.28 4.28 4.28 2.29-2.29z" fill="white"/></svg>
       </div>
@@ -1015,12 +1015,12 @@ header {
     </div>
     <p style="margin-top:-8px;font-size:13px;color:var(--muted)">Your credentials are stored in your browser only — never sent anywhere except the respective services.</p>
 
-    <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);padding-bottom:4px;border-bottom:1px solid var(--border)">AI (ChatGPT / OpenAI)</div>
+    <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);padding-bottom:4px;border-bottom:1px solid var(--border)">AI (Claude / Anthropic)</div>
     <div class="field">
-      <label>OpenAI API Key</label>
-      <input id="anthropic-key" type="password" placeholder="sk-…" autocomplete="off"/>
+      <label>Anthropic API Key</label>
+      <input id="anthropic-key" type="password" placeholder="sk-ant-…" autocomplete="off"/>
       <div style="font-size:11px;color:#b8b4ac;margin-top:4px">
-        Get a key at <a href="https://platform.openai.com/api-keys" target="_blank" style="color:var(--action)">platform.openai.com/api-keys</a>. Requires a small credit balance.
+        Get a key at <a href="https://console.anthropic.com/settings/keys" target="_blank" style="color:var(--action)">console.anthropic.com/settings/keys</a>. Requires a small credit balance.
       </div>
     </div>
     <button class="join-btn" onclick="saveAnthropicKey()" style="margin-top:-8px">Save AI key</button>
@@ -1065,7 +1065,8 @@ header {
 
 <!-- Timer overlay -->
 <div id="timer-overlay" style="display:none;position:fixed;inset:0;z-index:150;pointer-events:none;padding-top:80px">
-  <div style="background:var(--text);color:#fff;border-radius:20px;padding:24px 40px;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,.3);pointer-events:all;min-width:320px">
+  <div style="position:relative;background:var(--text);color:#fff;border-radius:20px;padding:24px 40px;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,.3);pointer-events:all;min-width:320px">
+    <button onclick="closeTimerOverlay()" title="Minimize" style="position:absolute;top:10px;right:12px;background:none;border:none;cursor:pointer;color:rgba(255,255,255,.6);font-size:18px;line-height:1;padding:4px">−</button>
     <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;opacity:.6;margin-bottom:8px">Card time remaining</div>
     <div id="timer-big" style="font-family:var(--serif);font-size:72px;line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-2px">6:00</div>
     <div id="timer-host-controls" style="display:none;gap:10px;margin-top:16px">
@@ -1776,9 +1777,9 @@ async function loadSprintIssues(sprint, boardId) {
   showJiraSprint();
 }
 
-function showJiraSprint() {
-  if (!jiraSprintData) return;
-  const { sprint, issues, sprints, boardId } = jiraSprintData;
+function renderJiraSprintPanel(interactive) {
+  if (!jiraSprintData) return null;
+  const { sprint, issues, sprints } = jiraSprintData;
 
   const panel = document.getElementById('jira-sprint-panel');
   panel.style.display = 'block';
@@ -1786,8 +1787,8 @@ function showJiraSprint() {
   const start = sprint.startDate ? new Date(sprint.startDate).toLocaleDateString(undefined,{month:'short',day:'numeric'}) : '';
   const end   = sprint.endDate   ? new Date(sprint.endDate).toLocaleDateString(undefined,{month:'short',day:'numeric'}) : '';
 
-  // Sprint picker if multiple sprints available
-  const sprintPicker = sprints && sprints.length > 1 ? `
+  // Sprint picker only for the host — participants see a read-only synced view
+  const sprintPicker = interactive && sprints && sprints.length > 1 ? `
     <select onchange="switchSprint(this.value)" style="font-family:var(--sans);font-size:12px;padding:3px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);cursor:pointer;margin-left:8px;max-width:200px">
       ${sprints.map(s => `<option value="${s.id}" ${s.id===sprint.id?'selected':''}>${s.name}${s.state==='active'?' (active)':''}</option>`).join('')}
     </select>` : '';
@@ -1816,8 +1817,50 @@ function showJiraSprint() {
     </button>`;
 
   const jbb = document.getElementById('jira-board-btn'); jbb.style.display = 'flex'; jbb.style.alignItems = 'center'; jbb.style.gap = '5px';
+  return { done, inprog, todo };
+}
+
+function openJiraSprintPanel() {
+  if (isHost) showJiraSprint();
+  else renderJiraSprintPanel(false); // participants just reopen the already-synced panel, no live Jira/AI calls
+}
+
+function showJiraSprint() {
+  const result = renderJiraSprintPanel(true);
+  if (!result || !jiraSprintData) return;
   document.getElementById('jira-ai-result').innerHTML = '<div class="loading"><div class="dots"><span></span><span></span><span></span></div> Generating sprint summary…</div>';
-  generateJiraSummary(sprint, done, inprog, todo);
+  generateJiraSummary(jiraSprintData.sprint, result.done, result.inprog, result.todo);
+  syncJiraSprintToRoom();
+}
+
+// Push the host's fetched sprint data (not credentials) to the shared room state
+// so participants — who typically don't have their own Jira/Cloudflare setup —
+// can see the same sprint stats and tickets read-only.
+async function syncJiraSprintToRoom() {
+  if (!isHost || !roomKey || !jiraSprintData) return;
+  try {
+    await fbSet(`rooms/${roomKey}/jiraSprint`, {
+      boardId: jiraSprintData.boardId,
+      sprints: jiraSprintData.sprints,
+      sprint: jiraSprintData.sprint,
+      issues: jiraSprintData.issues,
+      ts: Date.now()
+    });
+  } catch(e) {}
+}
+
+let lastJiraSyncTs = 0;
+async function checkJiraSprintSync() {
+  if (!roomKey || isHost) return;
+  try {
+    const data = await fbGet(`rooms/${roomKey}/jiraSprint`);
+    if (!data || data.ts === lastJiraSyncTs) return;
+    lastJiraSyncTs = data.ts;
+    jiraSprintData = { boardId: data.boardId, sprints: data.sprints || [data.sprint], sprint: data.sprint, issues: data.issues || [] };
+    renderJiraSprintPanel(false);
+    const summary = await fbGet(`rooms/${roomKey}/jiraSprintSummary`);
+    document.getElementById('jira-ai-result').innerHTML = summary?.html || '<p style="color:var(--muted);font-size:12px">Waiting for the host to generate a summary…</p>';
+  } catch(e) {}
 }
 
 async function switchSprint(sprintId) {
@@ -1931,17 +1974,24 @@ Keep it under 120 words. Be direct and specific. No markdown, no headers.`;
   try {
     const apiKey = getAnthropicKey();
     if (!apiKey) {
-      document.getElementById('jira-ai-result').innerHTML = '<p style="color:#c0392b;font-size:12px">No API key — go to ⚙️ Settings and add your OpenAI API key.</p>';
+      document.getElementById('jira-ai-result').innerHTML = '<p style="color:#c0392b;font-size:12px">No API key — go to ⚙️ Settings and add your Anthropic API key.</p>';
       return;
     }
-    const res = await fetch('https://api.openai.com/v1/chat/completions', {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
-      body: JSON.stringify({ model: 'gpt-4o-mini', max_tokens: 400, messages: [{ role: 'user', content: prompt }] })
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 400, messages: [{ role: 'user', content: prompt }] })
     });
     const json = await res.json();
-    if (json.choices?.[0]?.message?.content) {
-      document.getElementById('jira-ai-result').innerHTML = json.choices[0].message.content;
+    const text = (json.content || []).filter(b => b.type === 'text').map(b => b.text).join('');
+    if (text) {
+      document.getElementById('jira-ai-result').innerHTML = text;
+      if (isHost && roomKey) fbSet(`rooms/${roomKey}/jiraSprintSummary`, { html: text, ts: Date.now() }).catch(()=>{});
     } else if (json.error) {
       document.getElementById('jira-ai-result').innerHTML = `<p style="color:#c0392b;font-size:12px">API error: ${esc(json.error.message||'unknown')}</p>`;
     } else {
@@ -2254,6 +2304,7 @@ async function tick() {
   await checkSoundEvent();
   await checkTimerSync();
   await checkEmojiReact();
+  await checkJiraSprintSync();
 }
 
 async function loadBoard() {
@@ -3502,18 +3553,24 @@ Be direct, specific, reference actual card content. No markdown.`;
 
   const apiKey = getAnthropicKey();
   if (!apiKey) {
-    document.getElementById('ai-body').innerHTML='<p style="color:#c0392b">No API key set — go to ⚙️ Settings and add your OpenAI API key.</p>';
+    document.getElementById('ai-body').innerHTML='<p style="color:#c0392b">No API key set — go to ⚙️ Settings and add your Anthropic API key.</p>';
     return;
   }
   try {
-    const res = await fetch('https://api.openai.com/v1/chat/completions', {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
-      body: JSON.stringify({ model: 'gpt-4o-mini', max_tokens: 1000, messages: [{ role: 'user', content: prompt }] })
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 1000, messages: [{ role: 'user', content: prompt }] })
     });
     const json = await res.json();
-    if (json.choices?.[0]?.message?.content) {
-      document.getElementById('ai-body').innerHTML = json.choices[0].message.content;
+    const text = (json.content || []).filter(b => b.type === 'text').map(b => b.text).join('');
+    if (text) {
+      document.getElementById('ai-body').innerHTML = text;
     } else if (json.error) {
       document.getElementById('ai-body').innerHTML = `<p style="color:#c0392b">API error: ${esc(json.error.message||'unknown')}</p>`;
     } else {
@@ -3969,6 +4026,9 @@ async function checkTimerSync() {
       // Host started timer — show read-only countdown to participant
       document.getElementById('timer-overlay').style.display = 'flex';
       timerRunning = true;
+      const musicBtn = document.getElementById('music-btn');
+      if (musicBtn) { musicBtn.disabled = false; musicBtn.style.opacity = '1'; musicBtn.style.cursor = 'pointer'; }
+      setTimeout(() => showMusicTip(), 800);
       if (timerInterval) clearInterval(timerInterval);
       timerInterval = setInterval(() => {
         if (timerSeconds <= 0) {
@@ -3984,6 +4044,8 @@ async function checkTimerSync() {
       clearInterval(timerInterval); timerInterval = null;
     } else if (!t.running && !timerRunning && t.seconds === TIMER_DURATION) {
       document.getElementById('timer-overlay').style.display = 'none';
+      const musicBtn = document.getElementById('music-btn');
+      if (musicBtn) { musicBtn.disabled = true; musicBtn.style.opacity = '.4'; musicBtn.style.cursor = 'not-allowed'; }
     }
   } catch(e) {}
 }
