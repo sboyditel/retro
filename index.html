@@ -1724,6 +1724,62 @@ function computeCycleTimeMinutes(changelogEntries, inProgressStatuses, doneStatu
 const CYCLE_TIME_IN_PROGRESS_STATUSES = ['Development', 'QA', 'Ready for QA'];
 const CYCLE_TIME_DONE_STATUS = 'Done';
 
+// Single pass over an issue's status changelog, computing everything at once:
+// - cycleTimeMinutes: blended active time (Dev/QA/Ready for QA combined), same as
+//   computeCycleTimeMinutes above.
+// - perStatusMinutes: { development, qa, 'ready for qa' } — broken out per status,
+//   each pausing independently when the ticket leaves that specific status.
+// - qaBounceBacks: count of QA -> Development transitions (rework/failed-QA signal).
+// - leadTimeMinutes: total business hours from ticket creation to first Done, regardless
+//   of status — includes backlog wait time, blocked time, everything. The gap between
+//   this and cycleTimeMinutes is how long the ticket sat untouched before/between work.
+// Returns { reachedDone: false } if the ticket never reached Done.
+function analyzeIssueTimings(createdDate, changelogEntries, inProgressStatuses, doneStatus) {
+  const inProgSet = new Set(inProgressStatuses.map(s => s.toLowerCase()));
+  const doneLower = doneStatus.toLowerCase();
+  const perStatusMinutes = {};
+  inProgressStatuses.forEach(s => { perStatusMinutes[s.toLowerCase()] = 0; });
+
+  let activeStart = null;
+  let cycleTimeMinutes = 0;
+  let currentStatus = null;
+  let activeStatusStart = null;
+  let qaBounceBacks = 0;
+  let doneAt = null;
+
+  for (const entry of changelogEntries) {
+    const toLower = (entry.toStatus || '').toLowerCase();
+    const fromLower = (entry.fromStatus || '').toLowerCase();
+
+    if (fromLower === 'qa' && toLower === 'development') qaBounceBacks++;
+
+    if (toLower === doneLower) {
+      if (activeStart !== null) { cycleTimeMinutes += businessMinutesBetween(activeStart, entry.timestamp); activeStart = null; }
+      if (currentStatus !== null) { perStatusMinutes[currentStatus] += businessMinutesBetween(activeStatusStart, entry.timestamp); currentStatus = null; }
+      doneAt = entry.timestamp;
+      break;
+    }
+
+    if (currentStatus !== null && toLower !== currentStatus) {
+      perStatusMinutes[currentStatus] += businessMinutesBetween(activeStatusStart, entry.timestamp);
+      currentStatus = null;
+    }
+    if (inProgSet.has(toLower) && currentStatus === null) {
+      currentStatus = toLower;
+      activeStatusStart = entry.timestamp;
+    }
+
+    const enteringActive = inProgSet.has(toLower) && !inProgSet.has(fromLower);
+    const leavingActive = !inProgSet.has(toLower) && inProgSet.has(fromLower);
+    if (enteringActive && activeStart === null) activeStart = entry.timestamp;
+    else if (leavingActive && activeStart !== null) { cycleTimeMinutes += businessMinutesBetween(activeStart, entry.timestamp); activeStart = null; }
+  }
+
+  if (doneAt === null) return { reachedDone: false };
+  const leadTimeMinutes = createdDate ? businessMinutesBetween(createdDate, doneAt) : null;
+  return { reachedDone: true, cycleTimeMinutes, perStatusMinutes, qaBounceBacks, leadTimeMinutes };
+}
+
 // Fetches the full status-change history for one issue (paginated), oldest first.
 async function fetchIssueStatusChangelog(issueKey) {
   const entries = [];
@@ -1981,7 +2037,7 @@ async function loadSprintIssues(sprint, boardId) {
   const btn = document.getElementById('jira-board-btn');
   btn.innerHTML = `<div style="width:14px;height:14px;border-radius:4px;background:linear-gradient(135deg,#0052cc,#2684ff);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="8" height="8" viewBox="0 0 32 32" fill="none"><path d="M22.4 15.1l-6.57-6.57-6.57 6.57 2.29 2.29 4.28-4.28 4.28 4.28 2.29-2.29z" fill="white"/></svg></div> Loading…`;
 
-  const issues = await jiraAgileFetch(`/board/${boardId}/sprint/${sprint.id}/issue?maxResults=100&fields=summary,status,assignee,priority,issuetype`);
+  const issues = await jiraAgileFetch(`/board/${boardId}/sprint/${sprint.id}/issue?maxResults=100&fields=summary,status,assignee,priority,issuetype&jql=${encodeURIComponent('project=' + jiraProjectKey)}`);
 
   if (jiraSprintData) {
     jiraSprintData.sprint = sprint;
@@ -2108,33 +2164,57 @@ async function loadJiraTrends() {
 
   try {
     const { boardId, sprints, sprint: currentSprint } = jiraSprintData;
-    const closedSprints = sprints.filter(s => s.state === 'closed').slice(0, 5);
+    // Pull a larger candidate pool of closed sprints, since some may turn out to belong
+    // entirely to a different project if this board is shared across multiple projects —
+    // those get skipped below once we see they have zero matching tickets.
+    const closedCandidates = sprints.filter(s => s.state === 'closed').slice(0, 15);
     const activeSprints = sprints.filter(s => s.state === 'active').slice(0, 1);
-    let sprintsToAnalyze = [...activeSprints, ...closedSprints];
+    let sprintsToAnalyze = [...activeSprints, ...closedCandidates];
     if (!sprintsToAnalyze.find(s => s.id === currentSprint.id)) sprintsToAnalyze.unshift(currentSprint);
 
     const results = [];
+    let closedCollected = 0;
     for (const sprint of sprintsToAnalyze) {
+      const isCurrent = sprint.id === currentSprint.id;
+      if (!isCurrent && closedCollected >= 5) break; // stop once we have enough valid closed sprints
       resultEl.innerHTML = `<div style="font-size:12px;color:var(--muted)">Analyzing ${esc(sprint.name)}…</div>`;
-      const issuesData = await jiraAgileFetch(`/board/${boardId}/sprint/${sprint.id}/issue?maxResults=200&fields=summary,status`);
+      const issuesData = await jiraAgileFetch(`/board/${boardId}/sprint/${sprint.id}/issue?maxResults=200&fields=summary,status,created&jql=${encodeURIComponent('project=' + jiraProjectKey)}`);
       const issues = issuesData?.issues || [];
+      if (!issues.length && !isCurrent) {
+        console.log(`loadJiraTrends: skipping "${sprint.name}" — no tickets in project ${jiraProjectKey} (likely belongs to a different project on a shared board)`);
+        continue;
+      }
       const nonCancelled = issues.filter(i => (i.fields?.status?.name || '').toLowerCase() !== 'cancelled');
       const doneIssues = nonCancelled.filter(i => (i.fields?.status?.name || '').toLowerCase() === CYCLE_TIME_DONE_STATUS.toLowerCase());
       const completionPct = nonCancelled.length ? Math.round((doneIssues.length / nonCancelled.length) * 100) : null;
 
-      let cycleTimes = [];
+      let cycleTimes = [], leadTimes = [], qaBounceBackTotal = 0;
+      const perStatusTotals = {}; // lowercase status -> array of minutes (one per ticket)
+      CYCLE_TIME_IN_PROGRESS_STATUSES.forEach(s => { perStatusTotals[s.toLowerCase()] = []; });
       for (const issue of doneIssues) {
         try {
           const changelog = await fetchIssueStatusChangelog(issue.key);
-          const minutes = computeCycleTimeMinutes(changelog, CYCLE_TIME_IN_PROGRESS_STATUSES, CYCLE_TIME_DONE_STATUS);
-          if (minutes !== null) cycleTimes.push(minutes);
+          const created = issue.fields?.created ? new Date(issue.fields.created) : null;
+          const analysis = analyzeIssueTimings(created, changelog, CYCLE_TIME_IN_PROGRESS_STATUSES, CYCLE_TIME_DONE_STATUS);
+          if (!analysis.reachedDone) continue;
+          cycleTimes.push(analysis.cycleTimeMinutes);
+          if (analysis.leadTimeMinutes !== null) leadTimes.push(analysis.leadTimeMinutes);
+          qaBounceBackTotal += analysis.qaBounceBacks;
+          Object.keys(perStatusTotals).forEach(k => perStatusTotals[k].push(analysis.perStatusMinutes[k] || 0));
         } catch(e) { console.warn('cycle time fetch failed for', issue.key, e); }
       }
-      const avgCycleHours = cycleTimes.length ? (cycleTimes.reduce((a,b) => a+b, 0) / cycleTimes.length / 60) : null;
+      const avg = arr => arr.length ? arr.reduce((a,b) => a+b, 0) / arr.length : null;
+      const avgCycleHours = avg(cycleTimes) !== null ? avg(cycleTimes) / 60 : null;
+      const avgLeadHours = avg(leadTimes) !== null ? avg(leadTimes) / 60 : null;
+      const avgGapHours = (avgCycleHours !== null && avgLeadHours !== null) ? Math.max(0, avgLeadHours - avgCycleHours) : null;
+      const perStatusHours = {};
+      Object.keys(perStatusTotals).forEach(k => { const a = avg(perStatusTotals[k]); perStatusHours[k] = a !== null ? a / 60 : null; });
+      if (!isCurrent) closedCollected++;
 
       results.push({
         id: sprint.id, name: sprint.name, state: sprint.state, goal: sprint.goal || '',
-        totalNonCancelled: nonCancelled.length, doneCount: doneIssues.length, completionPct, avgCycleHours
+        totalNonCancelled: nonCancelled.length, doneCount: doneIssues.length, completionPct, avgCycleHours,
+        perStatusHours, qaBounceBackTotal, avgLeadHours, avgGapHours
       });
     }
 
@@ -2169,14 +2249,33 @@ function renderJiraTrends(trendData) {
     const pctLabel = r.completionPct === null ? '–' : `${r.completionPct}%`;
     const cycleLabel = r.avgCycleHours === null ? '–' : `${r.avgCycleHours.toFixed(1)}h`;
     const barWidth = r.completionPct === null ? 0 : r.completionPct;
+
+    const ps = r.perStatusHours || {};
+    const fmtH = v => v === null || v === undefined ? '–' : `${v.toFixed(1)}h`;
+    const devH = fmtH(ps['development']);
+    const qaH = fmtH(ps['qa']);
+    const readyH = fmtH(ps['ready for qa']);
+    const leadLabel = r.avgLeadHours === null || r.avgLeadHours === undefined ? '–' : `${r.avgLeadHours.toFixed(1)}h`;
+    const gapLabel = r.avgGapHours === null || r.avgGapHours === undefined ? '–' : `${r.avgGapHours.toFixed(1)}h`;
+    const bounceCount = r.qaBounceBackTotal || 0;
+    const hasBreakdown = r.doneCount > 0;
+
     return `
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
-        <span style="font-size:11px;color:var(--muted);width:110px;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(r.name)}">${esc(r.name)}${r.state==='active'?' •':''}</span>
-        <div style="flex:1;height:16px;background:var(--border);border-radius:4px;overflow:hidden">
-          <div style="height:100%;width:${barWidth}%;background:var(--action);border-radius:4px"></div>
+      <div style="margin-bottom:10px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:11px;color:var(--muted);width:110px;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(r.name)}">${esc(r.name)}${r.state==='active'?' •':''}</span>
+          <div style="flex:1;height:16px;background:var(--border);border-radius:4px;overflow:hidden">
+            <div style="height:100%;width:${barWidth}%;background:var(--action);border-radius:4px"></div>
+          </div>
+          <span style="font-size:11px;font-weight:600;width:38px;text-align:right;flex-shrink:0">${pctLabel}</span>
+          <span style="font-size:11px;color:var(--muted);width:56px;text-align:right;flex-shrink:0">${cycleLabel} avg</span>
         </div>
-        <span style="font-size:11px;font-weight:600;width:38px;text-align:right;flex-shrink:0">${pctLabel}</span>
-        <span style="font-size:11px;color:var(--muted);width:56px;text-align:right;flex-shrink:0">${cycleLabel} avg</span>
+        ${hasBreakdown ? `
+        <div style="font-size:10.5px;color:var(--muted);margin-top:3px;margin-left:118px">
+          Dev ${devH} · QA ${qaH} · Ready ${readyH}
+          &nbsp;|&nbsp; 🔁 ${bounceCount} bounce-back${bounceCount === 1 ? '' : 's'}
+          &nbsp;|&nbsp; Lead ${leadLabel} (gap ${gapLabel})
+        </div>` : ''}
       </div>`;
   }).join('');
 
