@@ -789,7 +789,7 @@ header {
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
       AI Insights
     </button>
-    <button class="btn" id="timer-btn" onclick="toggleTimer()" style="display:none;font-variant-numeric:tabular-nums;min-width:90px">
+    <button class="btn" id="timer-btn" onclick="handleTimerBtnClick()" style="display:none;font-variant-numeric:tabular-nums;min-width:90px">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
       <span id="timer-display">Start</span>
     </button>
@@ -920,8 +920,8 @@ header {
     </div>
   </div>
 
-  <!-- Complete button -->
-  <div class="complete-bar">
+  <!-- Complete button (host only) -->
+  <div class="complete-bar" id="complete-bar" style="display:none">
     <button class="complete-btn" onclick="completeRetro()">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
       Complete Retrospective
@@ -2032,6 +2032,8 @@ async function joinAsHost() {
   if (tb) { tb.style.display = 'flex'; tb.style.alignItems = 'center'; tb.style.justifyContent = 'center'; }
   const hc = document.getElementById('timer-host-controls');
   if (hc) { hc.style.display = 'flex'; }
+  const cbar = document.getElementById('complete-bar');
+  if (cbar) cbar.style.display = 'flex';
   const tnb = document.getElementById('timer-next-btn');
   if (tnb) tnb.style.display = '';
   startSync();
@@ -2052,7 +2054,6 @@ async function joinAsParticipant() {
   showScreen(null);
   document.getElementById('app').style.display = 'block';
   isHost = false;
-  document.getElementById('timer-btn').style.display = 'none';
   document.getElementById('app').innerHTML += ''; // force paint
 
   // Read sessionId — retry up to 10s in case host hasn't created room yet
@@ -2971,6 +2972,7 @@ async function loadScores() {
 
 // ── Complete retro / summary ──
 async function completeRetro() {
+  if (!isHost) { toast('Only the host can complete the retrospective'); return; }
   document.getElementById('app').style.display = 'none';
   document.getElementById('summary-page').style.display = 'block';
   renderSummary();
@@ -3895,6 +3897,11 @@ let timerSeconds = TIMER_DURATION;
 let timerInterval = null;
 let timerRunning = false;
 
+function handleTimerBtnClick() {
+  if (isHost) { toggleTimer(); }
+  else { document.getElementById('timer-overlay').style.display = 'flex'; }
+}
+
 function toggleTimer() {
   if (!timerRunning) {
     startTimer();
@@ -4029,11 +4036,20 @@ async function checkTimerSync() {
       const musicBtn = document.getElementById('music-btn');
       if (musicBtn) { musicBtn.disabled = false; musicBtn.style.opacity = '1'; musicBtn.style.cursor = 'pointer'; }
       setTimeout(() => showMusicTip(), 800);
+      const tb = document.getElementById('timer-btn');
+      if (tb) { tb.style.display = 'flex'; tb.style.alignItems = 'center'; tb.style.justifyContent = 'center'; }
       if (timerInterval) clearInterval(timerInterval);
       timerInterval = setInterval(() => {
         if (timerSeconds <= 0) {
           clearInterval(timerInterval); timerInterval = null; timerRunning = false;
           document.getElementById('timer-overlay').style.display = 'none';
+          document.getElementById('timer-btn').style.display = 'none';
+          stopMusicPlayer();
+          closeMusicModal();
+          const mb = document.getElementById('music-btn');
+          if (mb) { mb.disabled = true; mb.style.opacity = '.4'; mb.style.cursor = 'not-allowed'; }
+          try { playDing(getAudioCtx()); } catch(e) {}
+          toast("⏰ Time's up! Stop adding cards.");
           return;
         }
         timerSeconds--;
@@ -4042,8 +4058,19 @@ async function checkTimerSync() {
     } else if (!t.running && timerRunning) {
       timerRunning = false;
       clearInterval(timerInterval); timerInterval = null;
+      if (t.seconds <= 0) {
+        // Host's timer fully expired (not just paused) — clean up music here too,
+        // in case this sync arrives before the participant's own local countdown hits zero
+        document.getElementById('timer-overlay').style.display = 'none';
+        document.getElementById('timer-btn').style.display = 'none';
+        stopMusicPlayer();
+        closeMusicModal();
+        const mb = document.getElementById('music-btn');
+        if (mb) { mb.disabled = true; mb.style.opacity = '.4'; mb.style.cursor = 'not-allowed'; }
+      }
     } else if (!t.running && !timerRunning && t.seconds === TIMER_DURATION) {
       document.getElementById('timer-overlay').style.display = 'none';
+      document.getElementById('timer-btn').style.display = 'none';
       const musicBtn = document.getElementById('music-btn');
       if (musicBtn) { musicBtn.disabled = true; musicBtn.style.opacity = '.4'; musicBtn.style.cursor = 'not-allowed'; }
     }
