@@ -3602,7 +3602,8 @@ function playWinning(ctx) {
     playTone(ctx, f, t+1.15+i*0.03, 1.0, 'triangle', 0.4));
 }
 
-let lastSoundTs = 0;
+const SESSION_START_TS = Date.now(); // ignore any events older than this
+let lastSoundTs = SESSION_START_TS;
 async function checkSoundEvent() {
   try {
     const evt = await fbGet(`rooms/${roomKey}/soundEvent`);
@@ -3745,7 +3746,7 @@ async function syncTimer() {
   } catch(e) {}
 }
 
-let lastTimerTs = 0;
+let lastTimerTs = SESSION_START_TS;
 async function checkTimerSync() {
   if (!roomKey || isHost) return; // host manages own timer locally
   try {
@@ -3885,8 +3886,9 @@ function removeSong(idx) {
 
 function playMusicById(videoId, songName, idx) {
   document.getElementById('music-modal').style.display = 'none';
-  const url = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
-  musicWindow = window.open(url, 'retro-music', 'width=400,height=240,left=20,top=20');
+  // Use regular watch URL — embed URLs get Error 153 in popups
+  const url = `https://www.youtube.com/watch?v=${videoId}`;
+  musicWindow = window.open(url, 'retro-music', 'width=480,height=320,left=20,top=20');
   if (idx !== undefined) currentSongIdx = idx;
   startTimer();
   document.getElementById('timer-overlay').style.display = 'flex';
@@ -3926,8 +3928,8 @@ function playSongFromTimer(idx) {
   if (!s) return;
   currentSongIdx = idx;
   stopMusic();
-  const url = `https://www.youtube.com/embed/${s.id}?autoplay=1`;
-  musicWindow = window.open(url, 'retro-music', 'width=400,height=240,left=20,top=20');
+  const url = `https://www.youtube.com/watch?v=${s.id}`;
+  musicWindow = window.open(url, 'retro-music', 'width=480,height=320,left=20,top=20');
   // Update now playing bar
   const bar = document.getElementById('timer-now-playing');
   bar.style.display = 'flex';
@@ -4026,7 +4028,7 @@ async function sendReaction(emoji) {
   }
 }
 
-let lastEmojiTs = 0;
+let lastEmojiTs = SESSION_START_TS;
 async function checkEmojiReact() {
   if (!roomKey) return;
   try {
