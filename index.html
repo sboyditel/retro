@@ -1220,7 +1220,7 @@ header {
 </div>
 
 <!-- Prev actions overlay (action item follow-up) -->
-<div id="prev-actions-overlay" style="display:none;position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.6)">
+<div id="action-followup-overlay" style="display:none;position:fixed;inset:0;z-index:320;background:rgba(0,0,0,.6)">
   <div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;padding:24px">
   <div style="background:var(--surface);border-radius:20px;width:100%;max-width:600px;max-height:88vh;overflow-y:auto;padding:28px;box-shadow:0 12px 48px rgba(0,0,0,.25)">
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
@@ -2782,7 +2782,21 @@ function renderCol(col, prevIds) {
           </div>` : ''}
         </div>`;
       bindDrag(div, col);
-      wrap.appendChild(div);
+      // Append to group container or main wrap
+      const targetGroupId = groups.find(g => g.cardIds.includes(card.id))?.id;
+      if (targetGroupId) {
+        const groupContainer = container.querySelector(`#group-${targetGroupId}`);
+        if (groupContainer) {
+          // Remove "no cards" placeholder
+          const placeholder = groupContainer.querySelector('div[style*="No cards"]');
+          if (placeholder) placeholder.remove();
+          groupContainer.appendChild(div);
+        } else {
+          wrap.appendChild(div);
+        }
+      } else {
+        wrap.appendChild(div);
+      }
     });
   }
 
@@ -3020,6 +3034,34 @@ async function openDetail(id) {
         </div>`).join('')
       : '<div class="sum-empty">Nothing added</div>';
 
+    const statusMeta = {
+      done:     { emoji:'✅', label:'Done',        color:'#22c55e' },
+      progress: { emoji:'🔄', label:'In Progress',  color:'#f59e0b' },
+      notdone:  { emoji:'❌', label:'Not Done',     color:'#ef4444' },
+    };
+    const followUp = r.actionFollowUp || [];
+    const renderActionsWithStatus = (items) => items.length
+      ? items.map((c,i)=>{
+          const status = followUp[i] ? followUp[i].status : null;
+          return `<div class="sum-item" style="flex-direction:column;align-items:stretch;gap:10px">
+            <div style="display:flex;align-items:flex-start;gap:8px">
+              <span style="flex:1">${esc(c.text||c)}</span>
+              ${(c.owners||[]).length ? `<span style="display:inline-flex;gap:3px;flex-wrap:wrap">${(c.owners||[]).map(o=>`<span class="assigned-badge"><div class="assigned-dot" style="background:${o.color||'#888'}">${esc((o.name||'?')[0].toUpperCase())}</div>${esc(o.name)}</span>`).join('')}</span>` : ''}
+              ${c.votes?`<span class="votes">♥ ${c.votes}</span>`:''}
+            </div>
+            <div style="display:flex;gap:6px">
+              ${['done','progress','notdone'].map(s => `
+                <button onclick="setDetailActionStatus('${id}',${i},'${s}')"
+                  style="font-family:var(--sans);font-size:11px;font-weight:600;padding:5px 9px;border-radius:8px;
+                    border:2px solid ${status===s?statusMeta[s].color:'var(--border)'};
+                    background:${status===s?statusMeta[s].color:'var(--bg)'};
+                    color:${status===s?'#fff':'var(--muted)'};cursor:pointer;flex:1;transition:all .15s">${statusMeta[s].emoji} ${statusMeta[s].label}</button>
+              `).join('')}
+            </div>
+          </div>`;
+        }).join('')
+      : '<div class="sum-empty">Nothing added</div>';
+
     document.getElementById('history-detail-body').innerHTML = `
       <div class="summary-hero" style="margin-bottom:32px">
         <div class="summary-check"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg></div>
@@ -3061,7 +3103,7 @@ async function openDetail(id) {
         </div>` : ''}
         <div class="sum-card">
           <div class="sum-card-label">Action items</div>
-          <div class="sum-list">${renderList(r.actions||[])}</div>
+          <div class="sum-list">${renderActionsWithStatus(r.actions||[])}</div>
         </div>
         <div class="sum-card">
           <div class="sum-card-label" style="color:var(--well)">
@@ -4529,17 +4571,20 @@ async function checkPrevActions(teamId) {
       .sort((a,b) => b.completedAt - a.completedAt);
     if (!retros.length) return;
     const last = retros[0];
-    const actions = [];
-    if (last.cards) {
-      Object.values(last.cards).filter(c => c.col === 'action' && c.text).forEach(c => actions.push({text:c.text}));
-    }
-    if (last.actionItems) last.actionItems.forEach(a => { if(a.text) actions.push({text:a.text}); });
+
+    // History saves action items under 'actions' array
+    const actions = (last.actions || []).filter(a => a.text && a.text.trim());
     if (!actions.length) return;
-    prevActionItems = actions;
+
+    prevActionItems = actions.map(a => ({ text: a.text, status: null }));
+
     const list = document.getElementById('prev-actions-list');
-    list.innerHTML = actions.map((a, i) => `
+    const date = new Date(last.completedAt).toLocaleDateString(undefined, {month:'short', day:'numeric'});
+    list.innerHTML = `
+      <div style="font-size:12px;color:var(--muted);margin-bottom:8px">From: <strong style="color:var(--text)">${esc(last.title||'Last Retro')}</strong> · ${date}</div>
+      ${prevActionItems.map((a, i) => `
       <div style="border:1px solid var(--border);border-radius:12px;padding:14px 16px">
-        <div style="font-size:14px;color:var(--text);margin-bottom:10px">${esc(a.text)}</div>
+        <div style="font-size:14px;color:var(--text);margin-bottom:10px;line-height:1.4">${esc(a.text)}</div>
         <div style="display:flex;gap:6px">
           <button class="action-status-btn" onclick="setActionStatus(${i},'done',this)"
             style="font-family:var(--sans);font-size:12px;font-weight:600;padding:5px 10px;border-radius:8px;border:2px solid var(--border);background:var(--bg);color:var(--muted);cursor:pointer;flex:1;transition:all .15s">✅ Done</button>
@@ -4548,9 +4593,10 @@ async function checkPrevActions(teamId) {
           <button class="action-status-btn" onclick="setActionStatus(${i},'notdone',this)"
             style="font-family:var(--sans);font-size:12px;font-weight:600;padding:5px 10px;border-radius:8px;border:2px solid var(--border);background:var(--bg);color:var(--muted);cursor:pointer;flex:1;transition:all .15s">❌ Not Done</button>
         </div>
-      </div>`).join('');
-    document.getElementById('prev-actions-overlay').style.display = 'flex';
-  } catch(e) {}
+      </div>`).join('')}`;
+
+    document.getElementById('action-followup-overlay').style.display = 'flex';
+  } catch(e) { console.error('checkPrevActions error:', e); }
 }
 
 function setActionStatus(idx, status, btn) {
@@ -4564,8 +4610,23 @@ function setActionStatus(idx, status, btn) {
   btn.style.color = '#fff';
 }
 
+async function setDetailActionStatus(retroId, idx, status) {
+  try {
+    const r = await fbGet(`history/${retroId}`);
+    if (!r) return;
+    const actions = r.actions || [];
+    let followUp = (r.actionFollowUp && r.actionFollowUp.length === actions.length)
+      ? r.actionFollowUp.slice()
+      : actions.map((a,i) => (r.actionFollowUp && r.actionFollowUp[i]) || {text:a.text, status:null});
+    followUp[idx] = { text: actions[idx].text, status };
+    await fbSet(`history/${retroId}/actionFollowUp`, followUp);
+    openDetail(retroId);
+    toast('Status updated');
+  } catch(e) { console.error('setDetailActionStatus error:', e); }
+}
+
 function closePrevActions() {
-  document.getElementById('prev-actions-overlay').style.display = 'none';
+  document.getElementById('action-followup-overlay').style.display = 'none';
 }
 
 async function savePrevActionsAndClose() {
