@@ -313,7 +313,8 @@ header {
 .card.dragging { opacity:.35; box-shadow:none; pointer-events:none; }
 .card.drop-above { box-shadow:0 -3px 0 0 #5c7ef7, var(--shadow); }
 .card.drop-below { box-shadow:0 3px 0 0 #5c7ef7, var(--shadow); }
-.col-cards { min-height:60px; }
+.card-edit-panel { display:none; flex-direction:column; gap:6px; }
+.card-edit-panel.open { display:flex; }
 .col-cards.drag-target { background:var(--bg); border-radius:var(--radius); outline:1.5px dashed var(--border); }
 @keyframes card-in { from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none} }
 .card:hover { box-shadow:var(--shadow-lg); transform:translateY(-1px); }
@@ -570,7 +571,14 @@ header {
 .jira-ai-body p { margin-bottom:10px; }
 
 .sound-btn {
-
+  font-family:var(--sans); font-size:13px; font-weight:500;
+  padding:10px 12px; border-radius:10px; border:none;
+  background:var(--bg); color:var(--text); cursor:pointer;
+  transition:all .15s; text-align:center;
+  box-shadow:0 1px 3px rgba(0,0,0,.08);
+}
+.sound-btn:hover { background:var(--text); color:#fff; transform:scale(1.04); box-shadow:0 4px 12px rgba(0,0,0,.15); }
+.sound-btn:active { transform:scale(0.97); }
 
 .cp { position:fixed; pointer-events:none; z-index:999; animation:fall linear forwards; }
 @keyframes fall { 0%{transform:translateY(-40px) rotate(0deg);opacity:1}100%{transform:translateY(110vh) rotate(720deg);opacity:0} }
@@ -2130,6 +2138,8 @@ function startSync() {
   // Immediately show self in presence bar without waiting for Firebase read
   presence[me.id] = { name: me.name, color: me.color, ts: Date.now() };
   renderPresence();
+  // Clean up any stuck animated elements from previous sessions
+  document.querySelectorAll('.cp, .flying-emoji').forEach(el => el.remove());
   loadBoard();
   loadRetroName();
   loadScores();
@@ -2195,6 +2205,8 @@ async function loadPresence() {
     lastPresStr = s;
     const now = Date.now();
     presence = Object.fromEntries(Object.entries(remote).filter(([,v]) => now - v.ts < 25000));
+    // Always ensure own entry is present
+    if (me && me.id) presence[me.id] = { name: me.name, color: me.color, ts: Date.now() };
     renderPresence();
   } catch(e) {}
 }
@@ -2273,14 +2285,14 @@ async function addCard(col) {
 async function startCardEdit(id) {
   document.getElementById('card-text-' + id).style.display = 'none';
   const editDiv = document.getElementById('card-edit-' + id);
-  editDiv.style.display = 'flex';
+  editDiv.classList.add('open');
   const ta = document.getElementById('card-edit-ta-' + id);
   if (ta) { ta.focus(); ta.select(); }
 }
 
 function cancelCardEdit(id) {
   document.getElementById('card-text-' + id).style.display = '';
-  document.getElementById('card-edit-' + id).style.display = 'none';
+  document.getElementById('card-edit-' + id).classList.remove('open');
 }
 
 async function saveCardEdit(col, id) {
@@ -2597,7 +2609,7 @@ function renderCol(col, prevIds) {
         ${labelTag}
         ${card.gifUrl ? `<img src="${card.gifUrl}" style="width:100%;border-radius:8px;margin-bottom:8px;display:block"/>` : ''}
         <div class="card-text" id="card-text-${card.id}">${esc(card.text)}</div>
-        <div id="card-edit-${card.id}" style="display:none;flex-direction:column;gap:6px">
+        <div id="card-edit-${card.id}" class="card-edit-panel">
           <textarea id="card-edit-ta-${card.id}" rows="3"
             style="font-family:var(--sans);font-size:14px;border:1.5px solid var(--action);border-radius:8px;padding:8px;outline:none;resize:none;width:100%;background:var(--bg);color:var(--text);line-height:1.55"
             onmousedown="event.stopPropagation()" onclick="event.stopPropagation()"
