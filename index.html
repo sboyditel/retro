@@ -3884,11 +3884,21 @@ function removeSong(idx) {
   renderPlaylist();
 }
 
+function openMusicWindow(videoId) {
+  const url = `https://www.youtube.com/watch?v=${videoId}`;
+  const win = window.open(url, 'retro-music', 'width=520,height=340,left=20,top=20,toolbar=0,menubar=0');
+  if (!win || win.closed || typeof win.closed === 'undefined') {
+    // Popup blocked — open in new tab as fallback
+    window.open(url, '_blank');
+    return null;
+  }
+  return win;
+}
+
 function playMusicById(videoId, songName, idx) {
   document.getElementById('music-modal').style.display = 'none';
-  // Use regular watch URL — embed URLs get Error 153 in popups
-  const url = `https://www.youtube.com/watch?v=${videoId}`;
-  musicWindow = window.open(url, 'retro-music', 'width=480,height=320,left=20,top=20');
+  stopMusic();
+  musicWindow = openMusicWindow(videoId);
   if (idx !== undefined) currentSongIdx = idx;
   startTimer();
   document.getElementById('timer-overlay').style.display = 'flex';
@@ -3928,8 +3938,7 @@ function playSongFromTimer(idx) {
   if (!s) return;
   currentSongIdx = idx;
   stopMusic();
-  const url = `https://www.youtube.com/watch?v=${s.id}`;
-  musicWindow = window.open(url, 'retro-music', 'width=480,height=320,left=20,top=20');
+  musicWindow = openMusicWindow(s.id);
   // Update now playing bar
   const bar = document.getElementById('timer-now-playing');
   bar.style.display = 'flex';
