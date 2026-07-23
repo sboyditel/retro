@@ -2212,9 +2212,11 @@ async function loadPresence() {
 }
 
 async function pingPresence() {
-  // Write-only: just update my own entry, don't read the whole object
   try {
     await fbSet(`rooms/${roomKey}/presence/${me.id}`, { name: me.name, color: me.color, ts: Date.now() });
+    // Ensure own avatar always shows
+    presence[me.id] = { name: me.name, color: me.color, ts: Date.now() };
+    renderPresence();
   } catch(e) {}
 }
 
@@ -2275,6 +2277,10 @@ async function addCard(col) {
   hideForm(col);
   confetti();
   trackStat('cardsAdded');
+  // Add to local board immediately so it shows without waiting for sync
+  card.mine = true;
+  board[col].unshift(card);
+  renderCol(col);
   try {
     setSyncState('syncing');
     await fbSet(`${cardsPath()}/${card.id}`, card);
