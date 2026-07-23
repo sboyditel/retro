@@ -2084,16 +2084,29 @@ async function callGemini(prompt, maxTokens) {
   const apiKey = getGeminiKey();
   if (!apiKey) return { error: 'No Gemini API key set.' };
   try {
+    // Gemini's newer models "think" before answering, and those thinking tokens count
+    // against maxOutputTokens — so a low budget (enough for Claude, which doesn't do this)
+    // can get entirely consumed by invisible reasoning, truncating the real answer to a
+    // sentence fragment. Disable thinking where supported, and give a generous budget as
+    // a safety margin on models that can't fully disable it.
     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${apiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { maxOutputTokens: maxTokens } })
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: {
+          maxOutputTokens: Math.max(maxTokens * 4, 2048),
+          thinkingConfig: { thinkingBudget: 0 }
+        }
+      })
     });
     const json = await res.json();
     const text = (json.candidates?.[0]?.content?.parts || []).map(p => p.text || '').join('');
-    if (text) return { text, provider: 'Gemini' };
+    const finishReason = json.candidates?.[0]?.finishReason;
+    if (text && finishReason !== 'MAX_TOKENS') return { text, provider: 'Gemini' };
+    if (text && finishReason === 'MAX_TOKENS') return { text, provider: 'Gemini', truncated: true };
     if (json.error) return { error: `Gemini API error: ${json.error.message || 'unknown'}` };
-    if (json.candidates?.[0]?.finishReason) return { error: `Gemini stopped early (${json.candidates[0].finishReason}).` };
+    if (finishReason) return { error: `Gemini stopped early (${finishReason}) with no output — try increasing the token budget.` };
     return { error: 'No response from Gemini.' };
   } catch(e) {
     return { error: `Could not reach Gemini: ${e.message}` };
@@ -2112,7 +2125,10 @@ async function callLLM(prompt, maxTokens) {
   const errors = [];
   for (const provider of order) {
     const result = provider === 'gemini' ? await callGemini(prompt, maxTokens) : await callClaude(prompt, maxTokens);
-    if (result.text) return result;
+    if (result.text) {
+      if (result.truncated) console.warn(`callLLM: ${provider} response was truncated (hit MAX_TOKENS) — consider a larger budget`);
+      return result;
+    }
     console.warn(`callLLM: ${provider} failed —`, result.error);
     errors.push(`${provider === 'gemini' ? 'Gemini' : 'Claude'}: ${result.error}`);
   }
