@@ -4308,10 +4308,26 @@ const DEFAULT_PASSWORD_HASH = 'aa0cf862cf127db8688d738d40c1b70ad5690c45a08face27
 async function getPasswordHash() {
   try {
     const remote = await fbGet('appSettings/passwordHash');
-    if (remote) { localStorage.setItem('retro_password_hash', remote); return remote; }
-  } catch(e) {}
-  return localStorage.getItem('retro_password_hash') || DEFAULT_PASSWORD_HASH;
+    if (remote) {
+      console.log('getPasswordHash: using REMOTE (Firebase) hash:', remote);
+      localStorage.setItem('retro_password_hash', remote);
+      return remote;
+    }
+  } catch(e) { console.warn('getPasswordHash: fbGet threw', e); }
+  const local = localStorage.getItem('retro_password_hash');
+  if (local) { console.log('getPasswordHash: Firebase empty, using LOCAL cached hash:', local); return local; }
+  console.log('getPasswordHash: nothing stored anywhere, using DEFAULT hash:', DEFAULT_PASSWORD_HASH);
+  return DEFAULT_PASSWORD_HASH;
 }
+
+// Emergency escape hatch — run resetPasswordToDefault() in the browser console
+// (F12 → Console) if the password gets lost or changed by mistake. Restores it
+// to the original default password everywhere (Firebase + this browser).
+window.resetPasswordToDefault = async function() {
+  localStorage.removeItem('retro_password_hash');
+  try { await fbSet('appSettings/passwordHash', null); } catch(e) {}
+  console.log('Password reset to default everywhere.');
+};
 async function setPasswordHash(hash) {
   localStorage.setItem('retro_password_hash', hash);
   try { await fbSet('appSettings/passwordHash', hash); } catch(e) {}
