@@ -3126,7 +3126,7 @@ function changeScore() {
 }
 
 async function saveScores() {
-  try { await fbSet(sessionPath('scores'), scores); } catch(e) {}
+  try { await fbSet(sessionPath(`scores/${me.id}`), { name: me.name, value: myScore }); } catch(e) {}
 }
 
 async function loadScores() {
