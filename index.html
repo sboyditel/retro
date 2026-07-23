@@ -2109,13 +2109,14 @@ async function callLLM(prompt, maxTokens) {
   if (!hasAnyKey) {
     return { error: 'No AI provider configured — go to ⚙️ Settings and add a Claude or Gemini API key.' };
   }
-  let lastError = 'AI request failed on all configured providers.';
+  const errors = [];
   for (const provider of order) {
     const result = provider === 'gemini' ? await callGemini(prompt, maxTokens) : await callClaude(prompt, maxTokens);
     if (result.text) return result;
-    lastError = result.error;
+    console.warn(`callLLM: ${provider} failed —`, result.error);
+    errors.push(`${provider === 'gemini' ? 'Gemini' : 'Claude'}: ${result.error}`);
   }
-  return { error: lastError };
+  return { error: errors.join(' | ') };
 }
 
 async function generateJiraSummary(sprint, done, inprog, todo) {
