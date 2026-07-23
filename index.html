@@ -1112,7 +1112,7 @@ header {
 </div>
 
 <!-- Emoji reaction picker -->
-<div id="emoji-react-modal" style="display:none;position:fixed;bottom:80px;right:24px;z-index:400;background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:16px;box-shadow:0 8px 40px rgba(0,0,0,.2);width:320px">
+<div id="emoji-react-modal" style="display:none;position:fixed;bottom:80px;right:24px;z-index:400;background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:16px;box-shadow:0 8px 40px rgba(0,0,0,.2);width:320px;max-height:min(400px, calc(100vh - 100px));overflow-y:auto">
   <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:10px">Send a reaction 🎉</div>
   <div style="display:grid;grid-template-columns:repeat(8,1fr);gap:4px">
     <span class="react-btn" onclick="sendReaction('👍')">👍</span>
@@ -1494,6 +1494,24 @@ function showScreen(id) {
   if (id === 'screen-teams') renderTeamsList();
   if (id === 'screen-jira') loadJiraSettingsToForm();
 }
+
+// TEMPORARY DIAGNOSTIC — logs every time #screen-landing's display is changed,
+// with a stack trace showing exactly which function did it. Remove once the
+// landing/board overlap bug is found.
+(function watchLandingDisplay() {
+  const el = document.getElementById('screen-landing');
+  if (!el) return;
+  const styleObj = el.style;
+  Object.defineProperty(styleObj, 'display', {
+    configurable: true,
+    get() { return styleObj.getPropertyValue('display'); },
+    set(v) {
+      console.log(`%c[landing-watch] #screen-landing display -> "${v}"`, 'color:#e07b30;font-weight:bold');
+      console.trace('[landing-watch] called from:');
+      styleObj.setProperty('display', v);
+    }
+  });
+})();
 
 // ── Teams ──
 let teams = {}; // id → { name, color }
