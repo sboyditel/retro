@@ -2112,7 +2112,11 @@ async function showPrevActionsModal(teamId) {
       .sort((a,b) => b.completedAt - a.completedAt);
     console.log(`showPrevActionsModal: teamId=${teamId}, found ${teamRetros.length} retros`);
     if (!teamRetros.length) return;
-    const last = teamRetros[0];
+    // Prefer the most recent retro that actually has carried items or action items;
+    // fall back to the latest retro if none have content.
+    const last = teamRetros.find(r =>
+      (r.carried||[]).length || (r.actions||[]).some(a => a && a.text && a.text.trim())
+    ) || teamRetros[0];
     const date = new Date(last.completedAt).toLocaleDateString(undefined, {weekday:'short',year:'numeric',month:'short',day:'numeric'});
 
     document.getElementById('prev-actions-retro-name').textContent = `${last.title || 'Last retro'} — ${date}`;
@@ -2792,6 +2796,7 @@ function renderCol(col, prevIds) {
           if (placeholder) placeholder.remove();
           groupContainer.appendChild(div);
         } else {
+          console.warn(`renderCol: group container #group-${targetGroupId} not found for card ${card.id} — falling back to ungrouped list`);
           wrap.appendChild(div);
         }
       } else {
@@ -4562,19 +4567,27 @@ async function loadIcebreakerAnswers() {
 // ── Action Item Follow-up ──
 let prevActionItems = [];
 
+let prevActionsRetroId = null;
+
 async function checkPrevActions(teamId) {
   try {
     const all = await fbGet('history');
     if (!all) return;
-    const retros = Object.values(all)
-      .filter(r => !teamId || r.teamId === teamId)
-      .sort((a,b) => b.completedAt - a.completedAt);
-    if (!retros.length) return;
-    const last = retros[0];
+    const retros = Object.entries(all)
+      .filter(([id,r]) => !teamId || r.teamId === teamId)
+      .sort((a,b) => b[1].completedAt - a[1].completedAt);
+    if (!retros.length) { console.log('checkPrevActions: no retros found for teamId', teamId); return; }
 
-    // History saves action items under 'actions' array
-    const actions = (last.actions || []).filter(a => a.text && a.text.trim());
-    if (!actions.length) return;
+    // Walk back through history to find the most recent retro that actually
+    // has action items — the very last retro might not have logged any.
+    let last = null, actions = [], lastId = null;
+    for (const [id, r] of retros) {
+      const a = (r.actions || []).filter(x => x && x.text && x.text.trim());
+      if (a.length) { last = r; actions = a; lastId = id; break; }
+    }
+    console.log(`checkPrevActions: scanned ${retros.length} retro(s), found actions in`, last ? last.title : 'none');
+    if (!last) return;
+    prevActionsRetroId = lastId;
 
     prevActionItems = actions.map(a => ({ text: a.text, status: null }));
 
@@ -4631,15 +4644,11 @@ function closePrevActions() {
 
 async function savePrevActionsAndClose() {
   closePrevActions();
+  if (!prevActionsRetroId) return;
   try {
-    const all = await fbGet('history');
-    if (!all) return;
-    const entries = Object.entries(all).sort((a,b) => b[1].completedAt - a[1].completedAt);
-    if (!entries.length) return;
-    const [lastKey] = entries[0];
-    await fbSet(`history/${lastKey}/actionFollowUp`, prevActionItems.map(a=>({text:a.text,status:a.status||'unknown'})));
+    await fbSet(`history/${prevActionsRetroId}/actionFollowUp`, prevActionItems.map(a=>({text:a.text,status:a.status||'unknown'})));
     toast('Action item follow-up saved!');
-  } catch(e) {}
+  } catch(e) { console.error('savePrevActionsAndClose error:', e); }
 }
 
 // ── Card Grouping ──
@@ -4680,7 +4689,9 @@ function toggleCardGroup(cardId, col, groupId) {
   if (groupId !== 'none') {
     const group = cardGroups[col].find(g => g.id === groupId);
     if (group) group.cardIds.push(cardId);
+    else console.warn(`toggleCardGroup: group ${groupId} not found in cardGroups[${col}]`);
   }
+  console.log(`toggleCardGroup: card ${cardId} -> group ${groupId} in ${col}. Current groups:`, JSON.parse(JSON.stringify(cardGroups[col])));
   saveCardGroups(); renderCol(col);
 }
 
