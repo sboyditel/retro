@@ -42,7 +42,7 @@
   --bg:#fff5f7; --surface:#ffffff; --text:#2c1018; --muted:#8a5060; --border:#f0cccc;
   --well:#2a8a4a; --well-light:#d4f0dc; --better:#c04840; --better-light:#fde4e4; --action:#c040a0; --action-light:#f8d4f0;
 }
-body { font-family: var(--sans); background: var(--bg); color: var(--text); min-height: 100vh; font-size: 15px; }
+body { font-family: var(--sans); background: var(--bg); color: var(--text); min-height: 100vh; font-size: 15px; overflow-x:hidden; }
 
 /* JOIN */
 #screen-landing, #screen-host, #screen-join { min-height:100vh; display:flex; align-items:center; justify-content:center; }
@@ -405,7 +405,7 @@ header {
   100% { transform:translateX(110vw) translateY(var(--tyf)) scale(0.8) rotate(var(--rot)); opacity:0; }
 }
 .flying-emoji {
-  position:fixed; left:-100px; z-index:9999; pointer-events:none;
+  position:fixed; left:-120px; z-index:9999; pointer-events:none;
   user-select:none; font-size:100px; line-height:1;
   animation:flyEmoji 3s cubic-bezier(.2,.6,.4,1) forwards;
 }
@@ -1138,7 +1138,7 @@ header {
     </div>
     <!-- Embedded player -->
     <div id="music-player-wrap" style="display:none;border-radius:12px;overflow:hidden;margin-bottom:16px;background:#000;aspect-ratio:16/9">
-      <iframe id="music-iframe" width="100%" height="100%" frameborder="0" allow="autoplay;encrypted-media" allowfullscreen style="display:block"></iframe>
+      <div id="yt-player-div" style="width:100%;height:100%"></div>
     </div>
     <!-- Playlist -->
     <div id="music-playlist" style="display:flex;flex-direction:column;gap:6px;overflow-y:auto;flex:1;margin-bottom:16px"></div>
@@ -2127,6 +2127,9 @@ async function loadAllUserStats() {
 
 function startSync() {
   pingPresence();
+  // Immediately show self in presence bar without waiting for Firebase read
+  presence[me.id] = { name: me.name, color: me.color, ts: Date.now() };
+  renderPresence();
   loadBoard();
   loadRetroName();
   loadScores();
@@ -4191,38 +4194,40 @@ function playSong(idx) {
   if (!song) return;
   currentSongIdx = idx;
 
-  // Show the player
-  const wrap = document.getElementById('music-player-wrap');
-  wrap.style.display = 'block';
-
-  // Update now-playing label
+  document.getElementById('music-player-wrap').style.display = 'block';
   document.getElementById('music-now-playing-label').textContent = '▶ ' + song.name;
 
-  if (ytApiReady && !ytPlayer) {
-    // Create player for first time
-    ytPlayer = new YT.Player('music-iframe', {
-      videoId: song.id,
-      playerVars: { autoplay: 1, rel: 0, modestbranding: 1 },
-      events: {
-        onStateChange: onPlayerStateChange,
-      }
-    });
-  } else if (ytPlayer && ytPlayer.loadVideoById) {
-    ytPlayer.loadVideoById(song.id);
-  } else {
-    // Fallback: set iframe src directly
-    document.getElementById('music-iframe').src =
-      `https://www.youtube.com/embed/${song.id}?autoplay=1&rel=0&modestbranding=1&enablejsapi=1`;
+  if (!ytApiReady) {
+    // API not ready yet — wait and retry
+    setTimeout(() => playSong(idx), 500);
+    return;
   }
 
-  renderMusicPlaylist(); // update highlighted row
+  if (!ytPlayer) {
+    // First time — create the player div properly
+    const wrap = document.getElementById('music-player-wrap');
+    wrap.innerHTML = '<div id="yt-player-div"></div>';
+    ytPlayer = new YT.Player('yt-player-div', {
+      height: '100%',
+      width: '100%',
+      videoId: song.id,
+      playerVars: { autoplay: 1, rel: 0, modestbranding: 1, origin: location.origin },
+      events: {
+        onStateChange: onPlayerStateChange,
+        onReady: (e) => e.target.playVideo(),
+      }
+    });
+  } else {
+    ytPlayer.loadVideoById(song.id);
+  }
+
+  renderMusicPlaylist();
   toast(`▶ ${song.name}`);
 }
 
 function onPlayerStateChange(event) {
-  // YT.PlayerState.ENDED = 0
-  if (event.data === 0) {
-    // Song ended — advance to next
+  if (event.data === YT.PlayerState.ENDED) {
+    if (!timerRunning) return; // don't auto-advance if timer stopped
     const pl = loadPlaylist();
     const nextIdx = (currentSongIdx + 1) % pl.length;
     playSong(nextIdx);
@@ -4230,10 +4235,22 @@ function onPlayerStateChange(event) {
 }
 
 function stopMusicPlayer() {
-  if (ytPlayer && ytPlayer.stopVideo) ytPlayer.stopVideo();
-  document.getElementById('music-player-wrap').style.display = 'none';
-  document.getElementById('music-now-playing-label').textContent = 'Pick a song to play';
+  try {
+    if (ytPlayer && ytPlayer.stopVideo) {
+      ytPlayer.stopVideo();
+      ytPlayer.destroy();
+      ytPlayer = null;
+    }
+  } catch(e) {}
+  const wrap = document.getElementById('music-player-wrap');
+  if (wrap) {
+    wrap.style.display = 'none';
+    wrap.innerHTML = '<div id="yt-player-div"></div>';
+  }
+  const label = document.getElementById('music-now-playing-label');
+  if (label) label.textContent = 'Pick a song to play';
   currentSongIdx = -1;
+  renderMusicPlaylist();
 }
 
 function renderMusicPlaylist() {
