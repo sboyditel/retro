@@ -995,7 +995,7 @@ header {
 </div>
 
 <!-- Jira settings screen -->
-<div id="screen-jira" style="display:none; min-height:100vh; background:var(--bg); align-items:flex-start; justify-content:center; padding:24px 16px; overflow-y:auto;">
+<div id="screen-jira" style="display:none; min-height:100vh; background:var(--bg); padding:24px 16px; overflow-y:auto;">
   <div class="join-card" style="max-width:480px;max-height:none;overflow:visible">
     <div style="display:flex;align-items:center;gap:10px">
       <button onclick="showScreen('screen-landing')" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:20px;line-height:1;padding:0">←</button>
@@ -1207,7 +1207,7 @@ header {
 </div>
 
 <!-- Teams screen -->
-<div id="screen-teams" style="display:none; min-height:100vh; background:var(--bg); align-items:center; justify-content:center;">
+<div id="screen-teams" style="display:none; min-height:100vh; background:var(--bg);">
   <div class="join-card" style="max-width:520px">
     <div style="display:flex;align-items:center;gap:10px">
       <button onclick="showScreen('screen-landing')" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:20px;line-height:1;padding:0">←</button>
@@ -1419,9 +1419,10 @@ function copyCode() {
 
 // ── Screen navigation ──
 function showScreen(id) {
-  ['screen-landing','screen-host','screen-join','screen-teams','screen-jira','history-page','history-detail'].forEach(s => {
+  const flexScreens = { 'screen-landing':'flex', 'screen-host':'flex', 'screen-join':'flex', 'screen-teams':'flex', 'screen-jira':'block', 'history-page':'block', 'history-detail':'block' };
+  Object.keys(flexScreens).forEach(s => {
     const el = document.getElementById(s);
-    if (el) el.style.display = s === id ? 'flex' : 'none';
+    if (el) el.style.display = s === id ? flexScreens[s] : 'none';
   });
   if (id === 'screen-host') { populateTeamDropdown(); loadJiraProjects(); }
   if (id === 'screen-teams') renderTeamsList();
