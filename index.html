@@ -834,6 +834,12 @@ header {
     </div>
     <div class="jira-stats" id="jira-stats"></div>
     <div id="jira-ai-result" class="jira-ai-body"></div>
+    <div id="jira-trends-section" style="margin-top:14px;border-top:1px solid var(--border);padding-top:12px">
+      <button id="jira-trends-btn" onclick="loadJiraTrends()" style="font-family:var(--sans);font-size:12px;font-weight:600;padding:6px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);cursor:pointer">
+        📈 Load Sprint Trends
+      </button>
+      <div id="jira-trends-result" style="margin-top:10px"></div>
+    </div>
   </div>
 
   <!-- Sprint goal bar -->
@@ -1640,6 +1646,106 @@ function populateTeamDropdown() {
 
 // ── Jira ──
 let jiraCfg = null; // { url, email, token }
+
+// ── Cycle time math (Mon-Fri, 9:30am-4:00pm Eastern Time, weekends excluded) ──
+const CYCLE_TIME_TZ = 'America/New_York';
+const CYCLE_TIME_WINDOW_START_MIN = 9 * 60 + 30; // 9:30am
+const CYCLE_TIME_WINDOW_END_MIN = 16 * 60;       // 4:00pm
+
+function ctToETParts(date) {
+  const fmt = new Intl.DateTimeFormat('en-US', {
+    timeZone: CYCLE_TIME_TZ, hour12: false,
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', second: '2-digit'
+  });
+  const parts = {};
+  for (const p of fmt.formatToParts(date)) { if (p.type !== 'literal') parts[p.type] = p.value; }
+  let hour = +parts.hour;
+  if (hour === 24) hour = 0;
+  return {
+    y: +parts.year, m: +parts.month, d: +parts.day,
+    minutesSinceMidnight: hour * 60 + +parts.minute + (+parts.second) / 60
+  };
+}
+function ctDateKey(p) { return p.y * 10000 + p.m * 100 + p.d; }
+function ctIsWeekday(p) {
+  const dow = new Date(Date.UTC(p.y, p.m - 1, p.d)).getUTCDay();
+  return dow >= 1 && dow <= 5;
+}
+function ctAddCalendarDays(p, days) {
+  const d = new Date(Date.UTC(p.y, p.m - 1, p.d + days));
+  return { y: d.getUTCFullYear(), m: d.getUTCMonth() + 1, d: d.getUTCDate() };
+}
+// Business minutes between two instants: Mon-Fri, 9:30am-4:00pm ET only.
+function businessMinutesBetween(start, end) {
+  if (!(end > start)) return 0;
+  const startP = ctToETParts(start);
+  const endP = ctToETParts(end);
+  let total = 0;
+  let cur = { y: startP.y, m: startP.m, d: startP.d };
+  const endKey = ctDateKey(endP);
+  while (ctDateKey(cur) <= endKey) {
+    if (ctIsWeekday(cur)) {
+      const isStartDay = ctDateKey(cur) === ctDateKey(startP);
+      const isEndDay = ctDateKey(cur) === endKey;
+      const dayLo = isStartDay ? Math.max(startP.minutesSinceMidnight, CYCLE_TIME_WINDOW_START_MIN) : CYCLE_TIME_WINDOW_START_MIN;
+      const dayHi = isEndDay ? Math.min(endP.minutesSinceMidnight, CYCLE_TIME_WINDOW_END_MIN) : CYCLE_TIME_WINDOW_END_MIN;
+      if (dayHi > dayLo) total += (dayHi - dayLo);
+    }
+    cur = ctAddCalendarDays(cur, 1);
+  }
+  return total;
+}
+
+// changelogEntries: [{ timestamp: Date, fromStatus, toStatus }] sorted ascending.
+// Returns total business minutes spent in an in-progress status, from first entry into one
+// until the FIRST transition into doneStatus. Pauses when leaving an in-progress status for
+// anything other than Done, resumes if it re-enters. Returns null if Done was never reached.
+function computeCycleTimeMinutes(changelogEntries, inProgressStatuses, doneStatus) {
+  const inProgSet = new Set(inProgressStatuses.map(s => s.toLowerCase()));
+  const doneLower = doneStatus.toLowerCase();
+  let activeStart = null;
+  let total = 0;
+  for (const entry of changelogEntries) {
+    const toLower = (entry.toStatus || '').toLowerCase();
+    const fromLower = (entry.fromStatus || '').toLowerCase();
+    if (toLower === doneLower) {
+      if (activeStart !== null) { total += businessMinutesBetween(activeStart, entry.timestamp); activeStart = null; }
+      return total;
+    }
+    const enteringActive = inProgSet.has(toLower) && !inProgSet.has(fromLower);
+    const leavingActive = !inProgSet.has(toLower) && inProgSet.has(fromLower);
+    if (enteringActive && activeStart === null) activeStart = entry.timestamp;
+    else if (leavingActive && activeStart !== null) { total += businessMinutesBetween(activeStart, entry.timestamp); activeStart = null; }
+  }
+  return null;
+}
+
+const CYCLE_TIME_IN_PROGRESS_STATUSES = ['Development', 'QA', 'Ready for QA'];
+const CYCLE_TIME_DONE_STATUS = 'Done';
+
+// Fetches the full status-change history for one issue (paginated), oldest first.
+async function fetchIssueStatusChangelog(issueKey) {
+  const entries = [];
+  let startAt = 0;
+  const maxResults = 100;
+  while (true) {
+    const data = await jiraFetch(`/issue/${issueKey}/changelog?startAt=${startAt}&maxResults=${maxResults}`);
+    if (!data?.values?.length) break;
+    for (const history of data.values) {
+      for (const item of (history.items || [])) {
+        if (item.field === 'status') {
+          entries.push({ timestamp: new Date(history.created), fromStatus: item.fromString, toStatus: item.toString });
+        }
+      }
+    }
+    if (data.isLast || data.values.length < maxResults) break;
+    startAt += maxResults;
+  }
+  entries.sort((a, b) => a.timestamp - b.timestamp);
+  return entries;
+}
+
 let jiraProjectKey = ''; // selected project key
 let jiraSprintData = null; // cached sprint issues
 
@@ -1926,6 +2032,8 @@ function renderJiraSprintPanel(interactive) {
     </button>`;
 
   const jbb = document.getElementById('jira-board-btn'); jbb.style.display = 'flex'; jbb.style.alignItems = 'center'; jbb.style.gap = '5px';
+  const trendsBtn = document.getElementById('jira-trends-btn');
+  if (trendsBtn) trendsBtn.style.display = interactive ? 'inline-block' : 'none';
   return { done, inprog, todo };
 }
 
@@ -1959,16 +2067,23 @@ async function syncJiraSprintToRoom() {
 }
 
 let lastJiraSyncTs = 0;
+let lastJiraTrendsTs = 0;
 async function checkJiraSprintSync() {
   if (!roomKey || isHost) return;
   try {
     const data = await fbGet(`rooms/${roomKey}/jiraSprint`);
-    if (!data || data.ts === lastJiraSyncTs) return;
-    lastJiraSyncTs = data.ts;
-    jiraSprintData = { boardId: data.boardId, sprints: data.sprints || [data.sprint], sprint: data.sprint, issues: data.issues || [] };
-    renderJiraSprintPanel(false);
-    const summary = await fbGet(`rooms/${roomKey}/jiraSprintSummary`);
-    document.getElementById('jira-ai-result').innerHTML = summary?.html || '<p style="color:var(--muted);font-size:12px">Waiting for the host to generate a summary…</p>';
+    if (data && data.ts !== lastJiraSyncTs) {
+      lastJiraSyncTs = data.ts;
+      jiraSprintData = { boardId: data.boardId, sprints: data.sprints || [data.sprint], sprint: data.sprint, issues: data.issues || [] };
+      renderJiraSprintPanel(false);
+      const summary = await fbGet(`rooms/${roomKey}/jiraSprintSummary`);
+      document.getElementById('jira-ai-result').innerHTML = summary?.html || '<p style="color:var(--muted);font-size:12px">Waiting for the host to generate a summary…</p>';
+    }
+    const trends = await fbGet(`rooms/${roomKey}/jiraTrends`);
+    if (trends && trends.ts !== lastJiraTrendsTs) {
+      lastJiraTrendsTs = trends.ts;
+      renderJiraTrends(trends);
+    }
   } catch(e) {}
 }
 
@@ -1978,6 +2093,100 @@ async function switchSprint(sprintId) {
   if (!sprint) return;
   document.getElementById('jira-ai-result').innerHTML = '<div class="loading"><div class="dots"><span></span><span></span><span></span></div> Loading sprint…</div>';
   await loadSprintIssues(sprint, jiraSprintData.boardId);
+}
+
+// ── Sprint trends: completion % + cycle time across recent sprints, goal vs actual ──
+async function loadJiraTrends() {
+  if (!jiraSprintData || !jiraCfg) { toast('Load a sprint first'); return; }
+  const btn = document.getElementById('jira-trends-btn');
+  const resultEl = document.getElementById('jira-trends-result');
+  if (!btn || !resultEl) return;
+  btn.disabled = true;
+  const originalBtnText = btn.textContent;
+  btn.textContent = 'Loading…';
+  resultEl.innerHTML = '<div style="font-size:12px;color:var(--muted)">Fetching sprint history and ticket changelogs — this can take a minute…</div>';
+
+  try {
+    const { boardId, sprints, sprint: currentSprint } = jiraSprintData;
+    const closedSprints = sprints.filter(s => s.state === 'closed').slice(0, 5);
+    const activeSprints = sprints.filter(s => s.state === 'active').slice(0, 1);
+    let sprintsToAnalyze = [...activeSprints, ...closedSprints];
+    if (!sprintsToAnalyze.find(s => s.id === currentSprint.id)) sprintsToAnalyze.unshift(currentSprint);
+
+    const results = [];
+    for (const sprint of sprintsToAnalyze) {
+      resultEl.innerHTML = `<div style="font-size:12px;color:var(--muted)">Analyzing ${esc(sprint.name)}…</div>`;
+      const issuesData = await jiraAgileFetch(`/board/${boardId}/sprint/${sprint.id}/issue?maxResults=200&fields=summary,status`);
+      const issues = issuesData?.issues || [];
+      const nonCancelled = issues.filter(i => (i.fields?.status?.name || '').toLowerCase() !== 'cancelled');
+      const doneIssues = nonCancelled.filter(i => (i.fields?.status?.name || '').toLowerCase() === CYCLE_TIME_DONE_STATUS.toLowerCase());
+      const completionPct = nonCancelled.length ? Math.round((doneIssues.length / nonCancelled.length) * 100) : null;
+
+      let cycleTimes = [];
+      for (const issue of doneIssues) {
+        try {
+          const changelog = await fetchIssueStatusChangelog(issue.key);
+          const minutes = computeCycleTimeMinutes(changelog, CYCLE_TIME_IN_PROGRESS_STATUSES, CYCLE_TIME_DONE_STATUS);
+          if (minutes !== null) cycleTimes.push(minutes);
+        } catch(e) { console.warn('cycle time fetch failed for', issue.key, e); }
+      }
+      const avgCycleHours = cycleTimes.length ? (cycleTimes.reduce((a,b) => a+b, 0) / cycleTimes.length / 60) : null;
+
+      results.push({
+        id: sprint.id, name: sprint.name, state: sprint.state, goal: sprint.goal || '',
+        totalNonCancelled: nonCancelled.length, doneCount: doneIssues.length, completionPct, avgCycleHours
+      });
+    }
+
+    const current = results.find(r => r.id === currentSprint.id) || results[0];
+    let goalVsActual = null;
+    if (current && current.goal) {
+      resultEl.innerHTML = '<div style="font-size:12px;color:var(--muted)">Comparing sprint goal to actual results…</div>';
+      const prompt = `Sprint goal: "${current.goal}"\nActual: ${current.completionPct}% complete (${current.doneCount}/${current.totalNonCancelled} tickets done, excluding cancelled).\nIn 1-2 short plain-text sentences (no markdown), say whether the team met this goal and clearly flag any notable mismatch between the stated goal and what actually happened.`;
+      const { text } = await callLLM(prompt, 200);
+      goalVsActual = text || null;
+    }
+
+    const trendData = { results: results.reverse(), goalVsActual, currentSprintId: currentSprint.id, ts: Date.now() };
+    renderJiraTrends(trendData);
+    if (isHost && roomKey) fbSet(`rooms/${roomKey}/jiraTrends`, trendData).catch(()=>{});
+  } catch(e) {
+    console.error('loadJiraTrends error:', e);
+    resultEl.innerHTML = `<div style="font-size:12px;color:#c0392b">Could not load trends: ${esc(e.message || 'unknown error')}</div>`;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = originalBtnText;
+  }
+}
+
+function renderJiraTrends(trendData) {
+  const resultEl = document.getElementById('jira-trends-result');
+  if (!resultEl || !trendData) return;
+  const { results, goalVsActual } = trendData;
+  if (!results || !results.length) { resultEl.innerHTML = '<div style="font-size:12px;color:var(--muted)">No trend data yet.</div>'; return; }
+
+  const rows = results.map(r => {
+    const pctLabel = r.completionPct === null ? '–' : `${r.completionPct}%`;
+    const cycleLabel = r.avgCycleHours === null ? '–' : `${r.avgCycleHours.toFixed(1)}h`;
+    const barWidth = r.completionPct === null ? 0 : r.completionPct;
+    return `
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+        <span style="font-size:11px;color:var(--muted);width:110px;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(r.name)}">${esc(r.name)}${r.state==='active'?' •':''}</span>
+        <div style="flex:1;height:16px;background:var(--border);border-radius:4px;overflow:hidden">
+          <div style="height:100%;width:${barWidth}%;background:var(--action);border-radius:4px"></div>
+        </div>
+        <span style="font-size:11px;font-weight:600;width:38px;text-align:right;flex-shrink:0">${pctLabel}</span>
+        <span style="font-size:11px;color:var(--muted);width:56px;text-align:right;flex-shrink:0">${cycleLabel} avg</span>
+      </div>`;
+  }).join('');
+
+  resultEl.innerHTML = `
+    <div style="font-size:11px;font-weight:600;color:var(--muted);margin-bottom:6px;display:flex;justify-content:space-between">
+      <span>Sprint (oldest → current)</span><span>Completion · Avg cycle time</span>
+    </div>
+    ${rows}
+    ${goalVsActual ? `<div style="margin-top:10px;padding:8px 10px;background:var(--bg);border-radius:8px;font-size:12px;color:var(--text)"><strong>Goal vs Actual:</strong> ${esc(goalVsActual)}</div>` : ''}
+  `;
 }
 
 // ── Tickets overlay ──
