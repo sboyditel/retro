@@ -4450,34 +4450,8 @@ function renderMusicPlaylist() {
   });
 }
 
-// Robustly extracts a JSON object assigned to `var <marker> = {...};` in an HTML
-// page, by counting braces/strings rather than a regex — regexes can truncate
-// early if the JSON's string content happens to contain "});" sequences.
-function extractBalancedJson(html, marker) {
-  const needle = `var ${marker}`;
-  const idx = html.indexOf(needle);
-  if (idx === -1) return null;
-  let i = html.indexOf('=', idx) + 1;
-  while (i < html.length && /\s/.test(html[i])) i++;
-  if (html[i] !== '{') return null;
-  const start = i;
-  let depth = 0, inStr = false, strChar = '', escape = false;
-  for (; i < html.length; i++) {
-    const ch = html[i];
-    if (inStr) {
-      if (escape) escape = false;
-      else if (ch === '\\') escape = true;
-      else if (ch === strChar) inStr = false;
-      continue;
-    }
-    if (ch === '"' || ch === "'") { inStr = true; strChar = ch; continue; }
-    if (ch === '{') depth++;
-    else if (ch === '}') { depth--; if (depth === 0) return html.slice(start, i + 1); }
-  }
-  return null;
-}
-
 // ── Music search ──
+const YOUTUBE_API_KEY = 'AIzaSyBSbIxgtmgPZJrBy2UQVUmlI_q9-j-E8yQ';
 let musicSearchResults = [];
 let musicSearchTimer = null;
 
@@ -4492,48 +4466,19 @@ async function searchYouTubeMusic(query) {
   if (!query) { container.innerHTML = ''; musicSearchResults = []; return; }
   container.innerHTML = '<div style="font-size:12px;color:var(--muted);text-align:center;padding:12px">Searching…</div>';
 
-  const targetUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`;
-  // Try a couple of CORS proxies in sequence — free proxies can be flaky/rate-limited individually
-  const proxies = [
-    `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`,
-    `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`,
-  ];
-
-  let html = null, lastErr = null;
-  for (const proxyUrl of proxies) {
-    try {
-      const res = await fetch(proxyUrl);
-      if (!res.ok) { lastErr = `proxy returned ${res.status}`; console.warn(`searchYouTubeMusic: ${proxyUrl} -> HTTP ${res.status}`); continue; }
-      const text = await res.text();
-      if (!text || text.length < 500) { lastErr = 'empty/short response'; console.warn(`searchYouTubeMusic: ${proxyUrl} -> suspiciously short response (${text.length} chars)`); continue; }
-      html = text;
-      break;
-    } catch (e) {
-      lastErr = e.message;
-      console.warn(`searchYouTubeMusic: ${proxyUrl} -> fetch threw`, e);
-    }
-  }
-
-  if (!html) {
-    console.error('searchYouTubeMusic: all proxies failed, last error:', lastErr);
-    container.innerHTML = '<div style="font-size:12px;color:var(--muted);text-align:center;padding:12px">Search failed — try pasting the YouTube URL below instead</div>';
-    return;
-  }
-
   try {
-    const jsonStr = extractBalancedJson(html, 'ytInitialData');
-    if (!jsonStr) {
-      console.warn('searchYouTubeMusic: ytInitialData marker not found in response (YouTube may have served a consent/CAPTCHA page instead of results)');
-      container.innerHTML = '<div style="font-size:12px;color:var(--muted);text-align:center;padding:12px">No results found</div>';
+    const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=10&q=${encodeURIComponent(query)}&key=${YOUTUBE_API_KEY}`;
+    const res = await fetch(url);
+    if (!res.ok) {
+      const errBody = await res.text().catch(() => '');
+      console.error(`searchYouTubeMusic: YouTube API HTTP ${res.status}`, errBody);
+      container.innerHTML = '<div style="font-size:12px;color:var(--muted);text-align:center;padding:12px">Search failed — try pasting the YouTube URL below instead</div>';
       return;
     }
-    const data = JSON.parse(jsonStr);
-    const sections = data?.contents?.twoColumnSearchResultsRenderer?.primaryContents?.sectionListRenderer?.contents || [];
-    const items = [];
-    sections.forEach(s => { (s.itemSectionRenderer?.contents || []).forEach(c => { if (c.videoRenderer) items.push(c.videoRenderer); }); });
-    musicSearchResults = items.slice(0, 10).map(v => ({
-      id: v.videoId,
-      name: (v.title?.runs || []).map(r => r.text).join('') || 'Untitled'
+    const data = await res.json();
+    musicSearchResults = (data.items || []).map(v => ({
+      id: v.id?.videoId,
+      name: v.snippet?.title || 'Untitled'
     })).filter(v => v.id);
     if (!musicSearchResults.length) { container.innerHTML = '<div style="font-size:12px;color:var(--muted);text-align:center;padding:12px">No results found</div>'; return; }
     container.innerHTML = musicSearchResults.map((v, i) => `
