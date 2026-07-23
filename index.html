@@ -4443,12 +4443,14 @@ function addCustomSong() {
   const nameEl = document.getElementById('music-name-input');
   const id = ytIdFromUrl(urlEl.value.trim());
   if (!id) { toast('Paste a valid YouTube URL'); return; }
+  const hadName = !!nameEl.value.trim();
   const pl = loadPlaylist();
   pl.push({ id, name: nameEl.value.trim() || '🎵 My song' });
   savePlaylist(pl);
   urlEl.value = ''; nameEl.value = '';
   renderMusicPlaylist();
   toast('Song added!');
+  if (!hadName) fetchPlaylistTitles();
 }
 
 function removeCustomSong(idx) {
@@ -4459,15 +4461,28 @@ function removeCustomSong(idx) {
 }
 
 async function fetchPlaylistTitles() {
-  let changed = false;
+  let defaultsChanged = false;
   for (let i = 0; i < DEFAULT_PLAYLIST.length; i++) {
     if (!DEFAULT_PLAYLIST[i].name.startsWith('🎵 Song ')) continue;
     try {
       const r = await fetch(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${DEFAULT_PLAYLIST[i].id}&format=json`);
-      if (r.ok) { const d = await r.json(); if (d.title) { DEFAULT_PLAYLIST[i].name = d.title; changed = true; } }
+      if (r.ok) { const d = await r.json(); if (d.title) { DEFAULT_PLAYLIST[i].name = d.title; defaultsChanged = true; } }
     } catch(e) {}
   }
-  if (changed) renderMusicPlaylist();
+  if (defaultsChanged) renderMusicPlaylist();
+
+  // Also fetch real titles for custom songs the user added without a name
+  const pl = loadPlaylist();
+  let customChanged = false;
+  for (let i = 0; i < pl.length; i++) {
+    if (i < DEFAULT_PLAYLIST.length) continue; // skip defaults, handled above
+    if (pl[i].name !== '🎵 My song') continue; // only auto-name ones left as placeholder
+    try {
+      const r = await fetch(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${pl[i].id}&format=json`);
+      if (r.ok) { const d = await r.json(); if (d.title) { pl[i].name = d.title; customChanged = true; } }
+    } catch(e) {}
+  }
+  if (customChanged) { savePlaylist(pl); renderMusicPlaylist(); }
 }
 
 // Stop music when timer ends/resets
