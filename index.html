@@ -2087,16 +2087,17 @@ async function callGemini(prompt, maxTokens) {
     // Gemini's newer models "think" before answering, and those thinking tokens count
     // against maxOutputTokens — so a low budget (enough for Claude, which doesn't do this)
     // can get entirely consumed by invisible reasoning, truncating the real answer to a
-    // sentence fragment. Disable thinking where supported, and give a generous budget as
-    // a safety margin on models that can't fully disable it.
+    // sentence fragment. The thinking-control parameter itself differs between model
+    // generations (thinkingBudget vs thinkingLevel) and sending the wrong one causes an
+    // "invalid argument" error, so instead of trying to disable thinking, just give a much
+    // larger budget so there's always room left over for the actual visible answer.
     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${apiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
         generationConfig: {
-          maxOutputTokens: Math.max(maxTokens * 4, 2048),
-          thinkingConfig: { thinkingBudget: 0 }
+          maxOutputTokens: Math.max(maxTokens * 8, 4096)
         }
       })
     });
