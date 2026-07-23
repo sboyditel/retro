@@ -1045,16 +1045,38 @@ header {
     <button class="join-btn" onclick="changePassword()" style="margin-top:-8px">Update Password</button>
     <div id="change-password-status" style="font-size:13px;color:var(--muted);text-align:center;min-height:16px;margin-top:-8px"></div>
 
-    <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);padding-bottom:4px;border-bottom:1px solid var(--border)">AI (Claude / Anthropic)</div>
+    <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);padding-bottom:4px;border-bottom:1px solid var(--border)">AI Insights &amp; Sprint Summary</div>
     <div class="field">
-      <label>Anthropic API Key</label>
+      <label>Preferred provider</label>
+      <div style="display:flex;gap:8px">
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:500;cursor:pointer">
+          <input type="radio" name="ai-provider" value="claude" id="ai-provider-claude" onchange="saveAIProvider('claude')"/> Claude
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:500;cursor:pointer">
+          <input type="radio" name="ai-provider" value="gemini" id="ai-provider-gemini" onchange="saveAIProvider('gemini')"/> Gemini
+        </label>
+      </div>
+      <div style="font-size:11px;color:#b8b4ac;margin-top:4px">Whichever has a key saved below will be used. If both do, this picks which one goes first — if it fails, the other is tried automatically as a fallback.</div>
+    </div>
+    <div class="field">
+      <label>Anthropic (Claude) API Key</label>
       <input id="anthropic-key" type="password" placeholder="sk-ant-…" autocomplete="off"/>
       <div style="font-size:11px;color:#b8b4ac;margin-top:4px">
         Get a key at <a href="https://console.anthropic.com/settings/keys" target="_blank" style="color:var(--action)">console.anthropic.com/settings/keys</a>. Requires a small credit balance.
       </div>
     </div>
-    <button class="join-btn" onclick="saveAnthropicKey()" style="margin-top:-8px">Save AI key</button>
+    <button class="join-btn" onclick="saveAnthropicKey()" style="margin-top:-8px">Save Claude key</button>
     <div id="anthropic-status" style="font-size:13px;color:var(--muted);text-align:center;min-height:16px;margin-top:-8px"></div>
+
+    <div class="field">
+      <label>Google (Gemini) API Key</label>
+      <input id="gemini-key" type="password" placeholder="AIza…" autocomplete="off"/>
+      <div style="font-size:11px;color:#b8b4ac;margin-top:4px">
+        Free tier available — get a key at <a href="https://aistudio.google.com/apikey" target="_blank" style="color:var(--action)">aistudio.google.com/apikey</a>. No credit card required.
+      </div>
+    </div>
+    <button class="join-btn" onclick="saveGeminiKey()" style="margin-top:-8px">Save Gemini key</button>
+    <div id="gemini-status" style="font-size:13px;color:var(--muted);text-align:center;min-height:16px;margin-top:-8px"></div>
 
     <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);padding-bottom:4px;border-bottom:1px solid var(--border);margin-top:4px">Music Search (YouTube)</div>
     <div class="field">
@@ -1642,6 +1664,14 @@ function loadJiraSettingsToForm() {
     document.getElementById('youtube-key').value = ytKey;
     document.getElementById('youtube-status').textContent = '✓ API key saved';
   }
+  const gKey = localStorage.getItem('retro_gemini_key');
+  if (gKey) {
+    document.getElementById('gemini-key').value = gKey;
+    document.getElementById('gemini-status').textContent = '✓ API key saved';
+  }
+  const provider = getAIProvider();
+  const radio = document.getElementById(provider === 'gemini' ? 'ai-provider-gemini' : 'ai-provider-claude');
+  if (radio) radio.checked = true;
 }
 
 function saveAnthropicKey() {
@@ -1666,6 +1696,26 @@ function saveYouTubeKey() {
 
 function getYouTubeKey() {
   return localStorage.getItem('retro_youtube_key') || '';
+}
+
+function saveGeminiKey() {
+  const key = document.getElementById('gemini-key').value.trim();
+  if (!key) { document.getElementById('gemini-status').textContent = 'Enter a key first'; return; }
+  localStorage.setItem('retro_gemini_key', key);
+  document.getElementById('gemini-status').textContent = '✓ Saved!';
+  setTimeout(() => { document.getElementById('gemini-status').textContent = ''; }, 2000);
+}
+
+function getGeminiKey() {
+  return localStorage.getItem('retro_gemini_key') || '';
+}
+
+function getAIProvider() {
+  return localStorage.getItem('retro_ai_provider') || 'claude';
+}
+
+function saveAIProvider(provider) {
+  localStorage.setItem('retro_ai_provider', provider);
 }
 
 async function saveJiraSettings() {
@@ -2005,6 +2055,69 @@ function renderTicketsList() {
   }).join('');
 }
 
+// ── AI provider abstraction (Claude + Gemini, with automatic fallback) ──
+async function callClaude(prompt, maxTokens) {
+  const apiKey = getAnthropicKey();
+  if (!apiKey) return { error: 'No Claude API key set.' };
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: maxTokens, messages: [{ role: 'user', content: prompt }] })
+    });
+    const json = await res.json();
+    const text = (json.content || []).filter(b => b.type === 'text').map(b => b.text).join('');
+    if (text) return { text, provider: 'Claude' };
+    if (json.error) return { error: `Claude API error: ${json.error.message || 'unknown'}` };
+    return { error: 'No response from Claude.' };
+  } catch(e) {
+    return { error: `Could not reach Claude: ${e.message}` };
+  }
+}
+
+async function callGemini(prompt, maxTokens) {
+  const apiKey = getGeminiKey();
+  if (!apiKey) return { error: 'No Gemini API key set.' };
+  try {
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { maxOutputTokens: maxTokens } })
+    });
+    const json = await res.json();
+    const text = (json.candidates?.[0]?.content?.parts || []).map(p => p.text || '').join('');
+    if (text) return { text, provider: 'Gemini' };
+    if (json.error) return { error: `Gemini API error: ${json.error.message || 'unknown'}` };
+    if (json.candidates?.[0]?.finishReason) return { error: `Gemini stopped early (${json.candidates[0].finishReason}).` };
+    return { error: 'No response from Gemini.' };
+  } catch(e) {
+    return { error: `Could not reach Gemini: ${e.message}` };
+  }
+}
+
+// Tries the preferred provider first (set in Settings); if it has no key or fails,
+// automatically falls back to the other provider if it has a key configured.
+async function callLLM(prompt, maxTokens) {
+  const preferred = getAIProvider();
+  const order = preferred === 'gemini' ? ['gemini', 'claude'] : ['claude', 'gemini'];
+  const hasAnyKey = !!getAnthropicKey() || !!getGeminiKey();
+  if (!hasAnyKey) {
+    return { error: 'No AI provider configured — go to ⚙️ Settings and add a Claude or Gemini API key.' };
+  }
+  let lastError = 'AI request failed on all configured providers.';
+  for (const provider of order) {
+    const result = provider === 'gemini' ? await callGemini(prompt, maxTokens) : await callClaude(prompt, maxTokens);
+    if (result.text) return result;
+    lastError = result.error;
+  }
+  return { error: lastError };
+}
+
 async function generateJiraSummary(sprint, done, inprog, todo) {
   const fmtIssues = arr => arr.slice(0,15).map(i => `- ${i.fields.summary} [${i.fields.status.name}]`).join('\n') || 'None';
   const prompt = `You are an Agile coach summarising a Jira sprint for a team retrospective.
@@ -2030,34 +2143,12 @@ Write a concise sprint summary in HTML using only <p> tags. Include:
 4. One practical recommendation for the retrospective discussion.
 Keep it under 120 words. Be direct and specific. No markdown, no headers.`;
 
-  try {
-    const apiKey = getAnthropicKey();
-    if (!apiKey) {
-      document.getElementById('jira-ai-result').innerHTML = '<p style="color:#c0392b;font-size:12px">No API key — go to ⚙️ Settings and add your Anthropic API key.</p>';
-      return;
-    }
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true'
-      },
-      body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 400, messages: [{ role: 'user', content: prompt }] })
-    });
-    const json = await res.json();
-    const text = (json.content || []).filter(b => b.type === 'text').map(b => b.text).join('');
-    if (text) {
-      document.getElementById('jira-ai-result').innerHTML = text;
-      if (isHost && roomKey) fbSet(`rooms/${roomKey}/jiraSprintSummary`, { html: text, ts: Date.now() }).catch(()=>{});
-    } else if (json.error) {
-      document.getElementById('jira-ai-result').innerHTML = `<p style="color:#c0392b;font-size:12px">API error: ${esc(json.error.message||'unknown')}</p>`;
-    } else {
-      document.getElementById('jira-ai-result').innerHTML = '<p style="color:var(--muted)">No summary generated.</p>';
-    }
-  } catch(e) {
-    document.getElementById('jira-ai-result').innerHTML = '<p style="color:var(--muted)">Could not generate summary.</p>';
+  const { text, error, provider } = await callLLM(prompt, 400);
+  if (text) {
+    document.getElementById('jira-ai-result').innerHTML = text;
+    if (isHost && roomKey) fbSet(`rooms/${roomKey}/jiraSprintSummary`, { html: text, ts: Date.now() }).catch(()=>{});
+  } else {
+    document.getElementById('jira-ai-result').innerHTML = `<p style="color:#c0392b;font-size:12px">${esc(error)}</p>`;
   }
 }
 
@@ -3612,33 +3703,11 @@ Respond ONLY with HTML in this format:
 <p>1-2 sentences on team momentum or culture.</p>
 Be direct, specific, reference actual card content. No markdown.`;
 
-  const apiKey = getAnthropicKey();
-  if (!apiKey) {
-    document.getElementById('ai-body').innerHTML='<p style="color:#c0392b">No API key set — go to ⚙️ Settings and add your Anthropic API key.</p>';
-    return;
-  }
-  try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true'
-      },
-      body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 1000, messages: [{ role: 'user', content: prompt }] })
-    });
-    const json = await res.json();
-    const text = (json.content || []).filter(b => b.type === 'text').map(b => b.text).join('');
-    if (text) {
-      document.getElementById('ai-body').innerHTML = text;
-    } else if (json.error) {
-      document.getElementById('ai-body').innerHTML = `<p style="color:#c0392b">API error: ${esc(json.error.message||'unknown')}</p>`;
-    } else {
-      document.getElementById('ai-body').innerHTML = '<p style="color:var(--muted)">No insights generated.</p>';
-    }
-  } catch(e) {
-    document.getElementById('ai-body').innerHTML='<p style="color:var(--muted)">Couldn\'t reach the AI service. Check your connection and try again.</p>';
+  const { text, error } = await callLLM(prompt, 1000);
+  if (text) {
+    document.getElementById('ai-body').innerHTML = text;
+  } else {
+    document.getElementById('ai-body').innerHTML = `<p style="color:#c0392b">${esc(error)}</p>`;
   }
 }
 
