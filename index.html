@@ -1034,7 +1034,7 @@ header {
   <div style="background:var(--text);color:#fff;border-radius:20px;padding:24px 40px;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,.3);pointer-events:all;min-width:320px">
     <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;opacity:.6;margin-bottom:8px">Card time remaining</div>
     <div id="timer-big" style="font-family:var(--serif);font-size:72px;line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-2px">6:00</div>
-    <div style="display:flex;gap:10px;margin-top:16px;justify-content:center">
+    <div id="timer-host-controls" style="display:none;flex-direction:row;gap:10px;margin-top:16px;justify-content:center">
       <button onclick="pauseTimer()" id="timer-pause-btn" style="font-family:var(--sans);font-size:13px;padding:7px 18px;border-radius:8px;border:1.5px solid rgba(255,255,255,.3);background:transparent;color:#fff;cursor:pointer">Pause</button>
       <button onclick="resetTimer()" style="font-family:var(--sans);font-size:13px;padding:7px 18px;border-radius:8px;border:1.5px solid rgba(255,255,255,.3);background:transparent;color:#fff;cursor:pointer">Reset</button>
       <button onclick="toggleTimerPlaylist()" id="timer-music-btn" style="font-family:var(--sans);font-size:13px;padding:7px 18px;border-radius:8px;border:1.5px solid rgba(255,255,255,.3);background:transparent;color:#fff;cursor:pointer">🎵 Playlist</button>
@@ -1047,7 +1047,7 @@ header {
     <!-- Now playing bar -->
     <div id="timer-now-playing" style="display:none;margin-top:12px;border-top:1px solid rgba(255,255,255,.15);padding-top:10px;font-size:12px;opacity:.8;display:flex;align-items:center;gap:8px">
       <span>🎵</span><span id="timer-now-playing-name" style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></span>
-      <button onclick="nextSong()" style="font-family:var(--sans);font-size:11px;padding:3px 10px;border-radius:6px;border:1px solid rgba(255,255,255,.3);background:transparent;color:#fff;cursor:pointer">Next ▶</button>
+      <button onclick="nextSong()" id="timer-next-btn" style="display:none;font-family:var(--sans);font-size:11px;padding:3px 10px;border-radius:6px;border:1px solid rgba(255,255,255,.3);background:transparent;color:#fff;cursor:pointer">Next ▶</button>
     </div>
   </div>
 </div>
@@ -1865,6 +1865,8 @@ async function joinAsHost() {
   document.getElementById('app').style.display = 'block';
   isHost = true;
   document.getElementById('timer-btn').style.display = 'flex';
+  document.getElementById('timer-host-controls').style.display = 'flex';
+  document.getElementById('timer-next-btn').style.display = '';
   startSync();
   initMyStats();
   if (teamId) showPrevActionsModal(teamId);
@@ -3745,41 +3747,32 @@ async function syncTimer() {
 
 let lastTimerTs = 0;
 async function checkTimerSync() {
-  if (!roomKey) return;
+  if (!roomKey || isHost) return; // host manages own timer locally
   try {
     const t = await fbGet(`rooms/${roomKey}/timer`);
     if (!t || t.ts <= lastTimerTs) return;
     lastTimerTs = t.ts;
-    if (isHost) return; // host manages own timer locally
-    // Participant: just show/update the display
     timerSeconds = Math.max(0, t.seconds);
     updateTimerDisplay();
     if (t.running && !timerRunning) {
-      // Timer started by host — show overlay for participants (read-only)
+      // Host started timer — show read-only countdown to participant
       document.getElementById('timer-overlay').style.display = 'flex';
-      // Hide all control buttons for participants
-      ['timer-pause-btn'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.style.display = 'none';
-      });
-      document.querySelectorAll('#timer-overlay button').forEach(btn => {
-        if (btn.id !== 'timer-music-btn') btn.style.display = 'none';
-      });
       timerRunning = true;
-      // Keep display updating locally
       if (timerInterval) clearInterval(timerInterval);
       timerInterval = setInterval(() => {
-        if (timerSeconds <= 0) { clearInterval(timerInterval); timerInterval = null; timerRunning = false; return; }
+        if (timerSeconds <= 0) {
+          clearInterval(timerInterval); timerInterval = null; timerRunning = false;
+          document.getElementById('timer-overlay').style.display = 'none';
+          return;
+        }
         timerSeconds--;
         updateTimerDisplay();
       }, 1000);
-    } else if (!t.running) {
+    } else if (!t.running && timerRunning) {
       timerRunning = false;
-      clearInterval(timerInterval);
-      timerInterval = null;
-      if (timerSeconds <= 0) {
-        document.getElementById('timer-overlay').style.display = 'none';
-      }
+      clearInterval(timerInterval); timerInterval = null;
+    } else if (!t.running && !timerRunning && t.seconds === TIMER_DURATION) {
+      document.getElementById('timer-overlay').style.display = 'none';
     }
   } catch(e) {}
 }
