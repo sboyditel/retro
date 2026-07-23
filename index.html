@@ -52,7 +52,7 @@ body { font-family: var(--sans); background: var(--bg); color: var(--text); min-
   display:flex; flex-direction:column; gap:20px;
 }
 .join-logo { font-family:var(--serif); font-size:28px; letter-spacing:-.5px; display:flex; align-items:center; gap:10px; }
-.mark { background:var(--text); border-radius:10px; display:flex; align-items:center; justify-content:center; }
+.mark { background:var(--text); color:var(--bg); border-radius:10px; display:flex; align-items:center; justify-content:center; }
 .join-logo .mark { width:34px; height:34px; }
 .join-card h2 { font-family:var(--serif); font-size:22px; font-weight:400; }
 .join-card p { font-size:14px; color:var(--muted); margin-top:-12px; line-height:1.5; }
@@ -73,9 +73,9 @@ body { font-family: var(--sans); background: var(--bg); color: var(--text); min-
 .avatar-pick.selected { border-color:var(--text); box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--text); }
 .join-btn {
   font-family:var(--sans); font-size:15px; font-weight:500; padding:12px;
-  border-radius:10px; border:none; background:var(--text); color:#fff; cursor:pointer; transition:background .15s; margin-top:4px;
+  border-radius:10px; border:none; background:var(--text); color:var(--bg); cursor:pointer; transition:filter .15s; margin-top:4px;
 }
-.join-btn:hover { background:#2a2926; }
+.join-btn:hover { filter:brightness(1.2); }
 .room-hint { font-size:12px; color:#b8b4ac; text-align:center; line-height:1.5; }
 .room-row { display:flex; gap:8px; align-items:center; }
 .room-row input { flex:1; }
@@ -121,7 +121,7 @@ header {
 .presence-avatar:hover { transform:translateY(-3px); z-index:5; }
 .presence-avatar .tip {
   position:absolute; bottom:calc(100% + 6px); left:50%; transform:translateX(-50%);
-  background:var(--text); color:#fff; font-size:11px; padding:3px 8px; border-radius:6px;
+  background:var(--text); color:var(--bg); font-size:11px; padding:3px 8px; border-radius:6px;
   white-space:nowrap; opacity:0; pointer-events:none; transition:opacity .15s;
 }
 .presence-avatar:hover .tip { opacity:1; }
@@ -155,11 +155,11 @@ header {
 .complete-btn {
   font-family:var(--sans); font-size:15px; font-weight:500;
   padding:13px 32px; border-radius:12px; border:none;
-  background:var(--text); color:#fff; cursor:pointer;
+  background:var(--text); color:var(--bg); cursor:pointer;
   display:flex; align-items:center; gap:8px;
   transition:all .2s; box-shadow:0 2px 8px rgba(0,0,0,.15);
 }
-.complete-btn:hover { background:#2a2926; transform:translateY(-1px); box-shadow:0 4px 16px rgba(0,0,0,.2); }
+.complete-btn:hover { filter:brightness(1.15); transform:translateY(-1px); box-shadow:0 4px 16px rgba(0,0,0,.2); }
 .complete-btn:active { transform:none; }
 
 /* SUMMARY PAGE */
@@ -171,7 +171,7 @@ header {
 .summary-body { max-width:900px; margin:0 auto; padding:40px 24px 64px; }
 .summary-hero { text-align:center; margin-bottom:40px; }
 .summary-check {
-  width:64px; height:64px; border-radius:50%; background:var(--text);
+  width:64px; height:64px; border-radius:50%; background:var(--text); color:var(--bg);
   display:flex; align-items:center; justify-content:center; margin:0 auto 16px;
   animation:pop-in .4s cubic-bezier(.16,1,.3,1);
 }
@@ -394,7 +394,7 @@ header {
 .emoji-picker { border:1px solid var(--border); border-radius:10px; overflow:hidden; background:var(--surface); }
 .emoji-tabs { display:flex; border-bottom:1px solid var(--border); background:var(--bg); }
 .emoji-tab { flex:1; padding:6px; border:none; background:transparent; font-size:16px; cursor:pointer; transition:background .1s; }
-.emoji-tab.active { background:var(--text); }
+.emoji-tab.active { background:var(--text); color:var(--bg); }
 .emoji-grid { display:grid; grid-template-columns:repeat(9,1fr); gap:1px; padding:6px; max-height:150px; overflow-y:auto; }
 .emoji-cell { background:none; border:none; font-size:20px; cursor:pointer; padding:4px; border-radius:6px; line-height:1.3; transition:background .1s; }
 .emoji-cell:hover { background:var(--border); }
@@ -417,14 +417,14 @@ header {
   animation:flyEmoji 3s cubic-bezier(.2,.6,.4,1) forwards;
 }
 .sbtn { font-family:var(--sans); font-size:12px; font-weight:500; padding:5px 12px; border-radius:7px; border:1px solid var(--border); background:var(--bg); cursor:pointer; color:var(--text); transition:all .15s; }
-.sbtn.ok { background:var(--text); color:#fff; border-color:transparent; }
+.sbtn.ok { background:var(--text); color:var(--bg); border-color:transparent; }
 .sbtn:hover { background:var(--border); }
-.sbtn.ok:hover { background:#2a2926; }
+.sbtn.ok:hover { filter:brightness(1.15); }
 .empty { font-size:12px; color:#b0aca5; text-align:center; padding:8px 0; }
 
 /* TOASTS */
 .toasts { position:fixed; bottom:24px; right:24px; display:flex; flex-direction:column; gap:8px; z-index:500; pointer-events:none; }
-.toast { background:var(--text); color:#fff; border-radius:10px; padding:10px 16px; font-size:13px; font-weight:500; display:flex; align-items:center; gap:8px; box-shadow:var(--shadow-lg); animation:toast-in .3s cubic-bezier(.16,1,.3,1); max-width:280px; }
+.toast { background:var(--text); color:var(--bg); border-radius:10px; padding:10px 16px; font-size:13px; font-weight:500; display:flex; align-items:center; gap:8px; box-shadow:var(--shadow-lg); animation:toast-in .3s cubic-bezier(.16,1,.3,1); max-width:280px; }
 @keyframes toast-in { from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:none} }
 
 /* AI */
@@ -583,7 +583,7 @@ header {
   transition:all .15s; text-align:center;
   box-shadow:0 1px 3px rgba(0,0,0,.08);
 }
-.sound-btn:hover { background:var(--text); color:#fff; transform:scale(1.04); box-shadow:0 4px 12px rgba(0,0,0,.15); }
+.sound-btn:hover { background:var(--text); color:var(--bg); transform:scale(1.04); box-shadow:0 4px 12px rgba(0,0,0,.15); }
 .sound-btn:active { transform:scale(0.97); }
 
 .cp { position:fixed; pointer-events:none; z-index:999; animation:fall linear forwards; }
@@ -615,9 +615,9 @@ header {
     <div class="join-logo">
       <div class="mark">
         <svg width="18" height="18" viewBox="0 0 14 14" fill="none">
-          <circle cx="4" cy="4" r="3" fill="white"/>
-          <circle cx="10" cy="10" r="3" fill="white" opacity=".6"/>
-          <circle cx="10" cy="4" r="2" fill="white" opacity=".35"/>
+          <circle cx="4" cy="4" r="3" fill="currentColor"/>
+          <circle cx="10" cy="10" r="3" fill="currentColor" opacity=".6"/>
+          <circle cx="10" cy="4" r="2" fill="currentColor" opacity=".35"/>
         </svg>
       </div>
       RetroBoard
@@ -652,9 +652,9 @@ header {
     <div class="join-logo">
       <div class="mark">
         <svg width="18" height="18" viewBox="0 0 14 14" fill="none">
-          <circle cx="4" cy="4" r="3" fill="white"/>
-          <circle cx="10" cy="10" r="3" fill="white" opacity=".6"/>
-          <circle cx="10" cy="4" r="2" fill="white" opacity=".35"/>
+          <circle cx="4" cy="4" r="3" fill="currentColor"/>
+          <circle cx="10" cy="10" r="3" fill="currentColor" opacity=".6"/>
+          <circle cx="10" cy="4" r="2" fill="currentColor" opacity=".35"/>
         </svg>
       </div>
       RetroBoard
@@ -719,9 +719,9 @@ header {
     <div class="join-logo">
       <div class="mark">
         <svg width="18" height="18" viewBox="0 0 14 14" fill="none">
-          <circle cx="4" cy="4" r="3" fill="white"/>
-          <circle cx="10" cy="10" r="3" fill="white" opacity=".6"/>
-          <circle cx="10" cy="4" r="2" fill="white" opacity=".35"/>
+          <circle cx="4" cy="4" r="3" fill="currentColor"/>
+          <circle cx="10" cy="10" r="3" fill="currentColor" opacity=".6"/>
+          <circle cx="10" cy="4" r="2" fill="currentColor" opacity=".35"/>
         </svg>
       </div>
       RetroBoard
@@ -753,9 +753,9 @@ header {
     <div class="logo">
       <div class="mark">
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-          <circle cx="4" cy="4" r="3" fill="white"/>
-          <circle cx="10" cy="10" r="3" fill="white" opacity=".6"/>
-          <circle cx="10" cy="4" r="2" fill="white" opacity=".35"/>
+          <circle cx="4" cy="4" r="3" fill="currentColor"/>
+          <circle cx="10" cy="10" r="3" fill="currentColor" opacity=".6"/>
+          <circle cx="10" cy="4" r="2" fill="currentColor" opacity=".35"/>
         </svg>
       </div>
       RetroBoard
@@ -935,9 +935,9 @@ header {
     <div class="logo" style="font-family:var(--serif);font-size:22px;letter-spacing:-.5px;display:flex;align-items:center;gap:8px">
       <div class="mark" style="width:28px;height:28px;border-radius:8px">
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-          <circle cx="4" cy="4" r="3" fill="white"/>
-          <circle cx="10" cy="10" r="3" fill="white" opacity=".6"/>
-          <circle cx="10" cy="4" r="2" fill="white" opacity=".35"/>
+          <circle cx="4" cy="4" r="3" fill="currentColor"/>
+          <circle cx="10" cy="10" r="3" fill="currentColor" opacity=".6"/>
+          <circle cx="10" cy="4" r="2" fill="currentColor" opacity=".35"/>
         </svg>
       </div>
       RetroBoard
@@ -948,7 +948,7 @@ header {
   <div class="summary-body">
     <div class="summary-hero">
       <div class="summary-check">
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
       </div>
       <h1 id="sum-title">Sprint Retrospective</h1>
       <p class="sum-date" id="sum-date"></p>
@@ -1065,7 +1065,7 @@ header {
 
 <!-- Timer overlay -->
 <div id="timer-overlay" style="display:none;position:fixed;inset:0;z-index:150;pointer-events:none;padding-top:80px">
-  <div style="position:relative;background:var(--text);color:#fff;border-radius:20px;padding:24px 40px;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,.3);pointer-events:all;min-width:320px">
+  <div style="position:relative;background:var(--text);color:var(--bg);border-radius:20px;padding:24px 40px;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,.3);pointer-events:all;min-width:320px">
     <button onclick="closeTimerOverlay()" title="Minimize" style="position:absolute;top:10px;right:12px;background:none;border:none;cursor:pointer;color:rgba(255,255,255,.6);font-size:18px;line-height:1;padding:4px">−</button>
     <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;opacity:.6;margin-bottom:8px">Card time remaining</div>
     <div id="timer-big" style="font-family:var(--serif);font-size:72px;line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-2px">6:00</div>
@@ -1179,7 +1179,7 @@ header {
           onkeydown="if(event.key==='Enter') addCustomSong()"/>
         <input id="music-name-input" type="text" placeholder="Name (optional)"
           style="font-family:var(--sans);font-size:13px;width:140px;padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);outline:none"/>
-        <button onclick="addCustomSong()" style="font-family:var(--sans);font-size:13px;padding:8px 14px;border-radius:8px;border:none;background:var(--text);color:#fff;cursor:pointer;white-space:nowrap">+ Add</button>
+        <button onclick="addCustomSong()" style="font-family:var(--sans);font-size:13px;padding:8px 14px;border-radius:8px;border:none;background:var(--text);color:var(--bg);cursor:pointer;white-space:nowrap">+ Add</button>
       </div>
     </div>
   </div>
@@ -1188,7 +1188,7 @@ header {
 
 <!-- Music tip overlay -->
 <div id="music-tip" style="display:none;position:fixed;inset:0;z-index:500;pointer-events:none">
-  <div style="position:absolute;top:70px;right:24px;background:var(--text);color:#fff;border-radius:16px;padding:16px 20px;max-width:260px;box-shadow:0 8px 32px rgba(0,0,0,.3);pointer-events:all;animation:fadeSlideIn .4s ease">
+  <div style="position:absolute;top:70px;right:24px;background:var(--text);color:var(--bg);border-radius:16px;padding:16px 20px;max-width:260px;box-shadow:0 8px 32px rgba(0,0,0,.3);pointer-events:all;animation:fadeSlideIn .4s ease">
     <div style="font-size:22px;margin-bottom:6px">🎵</div>
     <div style="font-size:14px;font-weight:600;margin-bottom:4px">Want music while you write?</div>
     <div style="font-size:12px;opacity:.8;line-height:1.5;margin-bottom:12px">Click the <strong>🎵 button</strong> in the header to pick a song. It's only available while the timer is running.</div>
@@ -1220,7 +1220,7 @@ header {
     <!-- Host controls -->
     <div id="icebreaker-host-controls" style="display:none;gap:10px;margin-top:20px;border-top:1px solid var(--border);padding-top:16px">
       <button onclick="nextIcebreakerQuestion()" style="font-family:var(--sans);font-size:13px;padding:8px 16px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);cursor:pointer">🎲 New question</button>
-      <button onclick="closeIcebreaker()" style="font-family:var(--sans);font-size:13px;padding:8px 16px;border-radius:8px;border:none;background:var(--text);color:#fff;cursor:pointer">End icebreaker</button>
+      <button onclick="closeIcebreaker()" style="font-family:var(--sans);font-size:13px;padding:8px 16px;border-radius:8px;border:none;background:var(--text);color:var(--bg);cursor:pointer">End icebreaker</button>
     </div>
     <button id="icebreaker-close-btn" onclick="closeIcebreaker()" style="display:none;font-family:var(--sans);font-size:13px;padding:8px 16px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--muted);cursor:pointer;margin-top:16px">Close</button>
   </div>
@@ -1240,7 +1240,7 @@ header {
       <button onclick="closePrevActions()" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:22px">×</button>
     </div>
     <div id="prev-actions-list" style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px"></div>
-    <button onclick="savePrevActionsAndClose()" style="font-family:var(--sans);font-size:14px;font-weight:600;padding:10px 24px;border-radius:10px;border:none;background:var(--text);color:#fff;cursor:pointer;width:100%">Done — Start Retro →</button>
+    <button onclick="savePrevActionsAndClose()" style="font-family:var(--sans);font-size:14px;font-weight:600;padding:10px 24px;border-radius:10px;border:none;background:var(--text);color:var(--bg);cursor:pointer;width:100%">Done — Start Retro →</button>
   </div>
   </div>
 </div>
@@ -1298,9 +1298,9 @@ header {
     <div class="logo" style="font-family:var(--serif);font-size:22px;letter-spacing:-.5px;display:flex;align-items:center;gap:8px">
       <div class="mark" style="width:28px;height:28px;border-radius:8px">
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-          <circle cx="4" cy="4" r="3" fill="white"/>
-          <circle cx="10" cy="10" r="3" fill="white" opacity=".6"/>
-          <circle cx="10" cy="4" r="2" fill="white" opacity=".35"/>
+          <circle cx="4" cy="4" r="3" fill="currentColor"/>
+          <circle cx="10" cy="10" r="3" fill="currentColor" opacity=".6"/>
+          <circle cx="10" cy="4" r="2" fill="currentColor" opacity=".35"/>
         </svg>
       </div>
       RetroBoard
@@ -1320,9 +1320,9 @@ header {
     <div class="logo" style="font-family:var(--serif);font-size:22px;letter-spacing:-.5px;display:flex;align-items:center;gap:8px">
       <div class="mark" style="width:28px;height:28px;border-radius:8px">
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-          <circle cx="4" cy="4" r="3" fill="white"/>
-          <circle cx="10" cy="10" r="3" fill="white" opacity=".6"/>
-          <circle cx="10" cy="4" r="2" fill="white" opacity=".35"/>
+          <circle cx="4" cy="4" r="3" fill="currentColor"/>
+          <circle cx="10" cy="10" r="3" fill="currentColor" opacity=".6"/>
+          <circle cx="10" cy="4" r="2" fill="currentColor" opacity=".35"/>
         </svg>
       </div>
       RetroBoard
@@ -3149,7 +3149,7 @@ async function openDetail(id) {
 
     document.getElementById('history-detail-body').innerHTML = `
       <div class="summary-hero" style="margin-bottom:32px">
-        <div class="summary-check"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg></div>
+        <div class="summary-check"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg></div>
         <h1 style="font-family:var(--serif);font-size:32px;font-weight:400;margin-bottom:6px">${esc(r.title||'Sprint Retro')}</h1>
         <p style="color:var(--muted);font-size:14px">${date}</p>
       </div>
@@ -4595,7 +4595,7 @@ async function searchYouTubeMusic(query) {
         <img src="https://img.youtube.com/vi/${v.id}/default.jpg" style="width:56px;height:36px;object-fit:cover;border-radius:6px;flex-shrink:0;background:#000"/>
         <span style="flex:1;font-size:13px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(v.name)}</span>
         <button class="music-search-add-btn" data-idx="${i}"
-          style="font-family:var(--sans);font-size:12px;font-weight:600;padding:5px 12px;border-radius:8px;border:none;background:var(--text);color:#fff;cursor:pointer;flex-shrink:0">+ Add</button>
+          style="font-family:var(--sans);font-size:12px;font-weight:600;padding:5px 12px;border-radius:8px;border:none;background:var(--text);color:var(--bg);cursor:pointer;flex-shrink:0">+ Add</button>
       </div>`).join('');
     document.querySelectorAll('.music-search-add-btn').forEach(btn => {
       btn.addEventListener('click', () => addSearchResultToPlaylist(parseInt(btn.dataset.idx)));
