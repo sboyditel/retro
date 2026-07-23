@@ -568,14 +568,9 @@ header {
 .jira-ai-body { font-size:14px; line-height:1.65; color:var(--text); }
 .jira-ai-body p { margin-bottom:10px; }
 
-.sound-btn, .music-opt-btn {
-  font-family:var(--sans); font-size:13px; font-weight:500;
-  padding:12px 10px; border-radius:10px; border:1.5px solid var(--border);
-  background:var(--bg); color:var(--text); cursor:pointer;
-  transition:all .15s; text-align:center;
-}
-.sound-btn:hover, .music-opt-btn:hover { background:var(--text); color:#fff; border-color:var(--text); transform:scale(1.03); }
-.sound-btn:active, .music-opt-btn:active { transform:scale(0.97); }
+.sound-btn {
+
+
 .cp { position:fixed; pointer-events:none; z-index:999; animation:fall linear forwards; }
 @keyframes fall { 0%{transform:translateY(-40px) rotate(0deg);opacity:1}100%{transform:translateY(110vh) rotate(720deg);opacity:0} }
 </style>
@@ -1037,19 +1032,10 @@ header {
     <div id="timer-host-controls" style="display:none;flex-direction:row;gap:10px;margin-top:16px;justify-content:center">
       <button onclick="pauseTimer()" id="timer-pause-btn" style="font-family:var(--sans);font-size:13px;padding:7px 18px;border-radius:8px;border:1.5px solid rgba(255,255,255,.3);background:transparent;color:#fff;cursor:pointer">Pause</button>
       <button onclick="resetTimer()" style="font-family:var(--sans);font-size:13px;padding:7px 18px;border-radius:8px;border:1.5px solid rgba(255,255,255,.3);background:transparent;color:#fff;cursor:pointer">Reset</button>
-      <button onclick="toggleTimerPlaylist()" id="timer-music-btn" style="font-family:var(--sans);font-size:13px;padding:7px 18px;border-radius:8px;border:1.5px solid rgba(255,255,255,.3);background:transparent;color:#fff;cursor:pointer">🎵 Playlist</button>
       <button onclick="closeTimerOverlay()" style="font-family:var(--sans);font-size:13px;padding:7px 18px;border-radius:8px;border:1.5px solid rgba(255,255,255,.3);background:transparent;color:#fff;cursor:pointer">Hide</button>
     </div>
-    <!-- Inline playlist panel -->
-    <div id="timer-playlist-panel" style="display:none;margin-top:16px;border-top:1px solid rgba(255,255,255,.2);padding-top:14px;text-align:left;max-height:240px;overflow-y:auto">
-      <div id="timer-playlist-inner" style="display:flex;flex-direction:column;gap:6px"></div>
-    </div>
-    <!-- Now playing bar -->
-    <div id="timer-now-playing" style="display:none;margin-top:12px;border-top:1px solid rgba(255,255,255,.15);padding-top:10px;font-size:12px;opacity:.8;display:flex;align-items:center;gap:8px">
-      <span>🎵</span><span id="timer-now-playing-name" style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></span>
-      <button onclick="nextSong()" id="timer-next-btn" style="display:none;font-family:var(--sans);font-size:11px;padding:3px 10px;border-radius:6px;border:1px solid rgba(255,255,255,.3);background:transparent;color:#fff;cursor:pointer">Next ▶</button>
-    </div>
-  </div>
+        </div>
+      </div>
 </div>
 
 <!-- Card of the Day overlay -->
@@ -1117,11 +1103,6 @@ header {
   </div>
 </div>
 
-<!-- Music playlist modal -->
-<div id="music-modal" style="display:none;position:fixed;inset:0;z-index:350;background:rgba(0,0,0,.55);align-items:center;justify-content:center;padding:24px">
-  <div style="background:var(--surface);border-radius:20px;padding:28px;max-width:520px;width:100%;box-shadow:0 12px 48px rgba(0,0,0,.3);max-height:88vh;display:flex;flex-direction:column">
-    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
-      <div style="font-size:28px">🎵</div>
       <div style="flex:1">
         <h2 style="font-family:var(--serif);font-size:20px;font-weight:400">Pick a song</h2>
         <p style="font-size:12px;color:var(--muted);margin-top:2px">Music stops when the timer ends</p>
@@ -3631,16 +3612,9 @@ let timerRunning = false;
 
 function toggleTimer() {
   if (!timerRunning) {
-    // Show music prompt only when starting fresh (full timer)
-    if (timerSeconds === TIMER_DURATION) {
-      renderPlaylist();
-      enrichPlaylistTitles(); // fetch real titles async
-      document.getElementById('music-modal').style.display = 'flex';
-    } else {
-      startTimer();
-      document.getElementById('timer-overlay').style.display = 'flex';
-      syncTimer();
-    }
+    startTimer();
+    document.getElementById('timer-overlay').style.display = 'flex';
+    syncTimer();
   } else {
     pauseTimer();
     document.getElementById('timer-overlay').style.display = 'flex';
@@ -3683,8 +3657,6 @@ function resetTimer() {
   timerRunning = false;
   timerSeconds = TIMER_DURATION;
   updateTimerDisplay();
-  stopMusicAndReset();
-  document.getElementById('timer-music-btn').style.display = '';
   document.getElementById('timer-btn').style.background = '';
   document.getElementById('timer-btn').style.color = '';
   document.getElementById('timer-btn').style.border = '';
@@ -3703,8 +3675,6 @@ function timerDone() {
   timerRunning = false;
   timerSeconds = 0;
   updateTimerDisplay();
-  stopMusicAndReset();
-  document.getElementById('timer-music-btn').style.display = 'none';
   // Flash red
   const big = document.getElementById('timer-big');
   big.style.color = '#ef4444';
@@ -3776,226 +3746,6 @@ async function checkTimerSync() {
       document.getElementById('timer-overlay').style.display = 'none';
     }
   } catch(e) {}
-}
-
-// ── Music Playlist ──
-const DEFAULT_PLAYLIST = [
-  { id:'PsO6ZnUZI0g', name:'🎵 Song 1' },
-  { id:'e17mr5ZtWPI', name:'🎵 Song 2' },
-  { id:'0LwcvjNJTuM', name:'🎵 Song 3' },
-  { id:'R03Xakd91Xw', name:'🎵 Song 4' },
-  { id:'o9OUSh_ADJ0', name:'🎵 Song 5' },
-  { id:'ok5BJlAd5-4', name:'🎵 Song 6' },
-  { id:'y8OtzJtp-EM', name:'🎵 Song 7' },
-  { id:'NFeUko-lQHg', name:'🎵 Song 8' },
-  { id:'J1hH8HDebT4', name:'🎵 Song 9' },
-  { id:'G-I9csAflBs', name:'🎵 Song 10' },
-  { id:'Wj7lL6eDOqc', name:'🎵 Song 11' },
-];
-
-async function fetchYouTubeTitle(id) {
-  try {
-    const r = await fetch(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${id}&format=json`);
-    if (!r.ok) return null;
-    const d = await r.json();
-    return d.title || null;
-  } catch(e) { return null; }
-}
-
-async function enrichPlaylistTitles() {
-  const pl = loadPlaylist();
-  let changed = false;
-  for (let i = 0; i < pl.length; i++) {
-    if (pl[i].name.startsWith('🎵 Song ') || pl[i].name === '🎵 My song') {
-      const title = await fetchYouTubeTitle(pl[i].id);
-      if (title) { pl[i].name = title; changed = true; }
-    }
-  }
-  if (changed) {
-    // Save enriched titles (only custom additions, defaults stay in code)
-    const custom = pl.slice(DEFAULT_PLAYLIST.length);
-    localStorage.setItem('retro_playlist', JSON.stringify(custom));
-    // Update defaults in memory
-    for (let i = 0; i < DEFAULT_PLAYLIST.length; i++) {
-      if (pl[i]) DEFAULT_PLAYLIST[i].name = pl[i].name;
-    }
-    renderPlaylist();
-  }
-}
-
-function loadPlaylist() {
-  const saved = localStorage.getItem('retro_playlist');
-  if (!saved) return [...DEFAULT_PLAYLIST];
-  const custom = JSON.parse(saved).filter(s => !DEFAULT_PLAYLIST.find(d => d.id === s.id));
-  return [...DEFAULT_PLAYLIST, ...custom];
-}
-
-function savePlaylist(pl) {
-  localStorage.setItem('retro_playlist', JSON.stringify(pl));
-}
-
-function ytIdFromUrl(url) {
-  const m = url.match(/(?:v=|youtu\.be\/|embed\/)([a-zA-Z0-9_-]{11})/);
-  return m ? m[1] : null;
-}
-
-function renderPlaylist() {
-  const pl = loadPlaylist();
-  const container = document.getElementById('music-playlist');
-  if (!pl.length) {
-    container.innerHTML = '<div style="color:var(--muted);font-size:13px;text-align:center;padding:16px">No songs yet — add some below!</div>';
-    return;
-  }
-  container.innerHTML = pl.map((s, i) => `
-    <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--bg);transition:background .15s"
-         onmouseover="this.style.background='var(--surface)'" onmouseout="this.style.background='var(--bg)'">
-      <div style="width:48px;height:36px;border-radius:6px;overflow:hidden;flex-shrink:0;background:#000">
-        <img src="https://img.youtube.com/vi/${s.id}/default.jpg" style="width:100%;height:100%;object-fit:cover"/>
-      </div>
-      <span style="flex:1;font-size:13px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(s.name)}</span>
-      <button class="play-song-btn" data-id="${s.id}" data-name="${s.name.replace(/"/g,'&quot;')}" data-idx="${i}"
-        style="font-family:var(--sans);font-size:12px;font-weight:600;padding:5px 14px;border-radius:8px;border:none;background:var(--action);color:#fff;cursor:pointer;white-space:nowrap;flex-shrink:0">
-        ▶ Play
-      </button>
-      ${i >= DEFAULT_PLAYLIST.length ? `
-      <button onclick="removeSong(${i})" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:16px;flex-shrink:0;padding:0 4px" title="Remove">×</button>` : ''}
-    </div>`).join('');
-
-  // Attach click handlers safely (avoids quote issues in onclick attributes)
-  document.querySelectorAll('.play-song-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      playMusicById(btn.dataset.id, btn.dataset.name, parseInt(btn.dataset.idx));
-    });
-  });
-}
-
-function addCustomSong() {
-  const urlInput = document.getElementById('music-url-input');
-  const nameInput = document.getElementById('music-name-input');
-  const url = urlInput.value.trim();
-  const name = nameInput.value.trim();
-  const id = ytIdFromUrl(url);
-  if (!id) { toast('Paste a valid YouTube URL'); return; }
-  const pl = loadPlaylist();
-  pl.push({ id, name: name || '🎵 My song' });
-  savePlaylist(pl);
-  urlInput.value = ''; nameInput.value = '';
-  renderPlaylist();
-  toast('Song added!');
-}
-
-function removeSong(idx) {
-  const pl = loadPlaylist();
-  pl.splice(idx, 1);
-  savePlaylist(pl);
-  renderPlaylist();
-}
-
-function openMusicWindow(videoId) {
-  const url = `https://www.youtube.com/watch?v=${videoId}`;
-  const win = window.open(url, 'retro-music', 'width=520,height=340,left=20,top=20,toolbar=0,menubar=0');
-  if (!win || win.closed || typeof win.closed === 'undefined') {
-    // Popup blocked — open in new tab as fallback
-    window.open(url, '_blank');
-    return null;
-  }
-  return win;
-}
-
-function playMusicById(videoId, songName, idx) {
-  document.getElementById('music-modal').style.display = 'none';
-  stopMusic();
-  musicWindow = openMusicWindow(videoId);
-  if (idx !== undefined) currentSongIdx = idx;
-  startTimer();
-  document.getElementById('timer-overlay').style.display = 'flex';
-  syncTimer();
-  const bar = document.getElementById('timer-now-playing');
-  bar.style.display = 'flex';
-  document.getElementById('timer-now-playing-name').textContent = songName;
-  toast(`▶ Now playing: ${songName}`);
-}
-
-let currentSongIdx = -1;
-let timerPlaylistOpen = false;
-
-function toggleTimerPlaylist() {
-  timerPlaylistOpen = !timerPlaylistOpen;
-  const panel = document.getElementById('timer-playlist-panel');
-  panel.style.display = timerPlaylistOpen ? 'block' : 'none';
-  if (timerPlaylistOpen) renderTimerPlaylist();
-}
-
-function renderTimerPlaylist() {
-  const pl = loadPlaylist();
-  const inner = document.getElementById('timer-playlist-inner');
-  inner.innerHTML = pl.map((s, i) => `
-    <div class="timer-song-row" data-id="${s.id}" data-name="${s.name.replace(/"/g,'&quot;')}" data-idx="${i}"
-         style="display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:8px;background:${i===currentSongIdx?'rgba(255,255,255,.2)':'rgba(255,255,255,.07)'};cursor:pointer">
-      <img src="https://img.youtube.com/vi/${s.id}/default.jpg" style="width:40px;height:30px;border-radius:4px;object-fit:cover;flex-shrink:0"/>
-      <span style="font-size:12px;font-weight:${i===currentSongIdx?'600':'400'};flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#fff">${esc(s.name)}</span>
-      ${i===currentSongIdx?'<span style="font-size:10px;opacity:.7">▶ playing</span>':''}
-    </div>`).join('');
-
-  document.querySelectorAll('.timer-song-row').forEach(row => {
-    row.addEventListener('click', () => {
-      playSongFromTimer(parseInt(row.dataset.idx));
-    });
-  });
-}
-
-function playSongFromTimer(idx) {
-  if (!timerRunning) return;
-  const pl = loadPlaylist();
-  const s = pl[idx];
-  if (!s) return;
-  currentSongIdx = idx;
-  stopMusic();
-  musicWindow = openMusicWindow(s.id);
-  // Update now playing bar
-  const bar = document.getElementById('timer-now-playing');
-  bar.style.display = 'flex';
-  document.getElementById('timer-now-playing-name').textContent = s.name;
-  renderTimerPlaylist();
-}
-
-function nextSong() {
-  const pl = loadPlaylist();
-  if (!pl.length || !timerRunning) return;
-  const nextIdx = (currentSongIdx + 1) % pl.length;
-  playSongFromTimer(nextIdx);
-}
-
-// Override stopMusic to also hide now-playing bar and playlist
-const _origStopMusic = typeof stopMusic === 'function' ? stopMusic : () => {};
-
-function stopMusic() {
-  if (musicWindow && !musicWindow.closed) {
-    musicWindow.close();
-    musicWindow = null;
-  }
-}
-
-function stopMusicAndReset() {
-  stopMusic();
-  currentSongIdx = -1;
-  timerPlaylistOpen = false;
-  document.getElementById('timer-playlist-panel').style.display = 'none';
-  document.getElementById('timer-now-playing').style.display = 'none';
-}
-
-function skipMusic() {
-  document.getElementById('music-modal').style.display = 'none';
-  startTimer();
-  document.getElementById('timer-overlay').style.display = 'flex';
-  syncTimer();
-}
-
-function stopMusic() {
-  if (musicWindow && !musicWindow.closed) {
-    musicWindow.close();
-    musicWindow = null;
-  }
 }
 
 // ── Emoji Reactions ──
