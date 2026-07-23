@@ -1013,6 +1013,19 @@ header {
       <button onclick="showScreen('screen-landing')" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:20px;line-height:1;padding:0">←</button>
       <h2 style="font-family:var(--serif);font-size:22px;font-weight:400">Settings</h2>
     </div>
+
+    <div id="settings-password-gate">
+      <p style="margin-top:-8px;font-size:13px;color:var(--muted)">This screen is password protected.</p>
+      <div class="field">
+        <label>Password</label>
+        <input id="settings-password-input" type="password" placeholder="Enter password" autocomplete="off"
+          onkeydown="if(event.key==='Enter') unlockSettings()"/>
+      </div>
+      <button class="join-btn" onclick="unlockSettings()">Unlock</button>
+      <div id="settings-password-status" style="font-size:13px;color:var(--muted);text-align:center;min-height:16px"></div>
+    </div>
+
+    <div id="settings-content" style="display:none;flex-direction:column;gap:20px">
     <p style="margin-top:-8px;font-size:13px;color:var(--muted)">Your credentials are stored in your browser only — never sent anywhere except the respective services.</p>
 
     <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);padding-bottom:4px;border-bottom:1px solid var(--border)">AI (Claude / Anthropic)</div>
@@ -1071,6 +1084,7 @@ header {
     </div>
     <button class="join-btn" onclick="openParticipationReport()" style="background:var(--action);margin-top:-8px">Enter</button>
     <div id="admin-status" style="font-size:13px;color:var(--muted);text-align:center;min-height:16px;margin-top:-8px"></div>
+    </div>
   </div>
 </div>
 
@@ -1504,7 +1518,7 @@ function showScreen(id) {
   });
   if (id === 'screen-host') { populateTeamDropdown(); loadJiraProjects(); }
   if (id === 'screen-teams') renderTeamsList();
-  if (id === 'screen-jira') loadJiraSettingsToForm();
+  if (id === 'screen-jira') resetSettingsGate();
 }
 
 // TEMPORARY DIAGNOSTIC — logs every time #screen-landing's display is changed,
@@ -4263,17 +4277,54 @@ document.getElementById('theme-modal').addEventListener('click', e => {
   if(e.target===e.currentTarget) closeThemePicker();
 });
 
-const ADMIN_PASSWORD = 'Really123!!';
+// Passwords are never stored in plaintext in this file — only their SHA-256 hash.
+// Anyone viewing source sees the hash, not the actual password, and can't reverse it.
+async function sha256Hex(text) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+  return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+const ADMIN_PASSWORD_HASH = 'aa0cf862cf127db8688d738d40c1b70ad5690c45a08face2792d15f1d2aa44c3';
+const SETTINGS_PASSWORD_HASH = 'aa0cf862cf127db8688d738d40c1b70ad5690c45a08face2792d15f1d2aa44c3';
 let prTeamFilter = '';
 
-function openParticipationReport() {
+function resetSettingsGate() {
+  const gate = document.getElementById('settings-password-gate');
+  const content = document.getElementById('settings-content');
+  const input = document.getElementById('settings-password-input');
+  const status = document.getElementById('settings-password-status');
+  if (gate) gate.style.display = 'block';
+  if (content) content.style.display = 'none';
+  if (input) input.value = '';
+  if (status) status.textContent = '';
+}
+
+async function unlockSettings() {
+  const pw = document.getElementById('settings-password-input')?.value || '';
+  const statusEl = document.getElementById('settings-password-status');
+  const hash = await sha256Hex(pw);
+  if (hash !== SETTINGS_PASSWORD_HASH) {
+    if (statusEl) { statusEl.textContent = '✗ Incorrect password'; statusEl.style.color = '#c0392b'; }
+    return;
+  }
+  document.getElementById('settings-password-gate').style.display = 'none';
+  const content = document.getElementById('settings-content');
+  content.style.display = 'flex';
+  document.getElementById('settings-password-input').value = '';
+  if (statusEl) { statusEl.textContent = ''; }
+  loadJiraSettingsToForm();
+}
+
+async function openParticipationReport() {
   const pw = document.getElementById('admin-password-input')?.value || '';
   const statusEl = document.getElementById('admin-status');
-  if (pw !== ADMIN_PASSWORD) {
+  const hash = await sha256Hex(pw);
+  if (hash !== ADMIN_PASSWORD_HASH) {
     if (statusEl) { statusEl.textContent = '✗ Incorrect password'; statusEl.style.color = '#c0392b'; }
     return;
   }
   if (statusEl) { statusEl.textContent = ''; }
+  document.getElementById('admin-password-input').value = '';
   document.getElementById('participation-overlay').style.display = 'flex';
   renderParticipationReport();
 }
