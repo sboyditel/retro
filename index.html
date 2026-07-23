@@ -16,6 +16,32 @@
   --shadow-lg: 0 2px 8px rgba(0,0,0,.10), 0 12px 40px rgba(0,0,0,.08);
   --radius: 12px; --serif: 'DM Serif Display',Georgia,serif; --sans: 'DM Sans',system-ui,sans-serif;
 }
+
+/* ── Themes ── */
+[data-theme="dark"] {
+  --bg:#1a1917; --surface:#252320; --text:#f0ede8; --muted:#8a8278; --border:#333028;
+  --well:#0e7a54; --well-light:#0e2e1f; --better:#c47a2a; --better-light:#2e1e00; --action:#5572e0; --action-light:#1a2454;
+}
+[data-theme="ocean"] {
+  --bg:#f0f7ff; --surface:#ffffff; --text:#0c2340; --muted:#4a6d8c; --border:#c8dff5;
+  --well:#0a7a6e; --well-light:#d4f2ef; --better:#c47a2a; --better-light:#fff0d4; --action:#1a5fc4; --action-light:#d4e5ff;
+}
+[data-theme="forest"] {
+  --bg:#f2f7f0; --surface:#ffffff; --text:#1a2e14; --muted:#5a7050; --border:#cce0c4;
+  --well:#2a7a3a; --well-light:#d4f0d8; --better:#8a6020; --better-light:#f5e8cc; --action:#3a5ab0; --action-light:#d4dcf5;
+}
+[data-theme="sunset"] {
+  --bg:#fff8f4; --surface:#ffffff; --text:#2c1410; --muted:#8a5a4a; --border:#f0d8cc;
+  --well:#2a8a4a; --well-light:#d4f0dc; --better:#c05020; --better-light:#fde8dc; --action:#9030b0; --action-light:#ecd4f8;
+}
+[data-theme="midnight"] {
+  --bg:#0d0d1a; --surface:#16162a; --text:#e8e8ff; --muted:#7878aa; --border:#2a2a44;
+  --well:#20c060; --well-light:#0a2818; --better:#e08030; --better-light:#2a1800; --action:#7060ff; --action-light:#1a1540;
+}
+[data-theme="rose"] {
+  --bg:#fff5f7; --surface:#ffffff; --text:#2c1018; --muted:#8a5060; --border:#f0cccc;
+  --well:#2a8a4a; --well-light:#d4f0dc; --better:#c04840; --better-light:#fde4e4; --action:#c040a0; --action-light:#f8d4f0;
+}
 body { font-family: var(--sans); background: var(--bg); color: var(--text); min-height: 100vh; font-size: 15px; }
 
 /* JOIN */
@@ -367,6 +393,22 @@ header {
 .emoji-cell:hover { background:var(--border); }
 .emoji-btn { font-size:20px; cursor:pointer; padding:4px 6px; border-radius:6px; transition:background .1s; user-select:none; line-height:1.3; display:inline-block; }
 .emoji-btn:hover { background:var(--border); }
+.react-btn {
+  font-size:24px; cursor:pointer; padding:4px; border-radius:8px;
+  transition:transform .1s, background .1s; user-select:none; display:block; text-align:center; line-height:1.3;
+}
+.react-btn:hover { background:var(--border); transform:scale(1.3); }
+.react-btn:active { transform:scale(0.9); }
+@keyframes flyEmoji {
+  0%   { transform:translateX(0) translateY(var(--ty0)) scale(1) rotate(0deg); opacity:1; }
+  50%  { opacity:1; }
+  100% { transform:translateX(110vw) translateY(var(--tyf)) scale(0.8) rotate(var(--rot)); opacity:0; }
+}
+.flying-emoji {
+  position:fixed; left:-100px; z-index:9999; pointer-events:none;
+  user-select:none; font-size:100px; line-height:1;
+  animation:flyEmoji 3s cubic-bezier(.2,.6,.4,1) forwards;
+}
 .sbtn { font-family:var(--sans); font-size:12px; font-weight:500; padding:5px 12px; border-radius:7px; border:1px solid var(--border); background:var(--bg); cursor:pointer; color:var(--text); transition:all .15s; }
 .sbtn.ok { background:var(--text); color:#fff; border-color:transparent; }
 .sbtn:hover { background:var(--border); }
@@ -526,14 +568,14 @@ header {
 .jira-ai-body { font-size:14px; line-height:1.65; color:var(--text); }
 .jira-ai-body p { margin-bottom:10px; }
 
-.sound-btn {
+.sound-btn, .music-opt-btn {
   font-family:var(--sans); font-size:13px; font-weight:500;
   padding:12px 10px; border-radius:10px; border:1.5px solid var(--border);
   background:var(--bg); color:var(--text); cursor:pointer;
   transition:all .15s; text-align:center;
 }
-.sound-btn:hover { background:var(--text); color:#fff; border-color:var(--text); transform:scale(1.03); }
-.sound-btn:active { transform:scale(0.97); }
+.sound-btn:hover, .music-opt-btn:hover { background:var(--text); color:#fff; border-color:var(--text); transform:scale(1.03); }
+.sound-btn:active, .music-opt-btn:active { transform:scale(0.97); }
 .cp { position:fixed; pointer-events:none; z-index:999; animation:fall linear forwards; }
 @keyframes fall { 0%{transform:translateY(-40px) rotate(0deg);opacity:1}100%{transform:translateY(110vh) rotate(720deg);opacity:0} }
 </style>
@@ -573,6 +615,7 @@ header {
       ⚙️ Settings (Jira &amp; AI)
     </button>
     <div id="fb-status" style="font-size:11px;text-align:center;color:#b0aca5;margin-top:-8px">Checking database…</div>
+    <button onclick="openThemePicker()" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:12px;margin-top:-4px">🎨 Change theme</button>
   </div>
 </div>
 
@@ -708,10 +751,19 @@ header {
       </div>
       Sprint Summary
     </button>
+    <button class="btn" onclick="openCotd()" title="Card of the Day" style="display:flex;align-items:center;gap:5px">
+      ⭐ Top Card
+    </button>
+    <button class="btn" onclick="openThemePicker()" title="Change theme" style="font-size:16px;padding:6px 10px">🎨</button>
     <button class="btn ai-btn" onclick="openAI()">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
       AI Insights
     </button>
+    <button class="btn" id="timer-btn" onclick="toggleTimer()" style="display:flex;align-items:center;gap:6px;font-variant-numeric:tabular-nums;min-width:90px;justify-content:center">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+      <span id="timer-display">6:00</span>
+    </button>
+    <button onclick="openEmojiReact()" title="Send a reaction" class="btn" style="font-size:18px;padding:6px 10px">😊</button>
     <button onclick="openSoundPicker()" title="Easy Button — play a sound" style="background:none;border:none;cursor:pointer;padding:0;margin-left:4px;flex-shrink:0">
       <div style="position:relative;width:44px;height:44px">
         <!-- silver base -->
@@ -974,6 +1026,116 @@ header {
     </div>
     <button class="join-btn" onclick="openParticipationReport()" style="background:var(--action);margin-top:-8px">Enter</button>
     <div id="admin-status" style="font-size:13px;color:var(--muted);text-align:center;min-height:16px;margin-top:-8px"></div>
+  </div>
+</div>
+
+<!-- Timer overlay -->
+<div id="timer-overlay" style="display:none;position:fixed;inset:0;z-index:150;pointer-events:none;align-items:flex-start;justify-content:center;padding-top:80px">
+  <div style="background:var(--text);color:#fff;border-radius:20px;padding:24px 40px;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,.3);pointer-events:all">
+    <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;opacity:.6;margin-bottom:8px">Card time remaining</div>
+    <div id="timer-big" style="font-family:var(--serif);font-size:72px;line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-2px">6:00</div>
+    <div style="display:flex;gap:10px;margin-top:16px;justify-content:center">
+      <button onclick="pauseTimer()" id="timer-pause-btn" style="font-family:var(--sans);font-size:13px;padding:7px 18px;border-radius:8px;border:1.5px solid rgba(255,255,255,.3);background:transparent;color:#fff;cursor:pointer">Pause</button>
+      <button onclick="resetTimer()" style="font-family:var(--sans);font-size:13px;padding:7px 18px;border-radius:8px;border:1.5px solid rgba(255,255,255,.3);background:transparent;color:#fff;cursor:pointer">Reset</button>
+      <button onclick="closeTimerOverlay()" style="font-family:var(--sans);font-size:13px;padding:7px 18px;border-radius:8px;border:1.5px solid rgba(255,255,255,.3);background:transparent;color:#fff;cursor:pointer">Hide</button>
+    </div>
+  </div>
+</div>
+
+<!-- Card of the Day overlay -->
+<div id="cotd-overlay" style="display:none;position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.6);align-items:center;justify-content:center;padding:24px">
+  <div style="background:var(--surface);border-radius:24px;width:100%;max-width:560px;padding:32px;box-shadow:0 20px 60px rgba(0,0,0,.3);position:relative">
+    <button onclick="closeCotd()" style="position:absolute;top:16px;right:16px;background:none;border:none;cursor:pointer;color:var(--muted);font-size:22px;line-height:1">×</button>
+    <div style="text-align:center;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--action);margin-bottom:20px">⭐ Card of the Day</div>
+    <!-- stacked cards behind -->
+    <div style="position:relative;margin-bottom:24px">
+      <div style="position:absolute;inset:0;border-radius:16px;background:var(--action-light);transform:rotate(-2deg) scale(1.03);opacity:.5"></div>
+      <div style="position:absolute;inset:0;border-radius:16px;background:var(--action-light);transform:rotate(1deg) scale(1.015);opacity:.7"></div>
+      <div id="cotd-card-inner" style="position:relative;background:var(--surface);border:2px solid var(--action);border-radius:16px;padding:28px 32px;text-align:center;transition:all .3s">
+        <div id="cotd-hearts" style="display:flex;justify-content:center;align-items:center;gap:6px;margin-bottom:14px;font-size:13px;color:var(--muted)"></div>
+        <div id="cotd-text" style="font-family:var(--serif);font-size:20px;line-height:1.5;color:var(--text);margin-bottom:16px"></div>
+        <div id="cotd-col-badge" style="display:inline-block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;padding:4px 12px;border-radius:20px"></div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:center;gap:12px">
+      <button onclick="cotdNav(-1)" style="font-family:var(--sans);font-size:13px;padding:8px 18px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);cursor:pointer">← Prev</button>
+      <span id="cotd-counter" style="font-size:13px;color:var(--muted)"></span>
+      <button onclick="cotdNav(1)" style="font-family:var(--sans);font-size:13px;padding:8px 18px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);cursor:pointer">Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- Theme picker modal -->
+<div id="theme-modal" style="display:none;position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.5);align-items:center;justify-content:center;padding:24px">
+  <div style="background:var(--surface);border-radius:20px;padding:28px 32px;max-width:440px;width:100%;box-shadow:0 12px 48px rgba(0,0,0,.25)">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <h2 style="font-family:var(--serif);font-size:20px;font-weight:400">Choose a theme</h2>
+      <button onclick="closeThemePicker()" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:22px">×</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px" id="theme-grid"></div>
+  </div>
+</div>
+
+<!-- Emoji reaction picker -->
+<div id="emoji-react-modal" style="display:none;position:fixed;bottom:80px;right:24px;z-index:400;background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:16px;box-shadow:0 8px 40px rgba(0,0,0,.2);width:320px">
+  <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:10px">Send a reaction 🎉</div>
+  <div style="display:grid;grid-template-columns:repeat(8,1fr);gap:4px">
+    <span class="react-btn" onclick="sendReaction('👍')">👍</span>
+    <span class="react-btn" onclick="sendReaction('❤️')">❤️</span>
+    <span class="react-btn" onclick="sendReaction('🎉')">🎉</span>
+    <span class="react-btn" onclick="sendReaction('🚀')">🚀</span>
+    <span class="react-btn" onclick="sendReaction('🔥')">🔥</span>
+    <span class="react-btn" onclick="sendReaction('😂')">😂</span>
+    <span class="react-btn" onclick="sendReaction('😮')">😮</span>
+    <span class="react-btn" onclick="sendReaction('👏')">👏</span>
+    <span class="react-btn" onclick="sendReaction('💯')">💯</span>
+    <span class="react-btn" onclick="sendReaction('⭐')">⭐</span>
+    <span class="react-btn" onclick="sendReaction('💡')">💡</span>
+    <span class="react-btn" onclick="sendReaction('🤔')">🤔</span>
+    <span class="react-btn" onclick="sendReaction('😴')">😴</span>
+    <span class="react-btn" onclick="sendReaction('🙌')">🙌</span>
+    <span class="react-btn" onclick="sendReaction('💪')">💪</span>
+    <span class="react-btn" onclick="sendReaction('🎯')">🎯</span>
+    <span class="react-btn" onclick="sendReaction('✅')">✅</span>
+    <span class="react-btn" onclick="sendReaction('❌')">❌</span>
+    <span class="react-btn" onclick="sendReaction('⚡')">⚡</span>
+    <span class="react-btn" onclick="sendReaction('🌈')">🌈</span>
+    <span class="react-btn" onclick="sendReaction('🍕')">🍕</span>
+    <span class="react-btn" onclick="sendReaction('🎸')">🎸</span>
+    <span class="react-btn" onclick="sendReaction('🤝')">🤝</span>
+    <span class="react-btn" onclick="sendReaction('💩')">💩</span>
+  </div>
+</div>
+
+<!-- Music playlist modal -->
+<div id="music-modal" style="display:none;position:fixed;inset:0;z-index:350;background:rgba(0,0,0,.55);align-items:center;justify-content:center;padding:24px">
+  <div style="background:var(--surface);border-radius:20px;padding:28px;max-width:520px;width:100%;box-shadow:0 12px 48px rgba(0,0,0,.3);max-height:88vh;display:flex;flex-direction:column">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
+      <div style="font-size:28px">🎵</div>
+      <div style="flex:1">
+        <h2 style="font-family:var(--serif);font-size:20px;font-weight:400">Pick a song</h2>
+        <p style="font-size:12px;color:var(--muted);margin-top:2px">Music stops when the timer ends</p>
+      </div>
+      <button onclick="skipMusic()" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:22px">×</button>
+    </div>
+
+    <!-- Playlist -->
+    <div id="music-playlist" style="display:flex;flex-direction:column;gap:6px;overflow-y:auto;max-height:340px;margin-bottom:16px"></div>
+
+    <!-- Add song -->
+    <div style="border-top:1px solid var(--border);padding-top:16px">
+      <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:8px">Add your own song</div>
+      <div style="display:flex;gap:8px">
+        <input id="music-url-input" type="text" placeholder="Paste a YouTube URL…"
+          style="font-family:var(--sans);font-size:13px;flex:1;padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);outline:none"
+          onkeydown="if(event.key==='Enter') addCustomSong()"/>
+        <input id="music-name-input" type="text" placeholder="Song name (optional)"
+          style="font-family:var(--sans);font-size:13px;width:160px;padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);outline:none"/>
+        <button onclick="addCustomSong()" style="font-family:var(--sans);font-size:13px;padding:8px 14px;border-radius:8px;border:none;background:var(--text);color:#fff;cursor:pointer;white-space:nowrap">+ Add</button>
+      </div>
+    </div>
+
+    <button onclick="skipMusic()" style="font-family:var(--sans);font-size:13px;color:var(--muted);background:none;border:none;cursor:pointer;padding:12px 0 0;text-align:center">No thanks, skip →</button>
   </div>
 </div>
 
@@ -1945,8 +2107,9 @@ async function tick() {
   if (tickCount % 3 === 0) await loadScores();
   // Load name every 4th tick (16s)
   if (tickCount % 4 === 0) await loadRetroName();
-  // Check for sound events every tick
   await checkSoundEvent();
+  await checkTimerSync();
+  await checkEmojiReact();
 }
 
 async function loadBoard() {
@@ -3418,7 +3581,443 @@ async function checkSoundEvent() {
   } catch(e) {}
 }
 
-// ── Participation Report ──
+// ── Timer ──
+const TIMER_DURATION = 6 * 60; // 6 minutes in seconds
+let timerSeconds = TIMER_DURATION;
+let timerInterval = null;
+let timerRunning = false;
+
+function toggleTimer() {
+  if (!timerRunning) {
+    // Show music prompt only when starting fresh (full timer)
+    if (timerSeconds === TIMER_DURATION) {
+      renderPlaylist();
+      enrichPlaylistTitles(); // fetch real titles async
+      document.getElementById('music-modal').style.display = 'flex';
+    } else {
+      startTimer();
+      document.getElementById('timer-overlay').style.display = 'flex';
+      syncTimer();
+    }
+  } else {
+    pauseTimer();
+    document.getElementById('timer-overlay').style.display = 'flex';
+    syncTimer();
+  }
+}
+
+function startTimer() {
+  timerRunning = true;
+  document.getElementById('timer-btn').style.background = '#22c55e';
+  document.getElementById('timer-btn').style.color = '#fff';
+  document.getElementById('timer-btn').style.border = 'none';
+  document.getElementById('timer-pause-btn').textContent = 'Pause';
+  if (timerInterval) clearInterval(timerInterval);
+  timerInterval = setInterval(() => {
+    if (timerSeconds <= 0) {
+      timerDone();
+      return;
+    }
+    timerSeconds--;
+    updateTimerDisplay();
+    if (timerSeconds % 10 === 0) syncTimer(); // sync every 10s
+  }, 1000);
+}
+
+function pauseTimer() {
+  timerRunning = false;
+  clearInterval(timerInterval);
+  timerInterval = null;
+  document.getElementById('timer-btn').style.background = '';
+  document.getElementById('timer-btn').style.color = '';
+  document.getElementById('timer-btn').style.border = '';
+  document.getElementById('timer-pause-btn').textContent = 'Resume';
+  syncTimer();
+}
+
+function resetTimer() {
+  clearInterval(timerInterval);
+  timerInterval = null;
+  timerRunning = false;
+  timerSeconds = TIMER_DURATION;
+  updateTimerDisplay();
+  document.getElementById('timer-btn').style.background = '';
+  document.getElementById('timer-btn').style.color = '';
+  document.getElementById('timer-btn').style.border = '';
+  document.getElementById('timer-pause-btn').textContent = 'Pause';
+  syncTimer();
+}
+
+function closeTimerOverlay() {
+  document.getElementById('timer-overlay').style.display = 'none';
+}
+
+function timerDone() {
+  clearInterval(timerInterval);
+  timerInterval = null;
+  timerRunning = false;
+  timerSeconds = 0;
+  updateTimerDisplay();
+  stopMusic();
+  // Flash red
+  const big = document.getElementById('timer-big');
+  big.style.color = '#ef4444';
+  document.getElementById('timer-btn').style.background = '#ef4444';
+  document.getElementById('timer-btn').style.color = '#fff';
+  document.getElementById('timer-btn').style.border = 'none';
+  // Play ding sound
+  try { playDing(getAudioCtx()); } catch(e) {}
+  toast("⏰ Time's up! Stop adding cards.");
+  syncTimer();
+}
+
+function updateTimerDisplay() {
+  const m = Math.floor(timerSeconds / 60);
+  const s = timerSeconds % 60;
+  const display = `${m}:${s.toString().padStart(2,'0')}`;
+  const btn = document.getElementById('timer-display');
+  const big = document.getElementById('timer-big');
+  if (btn) btn.textContent = display;
+  if (big) {
+    big.textContent = display;
+    // Turn red in last 60 seconds
+    big.style.color = timerSeconds <= 60 ? '#ef4444' : '#fff';
+    if (timerSeconds <= 60) {
+      document.getElementById('timer-btn').style.background = '#ef4444';
+      document.getElementById('timer-btn').style.border = 'none';
+      document.getElementById('timer-btn').style.color = '#fff';
+    }
+  }
+}
+
+async function syncTimer() {
+  if (!roomKey) return;
+  try {
+    await fbSet(`rooms/${roomKey}/timer`, {
+      seconds: timerSeconds,
+      running: timerRunning,
+      ts: Date.now()
+    });
+  } catch(e) {}
+}
+
+let lastTimerTs = 0;
+async function checkTimerSync() {
+  if (!roomKey) return;
+  try {
+    const t = await fbGet(`rooms/${roomKey}/timer`);
+    if (!t || t.ts <= lastTimerTs) return;
+    lastTimerTs = t.ts;
+    // Only sync if we're not the one controlling (not running locally)
+    if (!timerRunning && t.running) {
+      // Another user started the timer — show overlay and sync
+      timerSeconds = t.seconds;
+      updateTimerDisplay();
+      document.getElementById('timer-overlay').style.display = 'flex';
+      startTimer();
+    } else if (!t.running && timerRunning) {
+      timerSeconds = t.seconds;
+      pauseTimer();
+      updateTimerDisplay();
+    } else if (!t.running && !timerRunning) {
+      timerSeconds = t.seconds;
+      updateTimerDisplay();
+    }
+  } catch(e) {}
+}
+
+// ── Music Playlist ──
+const DEFAULT_PLAYLIST = [
+  { id:'PsO6ZnUZI0g', name:'🎵 Song 1' },
+  { id:'e17mr5ZtWPI', name:'🎵 Song 2' },
+  { id:'0LwcvjNJTuM', name:'🎵 Song 3' },
+  { id:'R03Xakd91Xw', name:'🎵 Song 4' },
+  { id:'o9OUSh_ADJ0', name:'🎵 Song 5' },
+  { id:'ok5BJlAd5-4', name:'🎵 Song 6' },
+  { id:'y8OtzJtp-EM', name:'🎵 Song 7' },
+  { id:'NFeUko-lQHg', name:'🎵 Song 8' },
+  { id:'J1hH8HDebT4', name:'🎵 Song 9' },
+  { id:'G-I9csAflBs', name:'🎵 Song 10' },
+  { id:'Wj7lL6eDOqc', name:'🎵 Song 11' },
+];
+
+async function fetchYouTubeTitle(id) {
+  try {
+    const r = await fetch(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${id}&format=json`);
+    if (!r.ok) return null;
+    const d = await r.json();
+    return d.title || null;
+  } catch(e) { return null; }
+}
+
+async function enrichPlaylistTitles() {
+  const pl = loadPlaylist();
+  let changed = false;
+  for (let i = 0; i < pl.length; i++) {
+    if (pl[i].name.startsWith('🎵 Song ') || pl[i].name === '🎵 My song') {
+      const title = await fetchYouTubeTitle(pl[i].id);
+      if (title) { pl[i].name = title; changed = true; }
+    }
+  }
+  if (changed) {
+    // Save enriched titles (only custom additions, defaults stay in code)
+    const custom = pl.slice(DEFAULT_PLAYLIST.length);
+    localStorage.setItem('retro_playlist', JSON.stringify(custom));
+    // Update defaults in memory
+    for (let i = 0; i < DEFAULT_PLAYLIST.length; i++) {
+      if (pl[i]) DEFAULT_PLAYLIST[i].name = pl[i].name;
+    }
+    renderPlaylist();
+  }
+}
+
+function loadPlaylist() {
+  const saved = localStorage.getItem('retro_playlist');
+  if (!saved) return [...DEFAULT_PLAYLIST];
+  const custom = JSON.parse(saved).filter(s => !DEFAULT_PLAYLIST.find(d => d.id === s.id));
+  return [...DEFAULT_PLAYLIST, ...custom];
+}
+
+function savePlaylist(pl) {
+  localStorage.setItem('retro_playlist', JSON.stringify(pl));
+}
+
+function ytIdFromUrl(url) {
+  const m = url.match(/(?:v=|youtu\.be\/|embed\/)([a-zA-Z0-9_-]{11})/);
+  return m ? m[1] : null;
+}
+
+function renderPlaylist() {
+  const pl = loadPlaylist();
+  const container = document.getElementById('music-playlist');
+  if (!pl.length) {
+    container.innerHTML = '<div style="color:var(--muted);font-size:13px;text-align:center;padding:16px">No songs yet — add some below!</div>';
+    return;
+  }
+  container.innerHTML = pl.map((s, i) => `
+    <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--bg);transition:background .15s"
+         onmouseover="this.style.background='var(--surface)'" onmouseout="this.style.background='var(--bg)'">
+      <div style="width:48px;height:36px;border-radius:6px;overflow:hidden;flex-shrink:0;background:#000">
+        <img src="https://img.youtube.com/vi/${s.id}/default.jpg" style="width:100%;height:100%;object-fit:cover"/>
+      </div>
+      <span style="flex:1;font-size:13px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(s.name)}</span>
+      <button onclick="playMusicById('${s.id}','${esc(s.name)}')"
+        style="font-family:var(--sans);font-size:12px;font-weight:600;padding:5px 14px;border-radius:8px;border:none;background:var(--action);color:#fff;cursor:pointer;white-space:nowrap;flex-shrink:0">
+        ▶ Play
+      </button>
+      ${i >= DEFAULT_PLAYLIST.length ? `
+      <button onclick="removeSong(${i})" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:16px;flex-shrink:0;padding:0 4px" title="Remove">×</button>` : ''}
+    </div>`).join('');
+}
+
+function addCustomSong() {
+  const urlInput = document.getElementById('music-url-input');
+  const nameInput = document.getElementById('music-name-input');
+  const url = urlInput.value.trim();
+  const name = nameInput.value.trim();
+  const id = ytIdFromUrl(url);
+  if (!id) { toast('Paste a valid YouTube URL'); return; }
+  const pl = loadPlaylist();
+  pl.push({ id, name: name || '🎵 My song' });
+  savePlaylist(pl);
+  urlInput.value = ''; nameInput.value = '';
+  renderPlaylist();
+  toast('Song added!');
+}
+
+function removeSong(idx) {
+  const pl = loadPlaylist();
+  pl.splice(idx, 1);
+  savePlaylist(pl);
+  renderPlaylist();
+}
+
+function playMusicById(videoId, songName) {
+  document.getElementById('music-modal').style.display = 'none';
+  const url = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+  musicWindow = window.open(url, 'retro-music', 'width=400,height=240,left=20,top=20');
+  startTimer();
+  document.getElementById('timer-overlay').style.display = 'flex';
+  syncTimer();
+  toast(`▶ Now playing: ${songName}`);
+}
+
+let musicWindow = null;
+
+function playMusic(vibe) {} // legacy — no longer used
+
+function skipMusic() {
+  document.getElementById('music-modal').style.display = 'none';
+  startTimer();
+  document.getElementById('timer-overlay').style.display = 'flex';
+  syncTimer();
+}
+
+function stopMusic() {
+  if (musicWindow && !musicWindow.closed) {
+    musicWindow.close();
+    musicWindow = null;
+  }
+}
+
+// ── Emoji Reactions ──
+let emojiReactOpen = false;
+
+function openEmojiReact() {
+  emojiReactOpen = !emojiReactOpen;
+  document.getElementById('emoji-react-modal').style.display = emojiReactOpen ? 'block' : 'none';
+}
+
+function closeEmojiReact() {
+  emojiReactOpen = false;
+  document.getElementById('emoji-react-modal').style.display = 'none';
+}
+
+document.addEventListener('click', e => {
+  if (emojiReactOpen && !e.target.closest('#emoji-react-modal') && !e.target.closest('[onclick="openEmojiReact()"]')) {
+    closeEmojiReact();
+  }
+});
+
+function spawnFlyingEmoji(emoji) {
+  const count = 8 + Math.floor(Math.random() * 6);
+  for (let i = 0; i < count; i++) {
+    setTimeout(() => {
+      const el = document.createElement('div');
+      el.className = 'flying-emoji';
+      el.textContent = emoji;
+      // Staggered heights across screen
+      const startY = 5 + Math.random() * 80; // % of viewport height
+      const driftY = (Math.random() - 0.5) * 200; // slight vertical drift
+      const rot = (Math.random() - 0.5) * 60;
+      el.style.top = startY + 'vh';
+      el.style.setProperty('--ty0', '0px');
+      el.style.setProperty('--tyf', driftY + 'px');
+      el.style.setProperty('--rot', rot + 'deg');
+      el.style.fontSize = (80 + Math.random() * 40) + 'px';
+      el.style.animationDuration = (2 + Math.random() * 1.5) + 's';
+      el.style.animationDelay = (i * 0.12) + 's';
+      document.body.appendChild(el);
+      el.addEventListener('animationend', () => el.remove());
+    }, 0);
+  }
+}
+
+async function sendReaction(emoji) {
+  closeEmojiReact();
+  spawnFlyingEmoji(emoji);
+  // Sync to Firebase so all participants see it
+  if (roomKey && sessionId) {
+    await fbSet(`rooms/${roomKey}/emojiReact`, { emoji, by: me.name, ts: Date.now() });
+  }
+}
+
+let lastEmojiTs = 0;
+async function checkEmojiReact() {
+  if (!roomKey) return;
+  try {
+    const evt = await fbGet(`rooms/${roomKey}/emojiReact`);
+    if (!evt || evt.ts <= lastEmojiTs) return;
+    if (evt.by === me.name) return; // skip own — already shown locally
+    lastEmojiTs = evt.ts;
+    spawnFlyingEmoji(evt.emoji);
+  } catch(e) {}
+}
+
+// ── Card of the Day ──
+let cotdIdx = 0;
+let cotdCards = [];
+
+function openCotd() {
+  cotdCards = [
+    ...board.well.map(c=>({...c,col:'well'})),
+    ...board.better.map(c=>({...c,col:'better'})),
+    ...board.action.map(c=>({...c,col:'action'})),
+  ].filter(c=>c.text).sort((a,b)=>(b.votes||0)-(a.votes||0));
+  if (!cotdCards.length) { toast('No cards yet — add some first!'); return; }
+  cotdIdx = 0;
+  renderCotd();
+  document.getElementById('cotd-overlay').style.display = 'flex';
+}
+
+function closeCotd() { document.getElementById('cotd-overlay').style.display = 'none'; }
+
+function cotdNav(dir) {
+  cotdIdx = (cotdIdx + dir + cotdCards.length) % cotdCards.length;
+  const card = document.getElementById('cotd-card-inner');
+  card.style.opacity = '0'; card.style.transform = 'translateY(8px)';
+  setTimeout(() => { renderCotd(); card.style.opacity='1'; card.style.transform=''; }, 180);
+}
+
+function renderCotd() {
+  const c = cotdCards[cotdIdx];
+  const colNames = {well:'What went well', better:'What could be better', action:'Action items'};
+  const colColors = {well:'var(--well)', better:'var(--better)', action:'var(--action)'};
+  const colBgs = {well:'var(--well-light)', better:'var(--better-light)', action:'var(--action-light)'};
+  const hearts = '❤️'.repeat(Math.min(c.votes||0, 8));
+  document.getElementById('cotd-hearts').innerHTML = c.votes > 0
+    ? `${hearts} <span>${c.votes} vote${c.votes!==1?'s':''}</span>`
+    : '<span style="color:var(--muted)">No votes yet</span>';
+  document.getElementById('cotd-text').textContent = c.text;
+  const badge = document.getElementById('cotd-col-badge');
+  badge.textContent = colNames[c.col];
+  badge.style.background = colBgs[c.col];
+  badge.style.color = colColors[c.col];
+  document.getElementById('cotd-card-inner').style.borderColor = colColors[c.col];
+  document.getElementById('cotd-counter').textContent = `${cotdIdx+1} of ${cotdCards.length}`;
+}
+
+document.getElementById('cotd-overlay').addEventListener('click', e => {
+  if(e.target===e.currentTarget) closeCotd();
+});
+
+// ── Themes ──
+const THEMES = [
+  { id:'default',  name:'☀️ Default',  preview:['#f8f7f4','#1a1917','#0e7a54'] },
+  { id:'dark',     name:'🌙 Dark',     preview:['#1a1917','#f0ede8','#20c060'] },
+  { id:'ocean',    name:'🌊 Ocean',    preview:['#f0f7ff','#0c2340','#0a7a6e'] },
+  { id:'forest',   name:'🌲 Forest',   preview:['#f2f7f0','#1a2e14','#2a7a3a'] },
+  { id:'sunset',   name:'🌅 Sunset',   preview:['#fff8f4','#2c1410','#c05020'] },
+  { id:'midnight', name:'🔮 Midnight', preview:['#0d0d1a','#e8e8ff','#7060ff'] },
+  { id:'rose',     name:'🌸 Rose',     preview:['#fff5f7','#2c1018','#c040a0'] },
+];
+
+function openThemePicker() {
+  const current = document.documentElement.dataset.theme || 'default';
+  const grid = document.getElementById('theme-grid');
+  grid.innerHTML = THEMES.map(t => `
+    <button onclick="applyTheme('${t.id}')" style="
+      font-family:var(--sans);border:2px solid ${current===t.id?'#5572e0':'var(--border)'};
+      border-radius:12px;padding:12px;cursor:pointer;background:${t.preview[0]};
+      text-align:left;transition:all .15s;display:flex;align-items:center;gap:10px">
+      <div style="display:flex;gap:4px">
+        ${t.preview.map(c=>`<div style="width:14px;height:14px;border-radius:50%;background:${c};border:1px solid rgba(0,0,0,.1)"></div>`).join('')}
+      </div>
+      <span style="font-size:13px;font-weight:500;color:${t.preview[1]}">${t.name}</span>
+    </button>`).join('');
+  document.getElementById('theme-modal').style.display = 'flex';
+}
+
+function closeThemePicker() { document.getElementById('theme-modal').style.display = 'none'; }
+
+function applyTheme(id) {
+  if (id === 'default') delete document.documentElement.dataset.theme;
+  else document.documentElement.dataset.theme = id;
+  localStorage.setItem('retro_theme', id);
+  toast('Theme applied!');
+  openThemePicker(); // re-render to show selection
+}
+
+function loadSavedTheme() {
+  const saved = localStorage.getItem('retro_theme');
+  if (saved && saved !== 'default') document.documentElement.dataset.theme = saved;
+}
+loadSavedTheme();
+
+document.getElementById('theme-modal').addEventListener('click', e => {
+  if(e.target===e.currentTarget) closeThemePicker();
+});
+
 const ADMIN_PASSWORD = 'Really123!!';
 let prTeamFilter = '';
 
