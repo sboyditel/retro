@@ -2245,12 +2245,9 @@ function setSyncState(s) {
 }
 
 // Presence UI
-let lastPresenceRenderStr = '';
 function renderPresence() {
-  const cur = JSON.stringify(presence);
-  if (cur === lastPresenceRenderStr) return; // skip if nothing changed
-  lastPresenceRenderStr = cur;
   const bar = document.getElementById('presence');
+  if (!bar) return;
   bar.innerHTML = Object.values(presence).map(u=>`
     <div class="presence-avatar" style="background:${u.color}">
       ${esc(u.name[0].toUpperCase())}
