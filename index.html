@@ -1251,6 +1251,10 @@ header {
     <div id="music-player-wrap" style="display:none;border-radius:12px;overflow:hidden;margin-bottom:16px;background:#000;aspect-ratio:16/9">
       <div id="yt-player-div" style="width:100%;height:100%"></div>
     </div>
+    <!-- Fun fact about the currently playing song -->
+    <div id="song-fact-card" style="display:none;background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:10px 14px;margin:-8px 0 16px;font-size:13px;color:var(--text);line-height:1.4">
+      💡 <span id="song-fact-text"></span>
+    </div>
     <!-- Playlist -->
     <div id="music-playlist" style="display:flex;flex-direction:column;gap:6px;overflow-y:auto;flex:1;margin-bottom:16px"></div>
     <!-- Add song -->
@@ -5195,6 +5199,18 @@ function openMusicModal() {
   renderMusicPlaylist();
   fetchPlaylistTitles();
   document.getElementById('music-modal').style.display = 'flex';
+  // Resume fact-fetching if a song is already playing (it was paused while the modal was closed)
+  if (ytPlayer && !songFactInterval) {
+    const pl = loadPlaylist();
+    const song = pl[currentSongIdx];
+    if (song && isRealSongTitle(song.name)) {
+      const card = document.getElementById('song-fact-card');
+      const textEl = document.getElementById('song-fact-text');
+      if (card && textEl && songFactHistory.length) { textEl.textContent = songFactHistory[songFactHistory.length - 1]; card.style.display = 'block'; }
+      else fetchAndShowSongFact(song.name);
+      songFactInterval = setInterval(() => fetchAndShowSongFact(song.name), 45000);
+    }
+  }
 }
 
 function closeMusicModal() {
@@ -5204,11 +5220,57 @@ function closeMusicModal() {
   const searchResults = document.getElementById('music-search-results');
   if (searchResults) searchResults.innerHTML = '';
   musicSearchResults = [];
+  // Pause fact-fetching while the panel is hidden — no point burning API calls for a
+  // fact nobody can see. The interval resumes in openMusicModal() if music is still playing.
+  if (songFactInterval) { clearInterval(songFactInterval); songFactInterval = null; }
 }
 
 document.getElementById('music-modal').addEventListener('click', e => {
   if (e.target === e.currentTarget) closeMusicModal();
 });
+
+// ── Song fun facts ──
+let songFactInterval = null;
+let songFactHistory = [];
+
+function isRealSongTitle(name) {
+  return !!name && name !== '🎵 My song' && !/^🎵 Song \d+$/.test(name);
+}
+
+function startSongFacts(songName) {
+  stopSongFacts();
+  if (!isRealSongTitle(songName)) return; // don't make up facts about a placeholder title
+  songFactHistory = [];
+  fetchAndShowSongFact(songName);
+  songFactInterval = setInterval(() => fetchAndShowSongFact(songName), 45000);
+}
+
+function stopSongFacts() {
+  if (songFactInterval) clearInterval(songFactInterval);
+  songFactInterval = null;
+  songFactHistory = [];
+  const card = document.getElementById('song-fact-card');
+  if (card) card.style.display = 'none';
+}
+
+async function fetchAndShowSongFact(songName) {
+  const alreadyMentioned = songFactHistory.length
+    ? ` Don't repeat these already-shared facts: ${songFactHistory.map(f => `"${f}"`).join('; ')}.`
+    : '';
+  const prompt = `Give one short, fun, interesting fact about the song "${songName}" (the artist, the recording, its history, or its cultural impact).${alreadyMentioned} Only state something as fact if you're genuinely confident it's accurate — if you're not sure of a specific detail, share a general true fact about its likely genre or era instead rather than guessing. Respond with exactly one short sentence, plain text, no markdown, no quotation marks around it.`;
+  try {
+    const { text } = await callLLM(prompt, 100);
+    if (!text) return; // no AI provider configured — fail silently, this is just a fun extra
+    const clean = text.trim().replace(/^["']|["']$/g, '');
+    songFactHistory.push(clean);
+    const card = document.getElementById('song-fact-card');
+    const textEl = document.getElementById('song-fact-text');
+    if (card && textEl) {
+      textEl.textContent = clean;
+      card.style.display = 'block';
+    }
+  } catch(e) { console.warn('fetchAndShowSongFact error:', e); }
+}
 
 function playSong(idx) {
   const pl = loadPlaylist();
@@ -5218,6 +5280,7 @@ function playSong(idx) {
 
   document.getElementById('music-player-wrap').style.display = 'block';
   document.getElementById('music-now-playing-label').textContent = '▶ ' + song.name;
+  startSongFacts(song.name);
 
   if (!ytApiReady) {
     // API not ready yet — wait and retry
@@ -5257,6 +5320,7 @@ function onPlayerStateChange(event) {
 }
 
 function stopMusicPlayer() {
+  stopSongFacts();
   try {
     if (ytPlayer && ytPlayer.stopVideo) {
       ytPlayer.stopVideo();
