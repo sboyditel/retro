@@ -2136,11 +2136,15 @@ async function checkJiraSprintSync() {
       document.getElementById('jira-ai-result').innerHTML = summary?.html || '<p style="color:var(--muted);font-size:12px">Waiting for the host to generate a summary…</p>';
     }
     const trends = await fbGet(`rooms/${roomKey}/jiraTrends`);
+    console.log('[jira-trends-debug] fetched trends:', trends ? `ts=${trends.ts}, lastSeen=${lastJiraTrendsTs}, resultsCount=${trends.results?.length}` : 'null');
     if (trends && trends.ts !== lastJiraTrendsTs) {
       lastJiraTrendsTs = trends.ts;
+      const el = document.getElementById('jira-trends-result');
+      console.log('[jira-trends-debug] jira-trends-result element exists:', !!el, '| jira-sprint-panel display:', document.getElementById('jira-sprint-panel')?.style.display);
       renderJiraTrends(trends);
+      console.log('[jira-trends-debug] rendered. Final HTML length:', document.getElementById('jira-trends-result')?.innerHTML.length);
     }
-  } catch(e) {}
+  } catch(e) { console.error('[jira-trends-debug] checkJiraSprintSync threw:', e); }
 }
 
 async function switchSprint(sprintId) {
