@@ -5263,13 +5263,18 @@ async function fetchAndShowSongFact(songName) {
     if (!text) return; // no AI provider configured — fail silently, this is just a fun extra
     const clean = text.trim().replace(/^["']|["']$/g, '');
     songFactHistory.push(clean);
-    const card = document.getElementById('song-fact-card');
-    const textEl = document.getElementById('song-fact-text');
-    if (card && textEl) {
-      textEl.textContent = clean;
-      card.style.display = 'block';
-    }
+    showSongFactCard(clean);
+    toast(`💡 ${clean}`, 10000);
   } catch(e) { console.warn('fetchAndShowSongFact error:', e); }
+}
+
+function showSongFactCard(text) {
+  const card = document.getElementById('song-fact-card');
+  const textEl = document.getElementById('song-fact-text');
+  if (card && textEl) {
+    textEl.textContent = text;
+    card.style.display = 'block';
+  }
 }
 
 function playSong(idx) {
