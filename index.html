@@ -784,6 +784,10 @@ header {
     <button class="btn" id="icebreaker-btn" onclick="openIcebreaker()" title="Icebreaker" style="display:flex;align-items:center;gap:5px">
       🧊 Icebreaker
     </button>
+    <button class="btn" id="shoutout-btn" onclick="openShoutouts()" title="Shoutouts" style="display:flex;align-items:center;gap:5px;position:relative">
+      🎉 Shoutouts
+      <span id="shoutout-count-badge" style="display:none;position:absolute;top:-6px;right:-6px;background:var(--action);color:#fff;font-size:10px;font-weight:700;min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 4px"></span>
+    </button>
     <button class="btn" onclick="openThemePicker()" title="Change theme" style="font-size:16px;padding:6px 10px">🎨</button>
     <button class="btn ai-btn" onclick="openAI()">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
@@ -1298,6 +1302,37 @@ header {
       <button onclick="closeIcebreaker()" style="font-family:var(--sans);font-size:13px;padding:8px 16px;border-radius:8px;border:none;background:var(--text);color:var(--bg);cursor:pointer">End icebreaker</button>
     </div>
     <button id="icebreaker-close-btn" onclick="closeIcebreaker()" style="display:none;font-family:var(--sans);font-size:13px;padding:8px 16px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--muted);cursor:pointer;margin-top:16px">Close</button>
+  </div>
+  </div>
+</div>
+
+<!-- Shoutouts overlay -->
+<div id="shoutout-overlay" style="display:none;position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.7)">
+  <div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;padding:24px">
+  <div style="background:var(--surface);border-radius:24px;width:100%;max-width:680px;max-height:88vh;overflow-y:auto;padding:36px;box-shadow:0 20px 60px rgba(0,0,0,.3)">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <div>
+        <div style="font-size:36px;margin-bottom:6px">🎉</div>
+        <h2 style="font-family:var(--serif);font-size:26px;font-weight:400">Shoutouts</h2>
+        <p style="font-size:13px;color:var(--muted);margin-top:2px">Give a teammate some credit for something great this sprint.</p>
+      </div>
+      <button onclick="closeShoutouts()" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:22px;line-height:1">×</button>
+    </div>
+    <!-- Give a shoutout -->
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px;padding:16px;background:var(--bg);border-radius:14px">
+      <input id="shoutout-to" type="text" placeholder="Who's it for? (e.g. Alex)" maxlength="40" list="shoutout-names"
+        style="font-family:var(--sans);font-size:14px;padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);outline:none"/>
+      <datalist id="shoutout-names"></datalist>
+      <div style="display:flex;gap:8px">
+        <input id="shoutout-message" type="text" placeholder="What did they do? 🎉" maxlength="200"
+          style="flex:1;font-family:var(--sans);font-size:14px;padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);outline:none"
+          onkeydown="if(event.key==='Enter') submitShoutout()"/>
+        <button onclick="submitShoutout()" style="font-family:var(--sans);font-size:14px;font-weight:600;padding:10px 20px;border-radius:10px;border:none;background:var(--action);color:#fff;cursor:pointer;white-space:nowrap">Send 🎉</button>
+      </div>
+    </div>
+    <!-- Live shoutouts feed -->
+    <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:10px">This retro's shoutouts</div>
+    <div id="shoutout-list" style="display:flex;flex-direction:column;gap:8px;max-height:340px;overflow-y:auto"></div>
   </div>
   </div>
 </div>
@@ -2826,6 +2861,7 @@ async function tick() {
   await checkEmojiReact();
   await checkJiraSprintSync();
   await checkMusicSearchRequests();
+  await checkShoutoutBadge();
 }
 
 async function loadBoard() {
@@ -3507,6 +3543,11 @@ async function saveToHistory() {
     if (!currentTeamId) {
       try { currentTeamId = await fbGet(sessionPath('teamId')) || ''; } catch(e) {}
     }
+    let shoutoutsData = [];
+    try {
+      const raw = await fbGet(sessionPath('shoutouts'));
+      shoutoutsData = raw ? Object.values(raw).sort((a,b) => a.ts - b.ts) : [];
+    } catch(e) {}
     const title = document.getElementById('badge-text').textContent.replace('✦ ', '');
     const vals = Object.values(scores).map(s => s.value);
     const avg = vals.length ? (vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(1) : null;
@@ -3527,6 +3568,7 @@ async function saveToHistory() {
       actions: board.action.map(c=>({text:c.text,votes:c.votes,carry:!!c.carry,carryYes:!!c.carryYes,carryNo:!!c.carryNo,doMore:!!c.doMore,stopDoing:!!c.stopDoing,owners:c.owners||[]})),
       well:   board.well.map(c=>({text:c.text,votes:c.votes})),
       better: board.better.map(c=>({text:c.text,votes:c.votes})),
+      shoutouts: shoutoutsData,
     };
     console.log('Saving history with teamId:', snapshot.teamId, 'teamName:', snapshot.teamName);
     const historyId = 'r' + Date.now().toString(36);
@@ -3724,6 +3766,15 @@ async function openDetail(id) {
           </div>
           <div class="sum-list">${renderList(r.better||[])}</div>
         </div>
+        ${(r.shoutouts||[]).length ? `
+        <div class="sum-card">
+          <div class="sum-card-label">🎉 Shoutouts</div>
+          <div class="sum-list">${(r.shoutouts||[]).map(s => `
+            <div class="sum-item" style="flex-direction:column;align-items:stretch;gap:2px">
+              <div style="font-size:11px;font-weight:600;color:var(--muted)">${esc(s.from)} → <strong style="color:var(--text)">${esc(s.to)}</strong></div>
+              <div>${esc(s.message)}</div>
+            </div>`).join('')}</div>
+        </div>` : ''}
       </div>`;
   } catch(e) {
     document.getElementById('history-detail-body').innerHTML = '<div style="color:var(--muted)">Couldn\'t load this retro.</div>';
@@ -5447,6 +5498,105 @@ async function loadIcebreakerAnswers() {
         <div style="font-size:14px;color:var(--text)">${esc(a.answer)}</div></div>
       </div>`).join('');
   } catch(e) {}
+}
+
+// ── Shoutouts ──
+let shoutoutCheckInterval = null;
+let lastSeenShoutoutTs = 0;
+let shoutoutBadgeInitialized = false;
+
+function openShoutouts() {
+  populateShoutoutNames();
+  document.getElementById('shoutout-overlay').style.display = 'flex';
+  document.getElementById('shoutout-message').value = '';
+  loadShoutouts();
+  if (shoutoutCheckInterval) clearInterval(shoutoutCheckInterval);
+  shoutoutCheckInterval = setInterval(loadShoutouts, 3000);
+  // Opening the panel counts as having seen the latest ones — clear the badge
+  const badge = document.getElementById('shoutout-count-badge');
+  if (badge) badge.style.display = 'none';
+}
+
+function closeShoutouts() {
+  document.getElementById('shoutout-overlay').style.display = 'none';
+  clearInterval(shoutoutCheckInterval);
+}
+
+function populateShoutoutNames() {
+  const list = document.getElementById('shoutout-names');
+  if (!list) return;
+  const names = [...new Set(Object.values(presence || {}).map(u => u.name))];
+  list.innerHTML = names.map(n => `<option value="${esc(n)}">`).join('');
+}
+
+async function submitShoutout() {
+  const toInput = document.getElementById('shoutout-to');
+  const msgInput = document.getElementById('shoutout-message');
+  const to = toInput.value.trim();
+  const message = msgInput.value.trim();
+  if (!to || !message) { toast('Add a name and a message first'); return; }
+  const id = 's' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  try {
+    await fbSet(sessionPath(`shoutouts/${id}`), {
+      to, message, from: me.name, fromColor: me.color, ts: Date.now()
+    });
+    msgInput.value = '';
+    confetti();
+    loadShoutouts();
+  } catch(e) { toast('Could not send shoutout — try again'); }
+}
+
+async function loadShoutouts() {
+  try {
+    const data = await fbGet(sessionPath('shoutouts'));
+    const shoutouts = data ? Object.values(data).sort((a,b) => b.ts - a.ts) : [];
+    renderShoutoutList(shoutouts);
+
+    // Update the toolbar badge with unseen count, and toast for genuinely new ones
+    // that arrived since we last checked (so people don't need the panel open).
+    if (shoutouts.length) {
+      const newest = shoutouts[0];
+      if (shoutoutBadgeInitialized && newest.ts > lastSeenShoutoutTs && newest.from !== me.name) {
+        toast(`🎉 ${newest.from} gave ${newest.to} a shoutout!`);
+      }
+      const overlayOpen = document.getElementById('shoutout-overlay').style.display === 'flex';
+      if (!overlayOpen) {
+        const unseenCount = shoutouts.filter(s => s.ts > lastSeenShoutoutTs).length;
+        const badge = document.getElementById('shoutout-count-badge');
+        if (badge) {
+          if (unseenCount > 0) { badge.textContent = unseenCount; badge.style.display = 'flex'; }
+          else badge.style.display = 'none';
+        }
+      } else {
+        lastSeenShoutoutTs = newest.ts;
+      }
+      if (!shoutoutBadgeInitialized) { lastSeenShoutoutTs = newest.ts; shoutoutBadgeInitialized = true; }
+    }
+  } catch(e) {}
+}
+
+function renderShoutoutList(shoutouts) {
+  const container = document.getElementById('shoutout-list');
+  if (!container) return;
+  if (!shoutouts.length) {
+    container.innerHTML = '<div style="color:var(--muted);font-size:13px;text-align:center;padding:16px">No shoutouts yet — be the first!</div>';
+    return;
+  }
+  container.innerHTML = shoutouts.map(s => `
+    <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:var(--bg);border-radius:10px;border:1px solid var(--border)">
+      <div style="width:28px;height:28px;border-radius:50%;background:${s.fromColor||'#888'};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0">${esc((s.from||'?')[0].toUpperCase())}</div>
+      <div>
+        <div style="font-size:11px;font-weight:600;color:var(--muted);margin-bottom:2px">${esc(s.from)} → <strong style="color:var(--text)">${esc(s.to)}</strong></div>
+        <div style="font-size:14px;color:var(--text)">${esc(s.message)}</div>
+      </div>
+    </div>`).join('');
+}
+
+// Lightweight badge-only check for the toolbar count, used even when the panel is closed
+// (called from the main polling loop) so people notice a shoutout without opening it.
+async function checkShoutoutBadge() {
+  if (document.getElementById('shoutout-overlay')?.style.display === 'flex') return; // loadShoutouts already covers this
+  await loadShoutouts();
 }
 
 // ── Action Item Follow-up ──
