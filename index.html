@@ -2136,15 +2136,11 @@ async function checkJiraSprintSync() {
       document.getElementById('jira-ai-result').innerHTML = summary?.html || '<p style="color:var(--muted);font-size:12px">Waiting for the host to generate a summary…</p>';
     }
     const trends = await fbGet(`rooms/${roomKey}/jiraTrends`);
-    console.log('[jira-trends-debug] fetched trends:', trends ? `ts=${trends.ts}, lastSeen=${lastJiraTrendsTs}, resultsCount=${trends.results?.length}` : 'null');
     if (trends && trends.ts !== lastJiraTrendsTs) {
       lastJiraTrendsTs = trends.ts;
-      const el = document.getElementById('jira-trends-result');
-      console.log('[jira-trends-debug] jira-trends-result element exists:', !!el, '| jira-sprint-panel display:', document.getElementById('jira-sprint-panel')?.style.display);
       renderJiraTrends(trends);
-      console.log('[jira-trends-debug] rendered. Final HTML length:', document.getElementById('jira-trends-result')?.innerHTML.length);
     }
-  } catch(e) { console.error('[jira-trends-debug] checkJiraSprintSync threw:', e); }
+  } catch(e) { console.error('checkJiraSprintSync error:', e); }
 }
 
 async function switchSprint(sprintId) {
@@ -2201,13 +2197,21 @@ async function loadJiraTrends() {
           const created = issue.fields?.created ? new Date(issue.fields.created) : null;
           const analysis = analyzeIssueTimings(created, changelog, CYCLE_TIME_IN_PROGRESS_STATUSES, CYCLE_TIME_DONE_STATUS);
           if (!analysis.reachedDone) continue;
-          cycleTimes.push(analysis.cycleTimeMinutes);
-          if (analysis.leadTimeMinutes !== null) leadTimes.push(analysis.leadTimeMinutes);
+          if (Number.isFinite(analysis.cycleTimeMinutes)) cycleTimes.push(analysis.cycleTimeMinutes);
+          else console.warn(`loadJiraTrends: ${issue.key} produced a non-finite cycle time (likely a malformed changelog timestamp) — excluded from averages`);
+          if (analysis.leadTimeMinutes !== null && Number.isFinite(analysis.leadTimeMinutes)) leadTimes.push(analysis.leadTimeMinutes);
           qaBounceBackTotal += analysis.qaBounceBacks;
-          Object.keys(perStatusTotals).forEach(k => perStatusTotals[k].push(analysis.perStatusMinutes[k] || 0));
+          Object.keys(perStatusTotals).forEach(k => {
+            const v = analysis.perStatusMinutes[k] || 0;
+            perStatusTotals[k].push(Number.isFinite(v) ? v : 0);
+          });
         } catch(e) { console.warn('cycle time fetch failed for', issue.key, e); }
       }
-      const avg = arr => arr.length ? arr.reduce((a,b) => a+b, 0) / arr.length : null;
+      const avg = arr => {
+        if (!arr.length) return null;
+        const v = arr.reduce((a,b) => a+b, 0) / arr.length;
+        return Number.isFinite(v) ? v : null;
+      };
       const avgCycleHours = avg(cycleTimes) !== null ? avg(cycleTimes) / 60 : null;
       const avgLeadHours = avg(leadTimes) !== null ? avg(leadTimes) / 60 : null;
       const avgGapHours = (avgCycleHours !== null && avgLeadHours !== null) ? Math.max(0, avgLeadHours - avgCycleHours) : null;
@@ -2250,17 +2254,17 @@ function renderJiraTrends(trendData) {
   if (!results || !results.length) { resultEl.innerHTML = '<div style="font-size:12px;color:var(--muted)">No trend data yet.</div>'; return; }
 
   const rows = results.map(r => {
-    const pctLabel = r.completionPct === null ? '–' : `${r.completionPct}%`;
-    const cycleLabel = r.avgCycleHours === null ? '–' : `${r.avgCycleHours.toFixed(1)}h`;
-    const barWidth = r.completionPct === null ? 0 : r.completionPct;
+    const pctLabel = r.completionPct === null || r.completionPct === undefined ? '–' : `${r.completionPct}%`;
+    const cycleLabel = r.avgCycleHours === null || r.avgCycleHours === undefined || !Number.isFinite(r.avgCycleHours) ? '–' : `${r.avgCycleHours.toFixed(1)}h`;
+    const barWidth = (r.completionPct === null || r.completionPct === undefined) ? 0 : r.completionPct;
 
     const ps = r.perStatusHours || {};
-    const fmtH = v => v === null || v === undefined ? '–' : `${v.toFixed(1)}h`;
+    const fmtH = v => (v === null || v === undefined || !Number.isFinite(v)) ? '–' : `${v.toFixed(1)}h`;
     const devH = fmtH(ps['development']);
     const qaH = fmtH(ps['qa']);
     const readyH = fmtH(ps['ready for qa']);
-    const leadLabel = r.avgLeadHours === null || r.avgLeadHours === undefined ? '–' : `${r.avgLeadHours.toFixed(1)}h`;
-    const gapLabel = r.avgGapHours === null || r.avgGapHours === undefined ? '–' : `${r.avgGapHours.toFixed(1)}h`;
+    const leadLabel = fmtH(r.avgLeadHours);
+    const gapLabel = fmtH(r.avgGapHours);
     const bounceCount = r.qaBounceBackTotal || 0;
     const hasBreakdown = r.doneCount > 0;
 
