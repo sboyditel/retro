@@ -2971,6 +2971,7 @@ async function loadBoard() {
     const s = JSON.stringify(remote);
     if (s === lastBoardStr) return;
     lastBoardStr = s;
+    console.log('[vote-debug] loadBoard: raw remote keys=', Object.keys(remote), '| entries=', Object.entries(remote).map(([k,v]) => ({ key: k, id: v.id, col: v.col, votes: v.votes })));
 
     const prevIds = {well:board.well.map(c=>c.id),better:board.better.map(c=>c.id),action:board.action.map(c=>c.id)};
 
@@ -3216,6 +3217,14 @@ async function vote(col, id, delta) {
     }
   }
   if (!card) return;
+
+  // DIAGNOSTIC: check for duplicate ids and log full state around this vote
+  const allIds = [...board.well, ...board.better, ...board.action].map(c => c.id);
+  const dupes = allIds.filter((v, i) => allIds.indexOf(v) !== i);
+  if (dupes.length) console.error('[vote-debug] DUPLICATE CARD IDS DETECTED:', dupes);
+  console.log('[vote-debug] vote() called: col=', col, 'id=', id, 'delta=', delta);
+  console.log('[vote-debug] BEFORE — all cards in', col, ':', board[col].map(c => ({ id: c.id, text: c.text?.slice(0,20), votes: c.votes, userVotes: JSON.stringify(c.userVotes) })));
+
   if (!card.userVotes) card.userVotes = {};
   const cur = card.userVotes[me.id] || 0;
   if (delta > 0) {
@@ -3239,6 +3248,7 @@ async function vote(col, id, delta) {
   board[col].sort((a,b) => (b.votes||0) - (a.votes||0) || (a.ts||0) - (b.ts||0));
   renderCol(col);
   voteLocked = false;
+  console.log('[vote-debug] AFTER — all cards in', col, ':', board[col].map(c => ({ id: c.id, text: c.text?.slice(0,20), votes: c.votes, userVotes: JSON.stringify(c.userVotes) })));
 }
 
 // ── Drag and drop (pointer events) ──
@@ -5200,20 +5210,12 @@ function openMusicModal() {
   renderMusicPlaylist();
   fetchPlaylistTitles();
   document.getElementById('music-modal').style.display = 'flex';
-  console.log('[song-fact-debug] openMusicModal: ytPlayer exists?', !!ytPlayer, '| songFactInterval already running?', !!songFactInterval);
-  // Resume fact-fetching if a song is already playing (it was paused while the modal was closed)
-  if (ytPlayer && !songFactInterval) {
-    const pl = loadPlaylist();
-    const song = pl[currentSongIdx];
-    console.log('[song-fact-debug] openMusicModal resume: currentSongIdx=', currentSongIdx, 'song=', song?.name, 'isRealSongTitle?', song && isRealSongTitle(song.name));
-    if (song && isRealSongTitle(song.name)) {
-      const card = document.getElementById('song-fact-card');
-      const textEl = document.getElementById('song-fact-text');
-      if (card && textEl && songFactHistory.length) { textEl.textContent = songFactHistory[songFactHistory.length - 1]; card.style.display = 'block'; }
-      else fetchAndShowSongFact(song.name);
-      songFactInterval = setInterval(() => fetchAndShowSongFact(song.name), 45000);
-      console.log('[song-fact-debug] resumed interval for', song.name);
-    }
+  // If a song is already playing but its card isn't showing (e.g. reopening the panel),
+  // just redisplay the most recent fact — the interval never stopped running in the background.
+  if (ytPlayer && songFactHistory.length) {
+    const card = document.getElementById('song-fact-card');
+    const textEl = document.getElementById('song-fact-text');
+    if (card && textEl) { textEl.textContent = songFactHistory[songFactHistory.length - 1]; card.style.display = 'block'; }
   }
 }
 
@@ -5224,13 +5226,12 @@ function closeMusicModal() {
   const searchResults = document.getElementById('music-search-results');
   if (searchResults) searchResults.innerHTML = '';
   musicSearchResults = [];
-  // Pause fact-fetching while the panel is hidden — no point burning API calls for a
-  // fact nobody can see. The interval resumes in openMusicModal() if music is still playing.
-  if (songFactInterval) { console.log('[song-fact-debug] closeMusicModal: clearing interval'); clearInterval(songFactInterval); songFactInterval = null; }
+  // Note: the fact interval deliberately keeps running in the background here — that's
+  // the whole point of the toast, so facts keep appearing even with the panel closed.
 }
 
 document.getElementById('music-modal').addEventListener('click', e => {
-  if (e.target === e.currentTarget) { console.log('[song-fact-debug] backdrop click detected, closing modal'); closeMusicModal(); }
+  if (e.target === e.currentTarget) closeMusicModal();
 });
 
 // ── Song fun facts ──
@@ -5242,17 +5243,14 @@ function isRealSongTitle(name) {
 }
 
 function startSongFacts(songName) {
-  console.log('[song-fact-debug] startSongFacts called for:', JSON.stringify(songName), '| isRealSongTitle?', isRealSongTitle(songName));
   stopSongFacts();
-  if (!isRealSongTitle(songName)) { console.log('[song-fact-debug] skipping — not a real title yet'); return; }
+  if (!isRealSongTitle(songName)) return; // don't make up facts about a placeholder title
   songFactHistory = [];
   fetchAndShowSongFact(songName);
-  songFactInterval = setInterval(() => { console.log('[song-fact-debug] 45s interval firing for', songName); fetchAndShowSongFact(songName); }, 45000);
-  console.log('[song-fact-debug] interval scheduled, id=', songFactInterval);
+  songFactInterval = setInterval(() => fetchAndShowSongFact(songName), 45000);
 }
 
 function stopSongFacts() {
-  if (songFactInterval) console.log('[song-fact-debug] stopSongFacts: clearing existing interval id=', songFactInterval);
   if (songFactInterval) clearInterval(songFactInterval);
   songFactInterval = null;
   songFactHistory = [];
