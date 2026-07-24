@@ -2857,12 +2857,6 @@ function trackStat(field, delta=1) {
       updateMyCoinDisplay();
       showCoinPopup(coinValue);
       playCoinSound();
-      // Broadcast so everyone else in the room hears the coin sound too
-      if (roomKey) {
-        const ts = Date.now();
-        lastCoinEventTs = ts; // don't re-trigger our own sound when this round-trips back
-        fbSet(`rooms/${roomKey}/coinEvent`, { by: me.name, ts }).catch(()=>{});
-      }
     }
   }
   fbSet(`rooms/${roomKey}/userStats/${me.id}`, userStats[me.id]);
@@ -2883,18 +2877,6 @@ function updateMyCoinDisplay() {
 
 function playCoinSound() {
   try { playAudioClip(AUDIO_COIN); } catch(e) {}
-}
-
-let lastCoinEventTs = 0;
-async function checkCoinEvent() {
-  if (!roomKey) return;
-  try {
-    const evt = await fbGet(`rooms/${roomKey}/coinEvent`);
-    if (evt && evt.ts !== lastCoinEventTs) {
-      lastCoinEventTs = evt.ts;
-      playCoinSound();
-    }
-  } catch(e) {}
 }
 
 // Small floating "+N coins" popup near the coin counter for instant feedback.
@@ -2973,7 +2955,6 @@ async function tick() {
   await checkJiraSprintSync();
   await checkMusicSearchRequests();
   await checkShoutoutBadge();
-  await checkCoinEvent();
 }
 
 async function loadBoard() {
