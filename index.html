@@ -2981,7 +2981,12 @@ async function loadBoard() {
       if (newBoard[col]) newBoard[col].push(c);
     });
     ['well','better','action'].forEach(col => {
-      newBoard[col].sort((a,b) => (b.votes||0) - (a.votes||0) || (a.ts||0) - (b.ts||0));
+      // Stable order by creation time only — NOT by votes. Auto-sorting by votes here
+      // caused cards to silently reorder mid-session as people voted (even without
+      // clicking rapidly, since this sync runs periodically in the background), making
+      // it easy to click the wrong card right after it shifted position. Sorting by
+      // votes is still available on-demand via the "Sort by votes" button.
+      newBoard[col].sort((a,b) => (a.ts||0) - (b.ts||0));
       newBoard[col].forEach(c => {
         if (!c.userVotes) c.userVotes = {};
         c.votes = cardTotal(c);
@@ -3217,18 +3222,6 @@ async function vote(col, id, delta) {
   }
   if (!card) return;
 
-  // DIAGNOSTIC
-  const allIds = [...board.well, ...board.better, ...board.action].map(c => c.id);
-  const dupes = allIds.filter((v, i) => allIds.indexOf(v) !== i);
-  if (dupes.length) console.error('[vote-debug] DUPLICATE CARD IDS DETECTED:', dupes);
-  const dump = () => ({
-    well: board.well.map(c => ({ id: c.id.slice(-6), text: c.text?.slice(0,15), votes: c.votes, myVotes: c.userVotes?.[me.id] })),
-    better: board.better.map(c => ({ id: c.id.slice(-6), text: c.text?.slice(0,15), votes: c.votes, myVotes: c.userVotes?.[me.id] })),
-    action: board.action.map(c => ({ id: c.id.slice(-6), text: c.text?.slice(0,15), votes: c.votes, myVotes: c.userVotes?.[me.id] })),
-  });
-  console.log('[vote-debug] vote() called col=', col, 'id=', id.slice(-6), 'delta=', delta);
-  console.log('[vote-debug] BEFORE (all cols):', JSON.stringify(dump()));
-
   if (!card.userVotes) card.userVotes = {};
   const cur = card.userVotes[me.id] || 0;
   if (delta > 0) {
@@ -3245,7 +3238,6 @@ async function vote(col, id, delta) {
   card.mine = (card.userVotes[me.id] || 0) > 0;
   voteLocked = true;
   renderCol(col);
-  console.log('[vote-debug] AFTER local update, BEFORE firebase save (all cols):', JSON.stringify(dump()));
   try {
     await fbSet(`${cardsPath()}/${id}/userVotes`, card.userVotes);
     await fbSet(`${cardsPath()}/${id}/votes`, card.votes);
