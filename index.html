@@ -835,9 +835,14 @@ header {
     <div class="jira-stats" id="jira-stats"></div>
     <div id="jira-ai-result" class="jira-ai-body"></div>
     <div id="jira-trends-section" style="margin-top:14px;border-top:1px solid var(--border);padding-top:12px">
-      <button id="jira-trends-btn" onclick="loadJiraTrends()" style="font-family:var(--sans);font-size:12px;font-weight:600;padding:6px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);cursor:pointer">
-        📈 Load Sprint Trends
-      </button>
+      <div style="display:flex;align-items:center;gap:8px">
+        <button id="jira-trends-btn" onclick="loadJiraTrends()" style="font-family:var(--sans);font-size:12px;font-weight:600;padding:6px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);cursor:pointer">
+          📈 Load Sprint Trends
+        </button>
+        <button id="jira-trends-toggle" onclick="toggleJiraTrendsCollapsed()" style="display:none;font-family:var(--sans);font-size:12px;font-weight:600;padding:6px 10px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--muted);cursor:pointer">
+          📈 Sprint Trends <span id="jira-trends-toggle-arrow">▾</span>
+        </button>
+      </div>
       <div id="jira-trends-result" style="margin-top:10px"></div>
     </div>
   </div>
@@ -2152,6 +2157,28 @@ async function switchSprint(sprintId) {
 }
 
 // ── Sprint trends: completion % + cycle time across recent sprints, goal vs actual ──
+function toggleJiraTrendsCollapsed() {
+  const collapsed = document.getElementById('jira-trends-result').style.display === 'none';
+  setJiraTrendsCollapsed(!collapsed);
+}
+
+function setJiraTrendsCollapsed(collapsed) {
+  const resultEl = document.getElementById('jira-trends-result');
+  const arrow = document.getElementById('jira-trends-toggle-arrow');
+  if (!resultEl) return;
+  resultEl.style.display = collapsed ? 'none' : 'block';
+  if (arrow) arrow.textContent = collapsed ? '▸' : '▾';
+  localStorage.setItem('retro_jira_trends_collapsed', collapsed ? '1' : '0');
+}
+
+// Reveals the collapse/expand toggle once trend data actually exists, applying
+// whatever collapsed/expanded state this browser last left it in.
+function showJiraTrendsToggle() {
+  const toggle = document.getElementById('jira-trends-toggle');
+  if (toggle) toggle.style.display = 'inline-block';
+  setJiraTrendsCollapsed(localStorage.getItem('retro_jira_trends_collapsed') === '1');
+}
+
 async function loadJiraTrends() {
   if (!jiraSprintData || !jiraCfg) { toast('Load a sprint first'); return; }
   const btn = document.getElementById('jira-trends-btn');
@@ -2294,6 +2321,7 @@ function renderJiraTrends(trendData) {
     ${rows}
     ${goalVsActual ? `<div style="margin-top:10px;padding:8px 10px;background:var(--bg);border-radius:8px;font-size:12px;color:var(--text)"><strong>Goal vs Actual:</strong> ${esc(goalVsActual)}</div>` : ''}
   `;
+  showJiraTrendsToggle();
 }
 
 // ── Tickets overlay ──
