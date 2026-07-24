@@ -2971,7 +2971,6 @@ async function loadBoard() {
     const s = JSON.stringify(remote);
     if (s === lastBoardStr) return;
     lastBoardStr = s;
-    console.log('[vote-debug] loadBoard: raw remote keys=', Object.keys(remote), '| entries=', Object.entries(remote).map(([k,v]) => ({ key: k, id: v.id, col: v.col, votes: v.votes })));
 
     const prevIds = {well:board.well.map(c=>c.id),better:board.better.map(c=>c.id),action:board.action.map(c=>c.id)};
 
@@ -3218,13 +3217,6 @@ async function vote(col, id, delta) {
   }
   if (!card) return;
 
-  // DIAGNOSTIC: check for duplicate ids and log full state around this vote
-  const allIds = [...board.well, ...board.better, ...board.action].map(c => c.id);
-  const dupes = allIds.filter((v, i) => allIds.indexOf(v) !== i);
-  if (dupes.length) console.error('[vote-debug] DUPLICATE CARD IDS DETECTED:', dupes);
-  console.log('[vote-debug] vote() called: col=', col, 'id=', id, 'delta=', delta);
-  console.log('[vote-debug] BEFORE — all cards in', col, ':', board[col].map(c => ({ id: c.id, text: c.text?.slice(0,20), votes: c.votes, userVotes: JSON.stringify(c.userVotes) })));
-
   if (!card.userVotes) card.userVotes = {};
   const cur = card.userVotes[me.id] || 0;
   if (delta > 0) {
@@ -3245,10 +3237,12 @@ async function vote(col, id, delta) {
     await fbSet(`${cardsPath()}/${id}/userVotes`, card.userVotes);
     await fbSet(`${cardsPath()}/${id}/votes`, card.votes);
   } catch(e) {}
-  board[col].sort((a,b) => (b.votes||0) - (a.votes||0) || (a.ts||0) - (b.ts||0));
-  renderCol(col);
+  // Note: deliberately NOT re-sorting here. Sorting immediately after every single vote
+  // caused cards to jump position mid-interaction — if you clicked a heart twice quickly,
+  // the card could reorder between clicks and your second click would land on whatever
+  // card slid into that same screen spot, not the one you meant to vote on again. Sort
+  // order still updates naturally on the next periodic board sync.
   voteLocked = false;
-  console.log('[vote-debug] AFTER — all cards in', col, ':', board[col].map(c => ({ id: c.id, text: c.text?.slice(0,20), votes: c.votes, userVotes: JSON.stringify(c.userVotes) })));
 }
 
 // ── Drag and drop (pointer events) ──
