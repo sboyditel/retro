@@ -3217,6 +3217,18 @@ async function vote(col, id, delta) {
   }
   if (!card) return;
 
+  // DIAGNOSTIC
+  const allIds = [...board.well, ...board.better, ...board.action].map(c => c.id);
+  const dupes = allIds.filter((v, i) => allIds.indexOf(v) !== i);
+  if (dupes.length) console.error('[vote-debug] DUPLICATE CARD IDS DETECTED:', dupes);
+  const dump = () => ({
+    well: board.well.map(c => ({ id: c.id.slice(-6), text: c.text?.slice(0,15), votes: c.votes, myVotes: c.userVotes?.[me.id] })),
+    better: board.better.map(c => ({ id: c.id.slice(-6), text: c.text?.slice(0,15), votes: c.votes, myVotes: c.userVotes?.[me.id] })),
+    action: board.action.map(c => ({ id: c.id.slice(-6), text: c.text?.slice(0,15), votes: c.votes, myVotes: c.userVotes?.[me.id] })),
+  });
+  console.log('[vote-debug] vote() called col=', col, 'id=', id.slice(-6), 'delta=', delta);
+  console.log('[vote-debug] BEFORE (all cols):', JSON.stringify(dump()));
+
   if (!card.userVotes) card.userVotes = {};
   const cur = card.userVotes[me.id] || 0;
   if (delta > 0) {
@@ -3233,6 +3245,7 @@ async function vote(col, id, delta) {
   card.mine = (card.userVotes[me.id] || 0) > 0;
   voteLocked = true;
   renderCol(col);
+  console.log('[vote-debug] AFTER local update, BEFORE firebase save (all cols):', JSON.stringify(dump()));
   try {
     await fbSet(`${cardsPath()}/${id}/userVotes`, card.userVotes);
     await fbSet(`${cardsPath()}/${id}/votes`, card.votes);
