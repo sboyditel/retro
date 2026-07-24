@@ -2845,7 +2845,7 @@ function initMyStats() {
   }
   if (userStats[me.id].coins === undefined) userStats[me.id].coins = 0;
   // Write to Firebase so host can aggregate
-  fbSet(`rooms/${roomKey}/userStats/${me.id}`, userStats[me.id]);
+  fbSet(sessionPath(`userStats/${me.id}`), userStats[me.id]);
   updateMyCoinDisplay();
 }
 
@@ -2863,12 +2863,12 @@ function trackStat(field, delta=1) {
       playCoinSound();
     }
   }
-  fbSet(`rooms/${roomKey}/userStats/${me.id}`, userStats[me.id]);
+  fbSet(sessionPath(`userStats/${me.id}`), userStats[me.id]);
 }
 
 async function loadAllUserStats() {
   try {
-    const remote = await fbGet(`rooms/${roomKey}/userStats`);
+    const remote = await fbGet(sessionPath('userStats'));
     if (remote) userStats = remote;
     renderPresence(); // refresh coin badges on avatars with the latest data
   } catch(e) {}
