@@ -2959,6 +2959,7 @@ async function tick() {
   await checkJiraSprintSync();
   await checkMusicSearchRequests();
   await checkShoutoutBadge();
+  await checkSongFactRequests();
 }
 
 async function loadBoard() {
@@ -5199,16 +5200,19 @@ function openMusicModal() {
   renderMusicPlaylist();
   fetchPlaylistTitles();
   document.getElementById('music-modal').style.display = 'flex';
+  console.log('[song-fact-debug] openMusicModal: ytPlayer exists?', !!ytPlayer, '| songFactInterval already running?', !!songFactInterval);
   // Resume fact-fetching if a song is already playing (it was paused while the modal was closed)
   if (ytPlayer && !songFactInterval) {
     const pl = loadPlaylist();
     const song = pl[currentSongIdx];
+    console.log('[song-fact-debug] openMusicModal resume: currentSongIdx=', currentSongIdx, 'song=', song?.name, 'isRealSongTitle?', song && isRealSongTitle(song.name));
     if (song && isRealSongTitle(song.name)) {
       const card = document.getElementById('song-fact-card');
       const textEl = document.getElementById('song-fact-text');
       if (card && textEl && songFactHistory.length) { textEl.textContent = songFactHistory[songFactHistory.length - 1]; card.style.display = 'block'; }
       else fetchAndShowSongFact(song.name);
       songFactInterval = setInterval(() => fetchAndShowSongFact(song.name), 45000);
+      console.log('[song-fact-debug] resumed interval for', song.name);
     }
   }
 }
@@ -5222,11 +5226,11 @@ function closeMusicModal() {
   musicSearchResults = [];
   // Pause fact-fetching while the panel is hidden — no point burning API calls for a
   // fact nobody can see. The interval resumes in openMusicModal() if music is still playing.
-  if (songFactInterval) { clearInterval(songFactInterval); songFactInterval = null; }
+  if (songFactInterval) { console.log('[song-fact-debug] closeMusicModal: clearing interval'); clearInterval(songFactInterval); songFactInterval = null; }
 }
 
 document.getElementById('music-modal').addEventListener('click', e => {
-  if (e.target === e.currentTarget) closeMusicModal();
+  if (e.target === e.currentTarget) { console.log('[song-fact-debug] backdrop click detected, closing modal'); closeMusicModal(); }
 });
 
 // ── Song fun facts ──
@@ -5238,14 +5242,17 @@ function isRealSongTitle(name) {
 }
 
 function startSongFacts(songName) {
+  console.log('[song-fact-debug] startSongFacts called for:', JSON.stringify(songName), '| isRealSongTitle?', isRealSongTitle(songName));
   stopSongFacts();
-  if (!isRealSongTitle(songName)) return; // don't make up facts about a placeholder title
+  if (!isRealSongTitle(songName)) { console.log('[song-fact-debug] skipping — not a real title yet'); return; }
   songFactHistory = [];
   fetchAndShowSongFact(songName);
-  songFactInterval = setInterval(() => fetchAndShowSongFact(songName), 45000);
+  songFactInterval = setInterval(() => { console.log('[song-fact-debug] 45s interval firing for', songName); fetchAndShowSongFact(songName); }, 45000);
+  console.log('[song-fact-debug] interval scheduled, id=', songFactInterval);
 }
 
 function stopSongFacts() {
+  if (songFactInterval) console.log('[song-fact-debug] stopSongFacts: clearing existing interval id=', songFactInterval);
   if (songFactInterval) clearInterval(songFactInterval);
   songFactInterval = null;
   songFactHistory = [];
@@ -5258,14 +5265,62 @@ async function fetchAndShowSongFact(songName) {
     ? ` Don't repeat these already-shared facts: ${songFactHistory.map(f => `"${f}"`).join('; ')}.`
     : '';
   const prompt = `Give one short, fun, interesting fact about the song "${songName}" (the artist, the recording, its history, or its cultural impact).${alreadyMentioned} Only state something as fact if you're genuinely confident it's accurate — if you're not sure of a specific detail, share a general true fact about its likely genre or era instead rather than guessing. Respond with exactly one short sentence, plain text, no markdown, no quotation marks around it.`;
+
+  const hasLocalKey = !!getAnthropicKey() || !!getGeminiKey();
+  let clean = null;
+
+  if (hasLocalKey || isHost || !roomKey) {
+    // We can generate this ourselves — either we have our own key, or (as host) we're the
+    // one other people's requests get relayed through anyway.
+    try {
+      const { text } = await callLLM(prompt, 100);
+      if (text) clean = text.trim().replace(/^["']|["']$/g, '');
+    } catch(e) { console.warn('fetchAndShowSongFact error:', e); }
+  } else {
+    // No local key — relay through the host's key, same pattern as YouTube search.
+    clean = await requestSongFactFromHost(songName, prompt);
+  }
+
+  if (!clean) return; // no AI available anywhere — fail silently, this is just a fun extra
+  songFactHistory.push(clean);
+  showSongFactCard(clean);
+  toast(`💡 ${clean}`, 10000);
+}
+
+async function requestSongFactFromHost(songName, prompt) {
+  const requestTs = Date.now();
   try {
-    const { text } = await callLLM(prompt, 100);
-    if (!text) return; // no AI provider configured — fail silently, this is just a fun extra
-    const clean = text.trim().replace(/^["']|["']$/g, '');
-    songFactHistory.push(clean);
-    showSongFactCard(clean);
-    toast(`💡 ${clean}`, 10000);
-  } catch(e) { console.warn('fetchAndShowSongFact error:', e); }
+    await fbSet(`rooms/${roomKey}/songFactRequests/${me.id}`, { songName, prompt, ts: requestTs });
+  } catch(e) { return null; }
+
+  const deadline = Date.now() + 15000;
+  while (Date.now() < deadline) {
+    await new Promise(r => setTimeout(r, 1500));
+    let result = null;
+    try { result = await fbGet(`rooms/${roomKey}/songFactResults/${me.id}`); } catch(e) {}
+    if (result && result.ts === requestTs) return result.text || null;
+  }
+  return null; // host never responded (not in the room, no key either, etc.) — fail silently
+}
+
+// Host-only: fulfills participants' relayed song-fact requests using the host's own AI key.
+let processedSongFactRequests = {};
+async function checkSongFactRequests() {
+  if (!isHost || !roomKey) return;
+  let requests = null;
+  try { requests = await fbGet(`rooms/${roomKey}/songFactRequests`); } catch(e) {}
+  if (!requests) return;
+  for (const [participantId, req] of Object.entries(requests)) {
+    if (!req || !req.prompt) continue;
+    if (processedSongFactRequests[participantId] === req.ts) continue;
+    processedSongFactRequests[participantId] = req.ts;
+    let text = null;
+    try {
+      const result = await callLLM(req.prompt, 100);
+      if (result.text) text = result.text.trim().replace(/^["']|["']$/g, '');
+    } catch(e) {}
+    try { await fbSet(`rooms/${roomKey}/songFactResults/${participantId}`, { text, ts: req.ts }); } catch(e) {}
+  }
 }
 
 function showSongFactCard(text) {
