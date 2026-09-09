@@ -1065,7 +1065,7 @@ header {
     <p style="font-size:12px;color:var(--muted);margin-top:-4px;line-height:1.5">If you accidentally left a retro you created, enter the room code to rejoin with full host controls.</p>
     <div class="field">
       <label>Room Code</label>
-      <input id="rejoin-room-code" type="text" placeholder="e.g. retro-default" autocomplete="off"/>
+      <input id="rejoin-room-code" type="text" placeholder="e.g. neat-maple-59" autocomplete="off"/>
     </div>
     <button class="join-btn" onclick="rejoinAsHost()" style="background:#c05020;margin-top:-8px">🔑 Rejoin as Host</button>
     <div id="rejoin-status" style="font-size:13px;color:var(--muted);text-align:center;min-height:16px;margin-top:-8px"></div>
@@ -4106,30 +4106,40 @@ async function rejoinAsHost() {
     statusEl.style.color = '#c0392b';
     return;
   }
-  const code = document.getElementById('rejoin-room-code')?.value.trim();
-  if (!code) { statusEl.textContent = '✗ Enter a room code'; statusEl.style.color = '#c0392b'; return; }
+  const rawCode = document.getElementById('rejoin-room-code')?.value.trim();
+  if (!rawCode) { statusEl.textContent = '✗ Enter a room code'; statusEl.style.color = '#c0392b'; return; }
+
+  // Room is stored as retro-{code} in Firebase
+  const fullRoomKey = rawCode.startsWith('retro-') ? rawCode : 'retro-' + rawCode;
 
   statusEl.textContent = 'Checking room…'; statusEl.style.color = 'var(--muted)';
   try {
-    const sessionId = await fbGet(`rooms/${code}/sessionId`);
-    if (!sessionId) { statusEl.textContent = '✗ No active retro found in that room'; statusEl.style.color = '#c0392b'; return; }
+    const sid = await fbGet(`rooms/${fullRoomKey}/sessionId`);
+    if (!sid) { statusEl.textContent = '✗ No active retro found in that room'; statusEl.style.color = '#c0392b'; return; }
 
-    // Set up as host for that room
-    roomKey = code;
-    window.sessionId = sessionId;
+    // Restore host state — must set the global sessionId variable
+    roomKey = fullRoomKey;
+    sessionId = sid;  // set the global
+    window.sessionId = sid; // belt and suspenders
     isHost = true;
-    me = me || { id: 'u'+Date.now()+Math.random().toString(36).slice(2), name: 'Host', color: '#5c7ef7' };
+    // Ask for name so their cards show as "your card"
+    const hostName = prompt('Enter your name (must match what you used originally):') || 'Host';
+    const hostColor = '#5c7ef7';
+    if (!me) me = { id: 'u'+Date.now()+Math.random().toString(36).slice(2), name: hostName, color: hostColor };
+    else { me.name = hostName; }
 
-    // Load retro name and show board
     showScreen(null);
     document.getElementById('app').style.display = 'block';
     const tb = document.getElementById('timer-btn');
     if (tb) { tb.style.display = 'flex'; tb.style.alignItems = 'center'; tb.style.justifyContent = 'center'; }
     const hc = document.getElementById('timer-host-controls');
     if (hc) hc.style.display = 'flex';
-    startSync();
-    initMyStats();
-    toast('✓ Rejoined as host!');
+    // Small delay to ensure sessionId is set before loadBoard runs
+    setTimeout(() => {
+      startSync();
+      initMyStats();
+      toast('✓ Rejoined as host! Room: ' + fullRoomKey + ' / Session: ' + sid);
+    }, 300);
   } catch(e) {
     statusEl.textContent = '✗ Error: ' + e.message;
     statusEl.style.color = '#c0392b';
