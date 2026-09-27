@@ -1241,7 +1241,8 @@ header {
       <button onclick="closePrevActions()" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:22px">×</button>
     </div>
     <div id="prev-actions-list" style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px"></div>
-    <button onclick="savePrevActionsAndClose()" style="font-family:var(--sans);font-size:14px;font-weight:600;padding:10px 24px;border-radius:10px;border:none;background:var(--text);color:#fff;cursor:pointer;width:100%">Done — Start Retro →</button>
+    <button onclick="savePrevActionsAndClose()" style="font-family:var(--sans);font-size:14px;font-weight:600;padding:10px 24px;border-radius:10px;border:none;background:var(--text);color:#fff;cursor:pointer;width:100%;margin-bottom:8px">Done — Start Retro →</button>
+    <button onclick="closePrevActions()" style="font-family:var(--sans);font-size:13px;padding:8px 24px;border-radius:10px;border:1px solid var(--border);background:none;color:var(--muted);cursor:pointer;width:100%">Skip →</button>
   </div>
   </div>
 </div>
@@ -1363,8 +1364,6 @@ header {
     <div class="ai-footer"><button class="btn" onclick="document.getElementById('prev-actions-overlay').classList.remove('open')">Close</button></div>
   </div>
 </div>
-
-<!-- Jira tickets overlay -->
 <div class="overlay" id="tickets-overlay" style="align-items:center">
   <div class="ai-panel" style="max-width:860px;border-radius:16px;max-height:85vh">
     <div class="ai-header" style="margin-bottom:12px">
@@ -2005,7 +2004,7 @@ async function joinAsParticipant() {
   initMyStats();
   try {
     const teamId = await fbGet(sessionPath('teamId'));
-    if (teamId) { currentTeamId = teamId; showPrevActionsModal(teamId); }
+    if (teamId) { currentTeamId = teamId; checkPrevActions(teamId); }
   } catch(e) {}
 }
 
@@ -2166,7 +2165,6 @@ async function showPrevActionsModal(teamId) {
     // Show the button in the sprint goal bar and open the modal
     const btn = document.getElementById('prev-actions-btn');
     if (btn) { btn.style.display = 'flex'; document.getElementById('sprint-goal-bar').style.display = 'flex'; }
-    document.getElementById('prev-actions-overlay').classList.add('open');
   } catch(e) {}
 }
 
@@ -4624,7 +4622,7 @@ async function checkPrevActions(teamId) {
         </div>
       </div>`).join('')}`;
 
-    document.getElementById('prev-actions-overlay').style.display = 'flex';
+    document.getElementById('action-followup-overlay').style.display = 'flex';
   } catch(e) { console.error('checkPrevActions error:', e); }
 }
 
