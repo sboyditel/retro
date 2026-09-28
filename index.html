@@ -719,103 +719,133 @@ header {
 </div>
 
 <!-- HOST SCREEN -->
-<div id="screen-host" style="display:none">
-  <div class="join-card">
-    <div class="join-logo">
-      <div class="mark" style="background:none;border-radius:0;width:auto;height:auto">
-        <svg width="72" height="44" viewBox="0 0 200 120" style="display:block">
-          <rect x="0" y="0" width="200" height="120" rx="60" fill="#1a1917"/>
-          <text x="18" y="95" font-family="Georgia,serif" font-size="100" font-weight="700" fill="white">R</text>
-          <text x="98" y="95" font-family="Georgia,serif" font-size="100" font-weight="700" fill="#5c7ef7">B</text>
-        </svg>
+<div id="screen-host" style="display:none;min-height:100vh;align-items:center;justify-content:center;position:relative;overflow:hidden;background:linear-gradient(135deg,#0f0f14 0%,#1a1a2e 50%,#16213e 100%)">
+  <div style="position:absolute;top:-150px;right:-150px;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(92,126,247,.5) 0%,rgba(92,126,247,.15) 40%,transparent 70%);pointer-events:none;filter:blur(40px)"></div>
+  <div style="position:absolute;bottom:-150px;left:-150px;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(118,75,162,.5) 0%,rgba(118,75,162,.15) 40%,transparent 70%);pointer-events:none;filter:blur(40px)"></div>
+  <svg style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none" xmlns="http://www.w3.org/2000/svg">
+    <defs><pattern id="hdots" x="0" y="0" width="60" height="60" patternUnits="userSpaceOnUse"><circle cx="30" cy="30" r="0.8" fill="white" opacity="0.07"/></pattern></defs>
+    <rect width="100%" height="100%" fill="url(#hdots)"/>
+  </svg>
+  <div style="width:100%;max-width:480px;padding:24px;z-index:1;margin:40px auto">
+    <!-- Logo -->
+    <div style="text-align:center;margin-bottom:28px">
+      <svg width="70" height="42" viewBox="0 0 200 120" style="display:inline-block;margin-bottom:12px">
+        <rect x="0" y="0" width="200" height="120" rx="60" fill="rgba(255,255,255,0.1)"/>
+        <rect x="2" y="2" width="196" height="116" rx="58" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="1.5"/>
+        <text x="18" y="95" font-family="Georgia,serif" font-size="100" font-weight="700" fill="white">R</text>
+        <text x="98" y="95" font-family="Georgia,serif" font-size="100" font-weight="700" fill="#5c7ef7">B</text>
+      </svg>
+      <div style="font-family:var(--serif);font-size:26px;color:white;font-weight:400">Create a retro</div>
+      <div style="font-size:12px;color:rgba(255,255,255,.4);margin-top:4px">Configure your board then share the room code</div>
+    </div>
+    <!-- Form card -->
+    <div style="background:rgba(255,255,255,0.05);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-radius:24px;padding:28px;border:1px solid rgba(255,255,255,0.1);box-shadow:0 8px 40px rgba(0,0,0,.4)">
+      <button onclick="showScreen('screen-landing')" style="background:none;border:none;cursor:pointer;color:rgba(255,255,255,.5);font-size:13px;font-family:var(--sans);padding:0;display:flex;align-items:center;gap:6px;margin-bottom:20px;transition:color .15s" onmouseover="this.style.color='white'" onmouseout="this.style.color='rgba(255,255,255,.5)'">← Back</button>
+
+      <style>
+        #screen-host label { color:rgba(255,255,255,.7) !important; }
+        #screen-host input, #screen-host select { background:rgba(255,255,255,.08) !important; border-color:rgba(255,255,255,.15) !important; color:white !important; }
+        #screen-host input::placeholder { color:rgba(255,255,255,.3) !important; }
+        #screen-host input:focus, #screen-host select:focus { border-color:rgba(92,126,247,.7) !important; background:rgba(255,255,255,.12) !important; }
+        #screen-host select option { background:#1a1a2e; color:white; }
+        #screen-host .room-hint { color:rgba(255,255,255,.35) !important; }
+        #screen-host .copy-strip { background:rgba(255,255,255,.06) !important; border-color:rgba(255,255,255,.12) !important; }
+        #screen-host #code-display { color:rgba(255,255,255,.8) !important; }
+        #screen-host .gen-btn { background:rgba(255,255,255,.1) !important; border-color:rgba(255,255,255,.2) !important; color:rgba(255,255,255,.8) !important; }
+        #screen-host .avatar-row .av { border-color:rgba(255,255,255,.2) !important; }
+      </style>
+
+      <div class="field" id="jira-project-field" style="display:none">
+        <label>Jira project <span style="color:rgba(255,255,255,.35);font-weight:400">(optional)</span></label>
+        <select id="host-jira-project" class="team-select"><option value="">Select a project…</option></select>
+        <div style="font-size:11px;color:rgba(255,255,255,.3);margin-top:4px">Not seeing projects? <button onclick="showScreen('screen-jira')" style="background:none;border:none;color:#5c7ef7;cursor:pointer;font-size:11px;font-family:var(--sans);padding:0;text-decoration:underline">Configure Jira</button></div>
       </div>
-      RetroBoard
-    </div>
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:-4px">
-      <button onclick="showScreen('screen-landing')" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:20px;line-height:1;padding:0">←</button>
-      <h2>Create a retro</h2>
-    </div>
-    <div class="field" id="jira-project-field" style="display:none">
-      <label>Jira project <span style="color:#b8b4ac;font-weight:400">(optional — loads last sprint)</span></label>
-      <select id="host-jira-project" class="team-select">
-        <option value="">Select a project…</option>
-      </select>
-      <div style="font-size:11px;color:#b8b4ac;margin-top:4px">
-        Not seeing projects? <button onclick="showScreen('screen-jira')" style="background:none;border:none;color:var(--action);cursor:pointer;font-size:11px;font-family:var(--sans);padding:0;text-decoration:underline">Configure Jira</button>
+      <div class="field">
+        <label>Team <span style="color:rgba(255,255,255,.35);font-weight:400">(optional)</span></label>
+        <select id="host-team" class="team-select"><option value="">No team / general</option></select>
       </div>
-    </div>
-    <div class="field">
-      <label>Team <span style="color:#b8b4ac;font-weight:400">(optional)</span></label>
-      <select id="host-team" class="team-select">
-        <option value="">No team / general</option>
-      </select>
-    </div>
-    <div class="field">
-      <label>Sprint goal <span style="color:#b8b4ac;font-weight:400">(optional)</span></label>
-      <input id="host-sprint-goal" type="text" placeholder="e.g. Ship v2 login flow" maxlength="120" autocomplete="off"/>
-    </div>
-    <div class="field">
-      <label>Retro name</label>
-      <input id="host-retro-name" type="text" placeholder="e.g. Sprint 24 Retrospective" maxlength="60" autocomplete="off"/>
-    </div>
-    <div class="field">
-      <label>Room code</label>
-      <div class="room-row">
-        <input id="inp-room" type="text" placeholder="e.g. swift-falcon-42" maxlength="32" autocomplete="off"/>
-        <button class="gen-btn" onclick="generateCode()">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle;margin-right:4px"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-          Generate
-        </button>
+      <div class="field">
+        <label>Sprint goal <span style="color:rgba(255,255,255,.35);font-weight:400">(optional)</span></label>
+        <input id="host-sprint-goal" type="text" placeholder="e.g. Ship v2 login flow" maxlength="120" autocomplete="off"/>
       </div>
-      <div class="copy-strip" id="copy-strip">
-        <span id="code-display"></span>
-        <button class="copy-btn" id="copy-btn" onclick="copyCode()">Copy</button>
+      <div class="field">
+        <label>Retro name</label>
+        <input id="host-retro-name" type="text" placeholder="e.g. Sprint 24 Retrospective" maxlength="60" autocomplete="off"/>
       </div>
+      <div class="field">
+        <label>Room code</label>
+        <div class="room-row">
+          <input id="inp-room" type="text" placeholder="e.g. swift-falcon-42" maxlength="32" autocomplete="off"/>
+          <button class="gen-btn" onclick="generateCode()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle;margin-right:4px"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+            Generate
+          </button>
+        </div>
+        <div class="copy-strip" id="copy-strip"><span id="code-display"></span><button class="copy-btn" id="copy-btn" onclick="copyCode()">Copy</button></div>
+      </div>
+      <div class="field">
+        <label>Your name</label>
+        <input id="host-name" type="text" placeholder="e.g. Alex" maxlength="24" autocomplete="off"/>
+      </div>
+      <div class="field">
+        <label>Pick your colour</label>
+        <div class="avatar-row" id="color-row"></div>
+      </div>
+      <button class="join-btn" onclick="joinAsHost()" style="width:100%;margin-top:8px">Create &amp; open board →</button>
+      <div class="room-hint" style="text-align:center;margin-top:10px">Share the room code with your team so they can join.</div>
     </div>
-    <div class="field">
-      <label>Your name</label>
-      <input id="host-name" type="text" placeholder="e.g. Alex" maxlength="24" autocomplete="off"/>
-    </div>
-    <div class="field">
-      <label>Pick your colour</label>
-      <div class="avatar-row" id="color-row"></div>
-    </div>
-    <button class="join-btn" onclick="joinAsHost()">Create &amp; open board →</button>
-    <div class="room-hint">Share the room code with your team so they can join.</div>
   </div>
 </div>
 
 <!-- PARTICIPANT SCREEN -->
-<div id="screen-join" style="display:none">
-  <div class="join-card">
-    <div class="join-logo">
-      <div class="mark" style="background:none;border-radius:0;width:auto;height:auto">
-        <svg width="72" height="44" viewBox="0 0 200 120" style="display:block">
-          <rect x="0" y="0" width="200" height="120" rx="60" fill="#1a1917"/>
-          <text x="18" y="95" font-family="Georgia,serif" font-size="100" font-weight="700" fill="white">R</text>
-          <text x="98" y="95" font-family="Georgia,serif" font-size="100" font-weight="700" fill="#5c7ef7">B</text>
-        </svg>
+<div id="screen-join" style="display:none;min-height:100vh;align-items:center;justify-content:center;position:relative;overflow:hidden;background:linear-gradient(135deg,#0f0f14 0%,#1a1a2e 50%,#16213e 100%)">
+  <div style="position:absolute;top:-150px;right:-150px;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(92,126,247,.5) 0%,rgba(92,126,247,.15) 40%,transparent 70%);pointer-events:none;filter:blur(40px)"></div>
+  <div style="position:absolute;bottom:-150px;left:-150px;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(118,75,162,.5) 0%,rgba(118,75,162,.15) 40%,transparent 70%);pointer-events:none;filter:blur(40px)"></div>
+  <svg style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none" xmlns="http://www.w3.org/2000/svg">
+    <defs><pattern id="jdots" x="0" y="0" width="60" height="60" patternUnits="userSpaceOnUse"><circle cx="30" cy="30" r="0.8" fill="white" opacity="0.07"/></pattern></defs>
+    <rect width="100%" height="100%" fill="url(#jdots)"/>
+  </svg>
+  <div style="width:100%;max-width:440px;padding:24px;z-index:1;margin:40px auto">
+    <!-- Logo -->
+    <div style="text-align:center;margin-bottom:28px">
+      <svg width="70" height="42" viewBox="0 0 200 120" style="display:inline-block;margin-bottom:12px">
+        <rect x="0" y="0" width="200" height="120" rx="60" fill="rgba(255,255,255,0.1)"/>
+        <rect x="2" y="2" width="196" height="116" rx="58" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="1.5"/>
+        <text x="18" y="95" font-family="Georgia,serif" font-size="100" font-weight="700" fill="white">R</text>
+        <text x="98" y="95" font-family="Georgia,serif" font-size="100" font-weight="700" fill="#5c7ef7">B</text>
+      </svg>
+      <div style="font-family:var(--serif);font-size:26px;color:white;font-weight:400">Join a retro</div>
+      <div style="font-size:12px;color:rgba(255,255,255,.4);margin-top:4px">Enter the room code your host shared</div>
+    </div>
+    <!-- Form card -->
+    <div style="background:rgba(255,255,255,0.05);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-radius:24px;padding:28px;border:1px solid rgba(255,255,255,0.1);box-shadow:0 8px 40px rgba(0,0,0,.4)">
+      <button onclick="showScreen('screen-landing')" style="background:none;border:none;cursor:pointer;color:rgba(255,255,255,.5);font-size:13px;font-family:var(--sans);padding:0;display:flex;align-items:center;gap:6px;margin-bottom:20px;transition:color .15s" onmouseover="this.style.color='white'" onmouseout="this.style.color='rgba(255,255,255,.5)'">← Back</button>
+
+      <style>
+        #screen-join label { color:rgba(255,255,255,.7) !important; }
+        #screen-join input, #screen-join select { background:rgba(255,255,255,.08) !important; border-color:rgba(255,255,255,.15) !important; color:white !important; }
+        #screen-join input::placeholder { color:rgba(255,255,255,.3) !important; }
+        #screen-join input:focus { border-color:rgba(92,126,247,.7) !important; background:rgba(255,255,255,.12) !important; }
+        #screen-join .avatar-row .av { border-color:rgba(255,255,255,.2) !important; }
+        #screen-join #join-status { color:rgba(255,255,255,.5) !important; }
+      </style>
+
+      <div class="field">
+        <label>Room code</label>
+        <input id="join-room" type="text" placeholder="e.g. swift-falcon-42" maxlength="32" autocomplete="off"/>
       </div>
-      RetroBoard
-    </div>
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:-4px">
-      <button onclick="showScreen('screen-landing')" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:20px;line-height:1;padding:0">←</button>
-      <h2>Join a retro</h2>
-    </div>
     <div class="field">
-      <label>Room code</label>
-      <input id="join-room" type="text" placeholder="e.g. swift-falcon-42" maxlength="32" autocomplete="off"/>
+        <label>Your name</label>
+        <input id="join-name" type="text" placeholder="e.g. Sam" maxlength="24" autocomplete="off"/>
+      </div>
+      <div class="field">
+        <label>Pick your colour</label>
+        <div class="avatar-row" id="color-row-join"></div>
+      </div>
+      <button class="join-btn" onclick="joinAsParticipant()" style="width:100%;margin-top:8px">Join retro →</button>
+      <div class="room-hint" style="text-align:center;margin-top:10px;color:rgba(255,255,255,.35)">Ask your facilitator for the room code.</div>
+      <div id="join-status" style="font-size:13px;text-align:center;margin-top:8px;min-height:20px"></div>
     </div>
-    <div class="field">
-      <label>Your name</label>
-      <input id="join-name" type="text" placeholder="e.g. Sam" maxlength="24" autocomplete="off"/>
-    </div>
-    <div class="field">
-      <label>Pick your colour</label>
-      <div class="avatar-row" id="color-row-join"></div>
-    </div>
-    <button class="join-btn" onclick="joinAsParticipant()">Join retro →</button>
-    <div class="room-hint">Ask your facilitator for the room code.</div>
   </div>
 </div>
 
