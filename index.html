@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<script>try{document.documentElement.dataset.bg=localStorage.getItem("kaizen_bg")||"asanoha"}catch(e){document.documentElement.dataset.bg="asanoha"}try{var _t=localStorage.getItem("retro_theme");if(localStorage.getItem("kaizen_look")!=="2"||!_t)_t="default";if(_t!=="default")document.documentElement.dataset.theme=_t}catch(e){}</script>
+<script>try{document.documentElement.dataset.bg=localStorage.getItem("kaizen_bg")||"asanoha"}catch(e){document.documentElement.dataset.bg="asanoha"}try{var _t=localStorage.getItem("retro_theme");if(localStorage.getItem("kaizen_look")!=="3"||!_t)_t="kaizen";if(_t!=="default")document.documentElement.dataset.theme=_t}catch(e){}</script>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2264%22 height=%2264%22 viewBox=%220 0 140 140%22%3E%3Ccircle cx=%2270%22 cy=%2270%22 r=%2270%22 fill=%22%231a1917%22/%3E%3Ctext x=%2270%22 y=%2290%22 text-anchor=%22middle%22 font-size=%2254%22 font-weight=%22700%22 fill=%22%23ffffff%22 font-family=%22'Hiragino Sans','Yu Gothic','Noto Sans JP','Meiryo','Microsoft YaHei',sans-serif%22%3E%26%2325913%3B%3C/text%3E%3Ctext x=%2270%22 y=%22124%22 text-anchor=%22middle%22 font-size=%2230%22 font-weight=%22700%22 fill=%22%235c7ef7%22 font-family=%22'Hiragino Sans','Yu Gothic','Noto Sans JP','Meiryo','Microsoft YaHei',sans-serif%22%3E%26%2321892%3B%3C/text%3E%3Ccircle cx=%22112%22 cy=%2226%22 r=%229%22 fill=%22%23e8472b%22/%3E%3C/svg%3E">
 <link rel="alternate icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -1156,7 +1156,6 @@ html:not([data-theme]) body::after { opacity:.55; }
       <button onclick="document.getElementById('jira-sprint-panel').style.display='none'" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:18px;margin-left:8px">×</button>
     </div>
     <div class="jira-stats" id="jira-stats"></div>
-    <div id="jira-breakdown"></div>
     <div id="jira-ai-result" class="jira-ai-body"></div>
   </div>
 
@@ -2149,51 +2148,10 @@ function showJiraSprint() {
     <button onclick="openTicketsOverlay()" style="font-family:var(--sans);font-size:12px;font-weight:500;padding:5px 12px;border-radius:8px;border:1px solid #2684ff;background:#e8f0fe;color:#0052cc;cursor:pointer;margin-left:auto">
       🎫 View all tickets
     </button>`;
-  renderJiraBreakdown(issues);
 
   const jbb = document.getElementById('jira-board-btn'); jbb.style.display = 'flex'; jbb.style.alignItems = 'center'; jbb.style.gap = '5px';
   document.getElementById('jira-ai-result').innerHTML = '<div class="loading"><div class="dots"><span></span><span></span><span></span></div> Generating sprint summary…</div>';
   generateJiraSummary(sprint, done, inprog, todo);
-}
-
-function renderJiraBreakdown(issues) {
-  const box = document.getElementById('jira-breakdown');
-  if (!box) return;
-  if (!issues || !issues.length) { box.innerHTML = ''; return; }
-  const isDone = i => i.fields.status?.statusCategory?.key === 'done';
-  const tally = keyFn => {
-    const m = {};
-    issues.forEach(i => { const k = keyFn(i); const e = (m[k] = m[k] || { total:0, done:0 }); e.total++; if (isDone(i)) e.done++; });
-    return Object.entries(m).sort((a, b) => b[1].total - a[1].total);
-  };
-  const types  = tally(i => i.fields.issuetype?.name || 'Other');
-  const people = tally(i => i.fields.assignee?.displayName || 'Unassigned');
-  const HIGH = ['highest', 'high', 'critical', 'blocker', 'major'];
-  const highOpen = issues.filter(i => !isDone(i) && HIGH.includes((i.fields.priority?.name || '').toLowerCase()));
-  const unassigned = issues.filter(i => !i.fields.assignee && !isDone(i));
-  const label = t => `<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin:10px 0 6px">${t}</div>`;
-  const shown = people.slice(0, 8);
-
-  box.innerHTML = `
-    ${label('By issue type')}
-    <div class="jira-stats" style="margin-bottom:0">
-      ${types.map(([t, e]) => `<div class="jira-stat"><strong>${e.done}/${e.total}</strong> ${esc(t)}</div>`).join('')}
-    </div>
-    ${label('By person')}
-    <div style="display:flex;flex-wrap:wrap;gap:8px 24px">
-      ${shown.map(([n, e]) => `
-        <div style="display:flex;align-items:center;gap:8px;font-size:12px;flex:1 1 240px;max-width:340px">
-          <span style="width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(n)}">${esc(n)}</span>
-          <div style="flex:1;height:6px;background:var(--border);border-radius:6px;overflow:hidden"><div style="width:${Math.round(e.done / e.total * 100)}%;height:100%;background:#22c55e"></div></div>
-          <span style="color:var(--muted);min-width:36px;text-align:right">${e.done}/${e.total}</span>
-        </div>`).join('')}
-      ${people.length > shown.length ? `<div style="font-size:12px;color:var(--muted)">+${people.length - shown.length} more</div>` : ''}
-    </div>
-    ${(highOpen.length || unassigned.length) ? `
-    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px">
-      ${highOpen.length ? `<span class="jira-stat" style="color:#b45309" title="${esc(highOpen.slice(0, 10).map(i => i.key).join(', '))}">⚠ <strong>${highOpen.length}</strong> high-priority still open</span>` : ''}
-      ${unassigned.length ? `<span class="jira-stat" style="color:var(--muted)" title="${esc(unassigned.slice(0, 10).map(i => i.key).join(', '))}">👤 <strong>${unassigned.length}</strong> open &amp; unassigned</span>` : ''}
-    </div>` : ''}`;
 }
 
 async function switchSprint(sprintId) {
@@ -4472,8 +4430,8 @@ document.getElementById('cotd-overlay').addEventListener('click', e => {
 
 // ── Themes ──
 const THEMES = [
-  { id:'default',  name:'Washi',    preview:['#f4efe3','#1c2340','#2c7a60'] },
   { id:'kaizen',   name:'Kon',      preview:['#0a1228','#e8ecf7','#d4af5a'] },
+  { id:'default',  name:'Washi',    preview:['#f4efe3','#1c2340','#2c7a60'] },
   { id:'dark',     name:'Sumi',     preview:['#1a1917','#f0ede8','#20c060'] },
   { id:'ocean',    name:'Indigo',   preview:['#f0f7ff','#0c2340','#0a7a6e'] },
   { id:'forest',   name:'Matcha',   preview:['#f2f7f0','#1a2e14','#2a7a3a'] },
@@ -4535,8 +4493,8 @@ function applyTheme(id) {
 function loadSavedTheme() {
   let saved = localStorage.getItem('retro_theme');
   // one-time move to the new Kaizen look; the picker still lets anyone switch back
-  if (localStorage.getItem('kaizen_look') !== '2') { saved = 'default'; localStorage.setItem('retro_theme','default'); localStorage.setItem('kaizen_look','2'); }
-  if (!saved) saved = 'default';
+  if (localStorage.getItem('kaizen_look') !== '3') { saved = 'kaizen'; localStorage.setItem('retro_theme','kaizen'); localStorage.setItem('kaizen_look','3'); }
+  if (!saved) saved = 'kaizen';
   if (saved !== 'default') document.documentElement.dataset.theme = saved;
   else delete document.documentElement.dataset.theme;
 }
