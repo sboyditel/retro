@@ -660,6 +660,9 @@ header {
   #ceremony .cer-ripple { display:none; }
   .enso circle, .enso-spin { animation:none !important; }
 }
+/* Overlay alignment — only takes effect once JS switches display from none to flex */
+#timer-overlay { align-items:flex-start; justify-content:center; }
+#cotd-overlay, #theme-modal, #participation-overlay { align-items:center; justify-content:center; }
 </style>
 </head>
 <body>
@@ -975,6 +978,7 @@ header {
       <button onclick="document.getElementById('jira-sprint-panel').style.display='none'" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:18px;margin-left:8px">×</button>
     </div>
     <div class="jira-stats" id="jira-stats"></div>
+    <div id="jira-breakdown"></div>
     <div id="jira-ai-result" class="jira-ai-body"></div>
   </div>
 
@@ -1217,6 +1221,9 @@ header {
       <button onclick="pauseTimer()" id="timer-pause-btn" style="font-family:var(--sans);font-size:13px;padding:7px 18px;border-radius:8px;border:1.5px solid rgba(255,255,255,.3);background:transparent;color:#fff;cursor:pointer">Pause</button>
       <button onclick="resetTimer()" style="font-family:var(--sans);font-size:13px;padding:7px 18px;border-radius:8px;border:1.5px solid rgba(255,255,255,.3);background:transparent;color:#fff;cursor:pointer">Reset</button>
       <button onclick="closeTimerOverlay()" style="font-family:var(--sans);font-size:13px;padding:7px 18px;border-radius:8px;border:1.5px solid rgba(255,255,255,.3);background:transparent;color:#fff;cursor:pointer">Hide</button>
+    </div>
+    <div id="timer-guest-controls" style="display:none;margin-top:14px">
+      <button onclick="hideTimerForMe()" title="Hide the clock for you only" style="font-family:var(--sans);font-size:13px;padding:7px 18px;border-radius:8px;border:1.5px solid rgba(255,255,255,.3);background:transparent;color:#fff;cursor:pointer">Hide</button>
     </div>
   </div>
 </div>
@@ -1899,7 +1906,17 @@ async function loadSprintIssues(sprint, boardId) {
   const btn = document.getElementById('jira-board-btn');
   btn.innerHTML = `<div style="width:14px;height:14px;border-radius:4px;background:linear-gradient(135deg,#0052cc,#2684ff);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="8" height="8" viewBox="0 0 32 32" fill="none"><path d="M22.4 15.1l-6.57-6.57-6.57 6.57 2.29 2.29 4.28-4.28 4.28 4.28 2.29-2.29z" fill="white"/></svg></div> Loading…`;
 
-  const issues = await jiraAgileFetch(`/board/${boardId}/sprint/${sprint.id}/issue?maxResults=100&fields=summary,status,assignee,priority,issuetype`);
+  // Fetch every page so Total / % Complete are right even for big sprints
+  let allIssues = [], startAt = 0, total = Infinity;
+  while (allIssues.length < total && startAt < 1000) {
+    const page = await jiraAgileFetch(`/board/${boardId}/sprint/${sprint.id}/issue?maxResults=100&startAt=${startAt}&fields=summary,status,assignee,priority,issuetype`);
+    const batch = page?.issues || [];
+    if (!batch.length) break;
+    allIssues = allIssues.concat(batch);
+    total = typeof page.total === 'number' ? page.total : allIssues.length;
+    startAt += batch.length;
+  }
+  const issues = { issues: allIssues };
 
   if (jiraSprintData) {
     jiraSprintData.sprint = sprint;
@@ -1948,10 +1965,51 @@ function showJiraSprint() {
     <button onclick="openTicketsOverlay()" style="font-family:var(--sans);font-size:12px;font-weight:500;padding:5px 12px;border-radius:8px;border:1px solid #2684ff;background:#e8f0fe;color:#0052cc;cursor:pointer;margin-left:auto">
       🎫 View all tickets
     </button>`;
+  renderJiraBreakdown(issues);
 
   const jbb = document.getElementById('jira-board-btn'); jbb.style.display = 'flex'; jbb.style.alignItems = 'center'; jbb.style.gap = '5px';
   document.getElementById('jira-ai-result').innerHTML = '<div class="loading"><div class="dots"><span></span><span></span><span></span></div> Generating sprint summary…</div>';
   generateJiraSummary(sprint, done, inprog, todo);
+}
+
+function renderJiraBreakdown(issues) {
+  const box = document.getElementById('jira-breakdown');
+  if (!box) return;
+  if (!issues || !issues.length) { box.innerHTML = ''; return; }
+  const isDone = i => i.fields.status?.statusCategory?.key === 'done';
+  const tally = keyFn => {
+    const m = {};
+    issues.forEach(i => { const k = keyFn(i); const e = (m[k] = m[k] || { total:0, done:0 }); e.total++; if (isDone(i)) e.done++; });
+    return Object.entries(m).sort((a, b) => b[1].total - a[1].total);
+  };
+  const types  = tally(i => i.fields.issuetype?.name || 'Other');
+  const people = tally(i => i.fields.assignee?.displayName || 'Unassigned');
+  const HIGH = ['highest', 'high', 'critical', 'blocker', 'major'];
+  const highOpen = issues.filter(i => !isDone(i) && HIGH.includes((i.fields.priority?.name || '').toLowerCase()));
+  const unassigned = issues.filter(i => !i.fields.assignee && !isDone(i));
+  const label = t => `<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin:10px 0 6px">${t}</div>`;
+  const shown = people.slice(0, 8);
+
+  box.innerHTML = `
+    ${label('By issue type')}
+    <div class="jira-stats" style="margin-bottom:0">
+      ${types.map(([t, e]) => `<div class="jira-stat"><strong>${e.done}/${e.total}</strong> ${esc(t)}</div>`).join('')}
+    </div>
+    ${label('By person')}
+    <div style="display:flex;flex-wrap:wrap;gap:8px 24px">
+      ${shown.map(([n, e]) => `
+        <div style="display:flex;align-items:center;gap:8px;font-size:12px;flex:1 1 240px;max-width:340px">
+          <span style="width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(n)}">${esc(n)}</span>
+          <div style="flex:1;height:6px;background:var(--border);border-radius:6px;overflow:hidden"><div style="width:${Math.round(e.done / e.total * 100)}%;height:100%;background:#22c55e"></div></div>
+          <span style="color:var(--muted);min-width:36px;text-align:right">${e.done}/${e.total}</span>
+        </div>`).join('')}
+      ${people.length > shown.length ? `<div style="font-size:12px;color:var(--muted)">+${people.length - shown.length} more</div>` : ''}
+    </div>
+    ${(highOpen.length || unassigned.length) ? `
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px">
+      ${highOpen.length ? `<span class="jira-stat" style="color:#b45309" title="${esc(highOpen.slice(0, 10).map(i => i.key).join(', '))}">⚠ <strong>${highOpen.length}</strong> high-priority still open</span>` : ''}
+      ${unassigned.length ? `<span class="jira-stat" style="color:var(--muted)" title="${esc(unassigned.slice(0, 10).map(i => i.key).join(', '))}">👤 <strong>${unassigned.length}</strong> open &amp; unassigned</span>` : ''}
+    </div>` : ''}`;
 }
 
 async function switchSprint(sprintId) {
@@ -2077,7 +2135,10 @@ Keep it under 120 words. Be direct and specific. No markdown, no headers.`;
     if (json.choices?.[0]?.message?.content) {
       document.getElementById('jira-ai-result').innerHTML = json.choices[0].message.content;
     } else if (json.error) {
-      document.getElementById('jira-ai-result').innerHTML = `<p style="color:#c0392b;font-size:12px">API error: ${esc(json.error.message||'unknown')}</p>`;
+      const badKey = json.error.code === 'invalid_api_key' || /incorrect api key/i.test(json.error.message || '');
+      document.getElementById('jira-ai-result').innerHTML = badKey
+        ? `<p style="color:var(--muted);font-size:12px;margin-top:12px">✨ AI summary unavailable — OpenAI rejected the saved API key. Update it from the home screen under ⚙️ Settings. The stats above are pulled live from Jira.</p>`
+        : `<p style="color:#c0392b;font-size:12px;margin-top:12px">AI summary error: ${esc(json.error.message||'unknown')}</p>`;
     } else {
       document.getElementById('jira-ai-result').innerHTML = '<p style="color:var(--muted)">No summary generated.</p>';
     }
@@ -4070,6 +4131,11 @@ async function syncTimer() {
 }
 
 let lastTimerTs = SESSION_START_TS;
+let timerHiddenByMe = false;   // participant dismissed the clock; stays hidden until the next fresh start
+function hideTimerForMe() {
+  timerHiddenByMe = true;
+  closeTimerOverlay();
+}
 async function checkTimerSync() {
   if (!roomKey || isHost) return; // host manages own timer locally
   try {
@@ -4078,9 +4144,15 @@ async function checkTimerSync() {
     lastTimerTs = t.ts;
     timerSeconds = Math.max(0, t.seconds);
     updateTimerDisplay();
+    // A reset / fresh start / finished timer clears "hidden by me", so the next round shows again
+    if (t.seconds >= TIMER_DURATION - 1 || t.seconds <= 0) timerHiddenByMe = false;
     if (t.running && !timerRunning) {
-      // Host started timer — show read-only countdown to participant
-      document.getElementById('timer-overlay').style.display = 'flex';
+      // Host started timer — show read-only countdown to participant (unless they hid it)
+      if (!timerHiddenByMe) {
+        document.getElementById('timer-overlay').style.display = 'flex';
+        const gc = document.getElementById('timer-guest-controls');
+        if (gc) gc.style.display = 'block';
+      }
       timerRunning = true;
       if (timerInterval) clearInterval(timerInterval);
       timerInterval = setInterval(() => {
