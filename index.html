@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>try{document.documentElement.dataset.bg=localStorage.getItem("kaizen_bg")||"asanoha"}catch(e){document.documentElement.dataset.bg="asanoha"}</script>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2264%22 height=%2264%22 viewBox=%220 0 140 140%22%3E%3Ccircle cx=%2270%22 cy=%2270%22 r=%2270%22 fill=%22%231a1917%22/%3E%3Ctext x=%2270%22 y=%2290%22 text-anchor=%22middle%22 font-size=%2254%22 font-weight=%22700%22 fill=%22%23ffffff%22 font-family=%22'Hiragino Sans','Yu Gothic','Noto Sans JP','Meiryo','Microsoft YaHei',sans-serif%22%3E%26%2325913%3B%3C/text%3E%3Ctext x=%2270%22 y=%22124%22 text-anchor=%22middle%22 font-size=%2230%22 font-weight=%22700%22 fill=%22%235c7ef7%22 font-family=%22'Hiragino Sans','Yu Gothic','Noto Sans JP','Meiryo','Microsoft YaHei',sans-serif%22%3E%26%2321892%3B%3C/text%3E%3Ccircle cx=%22112%22 cy=%2226%22 r=%229%22 fill=%22%23e8472b%22/%3E%3C/svg%3E">
 <link rel="alternate icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -630,8 +631,6 @@ header {
 }
 
 /* ── Kaizen brand layer ── */
-#screen-host .join-btn, #screen-join .join-btn { background:linear-gradient(135deg,#ee5a3c,#d63a1f) !important; box-shadow:0 6px 20px rgba(232,71,43,.30); transition:transform .15s, filter .15s; }
-#screen-host .join-btn:hover, #screen-join .join-btn:hover { filter:brightness(1.07); transform:translateY(-1px); }
 .enso circle { animation:enso-draw 1.4s cubic-bezier(.5,0,.2,1) both; }
 .enso-still circle { animation:none; }
 .enso-spin { animation:enso-rot 2.4s linear infinite; }
@@ -663,111 +662,166 @@ header {
 /* Overlay alignment — only takes effect once JS switches display from none to flex */
 #timer-overlay { align-items:flex-start; justify-content:center; }
 #cotd-overlay, #theme-modal, #participation-overlay { align-items:center; justify-content:center; }
+
+/* ── Landing (sign-in) ── */
+#screen-landing { min-height:100vh; display:flex; align-items:stretch; justify-content:flex-start; position:relative; overflow:hidden; background:linear-gradient(155deg,var(--kz-bg1) 0%,var(--kz-bg2) 52%,var(--kz-bg3) 100%); color:#fff; font-family:var(--sans); }
+.lp-brand { flex:1.2; position:relative; z-index:1; overflow:hidden; padding:48px 64px; display:flex; flex-direction:column; justify-content:space-between; background:transparent; }
+.lp-brand::before { content:''; position:absolute; inset:0; pointer-events:none; background:radial-gradient(ellipse 78% 74% at 34% 54%,rgba(var(--kz-shade),.74) 0%,rgba(var(--kz-shade),.5) 55%,rgba(var(--kz-shade),0) 100%); }
+
+.lp-brand > * { position:relative; z-index:1; }
+.lp-logo, .lp-panel-brand { display:flex; align-items:center; gap:14px; }
+.lp-wordmark { font-family:var(--serif); font-size:26px; letter-spacing:-.3px; color:#fff; }
+.lp-hero { max-width:540px; }
+.lp-eyebrow { font-size:12px; font-weight:600; letter-spacing:2.2px; text-transform:uppercase; color:rgba(255,255,255,.5); margin-bottom:20px; transition:opacity .5s; min-height:16px; }
+.lp-headline { font-family:var(--serif); font-weight:400; font-size:48px; line-height:1.1; letter-spacing:-.8px; margin-bottom:20px; color:#fff; }
+.lp-lede { font-size:16px; line-height:1.65; color:rgba(255,255,255,.62); max-width:470px; margin-bottom:40px; }
+.lp-feats { list-style:none; display:flex; flex-direction:column; gap:22px; }
+.lp-feats li { display:flex; gap:16px; align-items:flex-start; }
+.lp-feat-ic { flex:0 0 auto; width:38px; height:38px; border-radius:10px; display:flex; align-items:center; justify-content:center; color:#8ea6ff; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.12); }
+.lp-feat-t { font-size:14.5px; font-weight:600; color:#fff; margin-bottom:3px; }
+.lp-feat-d { font-size:13.5px; line-height:1.5; color:rgba(255,255,255,.52); }
+.lp-brand-foot { font-size:12.5px; color:rgba(255,255,255,.5); letter-spacing:.3px; }
+
+.lp-panel { flex:1; min-width:440px; background:rgba(var(--kz-shade),.2); border-left:1px solid var(--kz-line); position:relative; z-index:1; display:flex; align-items:center; justify-content:center; padding:48px 56px; }
+.lp-panel-inner { width:100%; max-width:392px; }
+.lp-panel-brand { display:none; }
+.lp-h2 { font-family:var(--serif); font-weight:400; font-size:32px; letter-spacing:-.4px; margin-bottom:8px; color:#fff; }
+.lp-sub { font-size:14.5px; line-height:1.55; color:rgba(255,255,255,.55); margin-bottom:28px; }
+.lp-primary { width:100%; height:50px; padding:0 18px; display:flex; align-items:center; justify-content:space-between; border:none; border-radius:10px; cursor:pointer; font-family:var(--sans); font-size:15px; font-weight:600; color:#fff; background:#e8472b; box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 10px 24px -10px rgba(232,71,43,.7); transition:background .15s,transform .15s; }
+.lp-primary:hover { background:#d63e22; transform:translateY(-1px); }
+.lp-primary-l { display:flex; align-items:center; gap:10px; }
+.lp-hint { font-size:12px; color:rgba(255,255,255,.4); margin:10px 2px 0; }
+.lp-or { display:flex; align-items:center; gap:12px; margin:26px 0 16px; font-size:11px; font-weight:600; letter-spacing:1.4px; text-transform:uppercase; color:rgba(255,255,255,.35); }
+.lp-or::before, .lp-or::after { content:''; flex:1; height:1px; background:rgba(255,255,255,.09); }
+.lp-join { display:flex; gap:8px; }
+.lp-join input { flex:1; min-width:0; height:48px; padding:0 14px; border-radius:10px; font-family:var(--sans); font-size:14.5px; color:#fff; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.13); outline:none; transition:border-color .15s,background .15s; }
+.lp-join input::placeholder { color:rgba(255,255,255,.33); }
+.lp-join input:focus { border-color:rgba(142,166,255,.8); background:rgba(255,255,255,.08); }
+.lp-join-btn { height:48px; padding:0 22px; border-radius:10px; cursor:pointer; font-family:var(--sans); font-size:14.5px; font-weight:600; color:#fff; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.16); transition:background .15s; }
+.lp-join-btn:hover { background:rgba(255,255,255,.15); }
+.lp-section { margin:34px 0 6px; font-size:11px; font-weight:600; letter-spacing:1.4px; text-transform:uppercase; color:rgba(255,255,255,.35); }
+.lp-list { border-top:1px solid rgba(255,255,255,.08); }
+.lp-row { width:100%; display:flex; align-items:center; gap:14px; padding:14px 6px; background:none; border:none; border-bottom:1px solid rgba(255,255,255,.08); color:#fff; cursor:pointer; text-align:left; font-family:var(--sans); transition:background .15s,padding .15s; }
+.lp-row:hover { background:rgba(255,255,255,.035); padding-left:12px; }
+.lp-row-ic { color:rgba(255,255,255,.6); display:flex; }
+.lp-row-t { flex:1; display:flex; flex-direction:column; gap:2px; }
+.lp-row-t strong { font-size:14px; font-weight:600; }
+.lp-row-t small { font-size:12.5px; color:rgba(255,255,255,.45); }
+.lp-row-ch { color:rgba(255,255,255,.3); display:flex; }
+.lp-foot { display:flex; align-items:center; justify-content:space-between; margin-top:28px; font-size:11.5px; color:rgba(255,255,255,.35); }
+.lp-link { background:none; border:none; cursor:pointer; font-family:var(--sans); font-size:12px; color:rgba(255,255,255,.5); padding:2px 0; }
+.lp-link:hover { color:#fff; }
+@media (max-width:960px) {
+  #screen-landing { flex-direction:column; }
+  .lp-brand { flex:none; padding:28px 24px 30px; }
+  .lp-feats, .lp-brand-foot, .lp-panel-brand { display:none; }
+  .lp-brand-top { margin-bottom:22px; }
+  .lp-hero { max-width:none; }
+  .lp-headline { font-size:32px; margin-bottom:12px; }
+  .lp-lede { margin-bottom:0; font-size:15px; }
+  .lp-eyebrow { margin-bottom:12px; }
+  .lp-panel { flex:1; min-width:0; max-width:none; border-left:none; border-top:1px solid rgba(255,255,255,.08); padding:32px 24px 40px; align-items:flex-start; }
+}
+@media (max-width:960px) and (min-width:600px) { .lp-panel-inner { margin:0 auto; } }
+
+/* ── Create / Join screens: same visual language as the landing ── */
+#screen-host, #screen-join { background:linear-gradient(155deg,var(--kz-bg1) 0%,var(--kz-bg2) 52%,var(--kz-bg3) 100%) !important; }
+#screen-host::before, #screen-join::before { -webkit-mask-image:radial-gradient(ellipse 80% 75% at 50% 40%,#000 0%,transparent 85%); mask-image:radial-gradient(ellipse 80% 75% at 50% 40%,#000 0%,transparent 85%); }
+#screen-host > div[style*="blur(40px)"], #screen-join > div[style*="blur(40px)"], #screen-host > svg, #screen-join > svg { display:none !important; }
+.auth-card { background:var(--kz-card); border:1px solid var(--kz-line); border-radius:16px; padding:32px; box-shadow:0 24px 60px -24px rgba(0,0,0,.7); }
+#screen-host .field, #screen-join .field { margin-bottom:18px; gap:7px; }
+#screen-host .field label, #screen-join .field label { font-size:13px; font-weight:500; color:rgba(255,255,255,.75); }
+#screen-host .field label span { color:rgba(255,255,255,.38) !important; }
+#screen-host input, #screen-host select, #screen-join input { height:46px; padding:0 14px; border-radius:10px; font-family:var(--sans); font-size:14.5px; color:#fff; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.13); outline:none; transition:border-color .15s, background .15s; width:100%; }
+#screen-host select { -webkit-appearance:none; appearance:none; color-scheme:dark; padding-right:38px; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-opacity='.55' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 14px center; cursor:pointer; }
+#screen-host select option { background:#1a1a2e; color:#fff; }
+#screen-host input::placeholder, #screen-join input::placeholder { color:rgba(255,255,255,.33); }
+#screen-host input:focus, #screen-host select:focus, #screen-join input:focus { border-color:rgba(142,166,255,.8); background-color:rgba(255,255,255,.08); }
+#screen-host .room-row input { flex:1; width:auto; }
+#screen-host .gen-btn { height:46px; padding:0 14px; border-radius:10px; background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.16); color:rgba(255,255,255,.85); }
+#screen-host .gen-btn:hover { background:rgba(255,255,255,.14); color:#fff; }
+#screen-host .copy-strip { background:rgba(255,255,255,.05); border-color:rgba(255,255,255,.13); }
+#screen-host #code-display { color:rgba(255,255,255,.85); }
+#screen-host .copy-btn { background:rgba(255,255,255,.07); border-color:rgba(255,255,255,.16); color:rgba(255,255,255,.8); }
+#screen-host .room-hint, #screen-join .room-hint { color:rgba(255,255,255,.38); font-size:12px; }
+#screen-host .avatar-pick.selected, #screen-join .avatar-pick.selected { border-color:#fff; box-shadow:0 0 0 2px #11111c, 0 0 0 4px #fff; }
+#screen-host .join-btn, #screen-join .join-btn { width:100%; height:50px; margin-top:6px; padding:0 18px; border-radius:10px; font-size:15px; font-weight:600; color:#fff; background:#e8472b !important; box-shadow:inset 0 1px 0 rgba(255,255,255,.18), 0 10px 24px -10px rgba(232,71,43,.7); transition:background .15s, transform .15s; }
+#screen-host .join-btn:hover, #screen-join .join-btn:hover { background:#d63e22 !important; transform:translateY(-1px); }
+
+/* ── Sign-in backgrounds: Asanoha (default) · Yozakura ── */
+:root { --kz-bg1:#09112a; --kz-bg2:#0e1a3a; --kz-bg3:#17264b; --kz-panel:#0b1328; --kz-panel-a:rgba(9,17,40,.84); --kz-shade:6,11,28; --kz-fa1:.8; --kz-fa2:.58; --kz-card:#0d1630; --kz-line:rgba(212,175,90,.2);
+  --kz-pattern:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44.00' height='76.21' viewBox='0 0 44.00 76.21'%3E%3Cpath d='M-110.0 -38.11L-88 -76.21M-110.0 -38.11L-88.0 -50.81M-110.0 38.11L-88 0.0M-110.0 38.11L-88.0 25.4M-110.0 114.32L-88 76.21M-110.0 114.32L-88.0 101.61M-110.0 190.53L-88 152.42M-110.0 190.53L-88.0 177.82M-88 -76.21L-88.0 -50.81M-88 -76.21L-66.0 -63.51M-88 -76.21L-66.0 -38.11M-88 -76.21L-44 -76.21M-88.0 -50.81L-66.0 -38.11M-88 0.0L-88.0 25.4M-88 0.0L-66.0 -38.11M-88 0.0L-66.0 -12.7M-88 0.0L-66.0 12.7M-88 0.0L-66.0 38.11M-88 0.0L-44 0.0M-88.0 25.4L-66.0 38.11M-88 76.21L-88.0 101.61M-88 76.21L-66.0 38.11M-88 76.21L-66.0 63.51M-88 76.21L-66.0 88.91M-88 76.21L-66.0 114.32M-88 76.21L-44 76.21M-88.0 101.61L-66.0 114.32M-88 152.42L-88.0 177.82M-88 152.42L-66.0 114.32M-88 152.42L-66.0 139.72M-88 152.42L-66.0 165.12M-88 152.42L-66.0 190.53M-88 152.42L-44 152.42M-88.0 177.82L-66.0 190.53M-66.0 -63.51L-66.0 -38.11M-66.0 -63.51L-44 -76.21M-66.0 -38.11L-66.0 -12.7M-66.0 -38.11L-44 -76.21M-66.0 -38.11L-44.0 -50.81M-66.0 -38.11L-44.0 -25.4M-66.0 -38.11L-44 0.0M-66.0 -38.11L-22.0 -38.11M-66.0 -12.7L-44 0.0M-66.0 12.7L-66.0 38.11M-66.0 12.7L-44 0.0M-66.0 38.11L-66.0 63.51M-66.0 38.11L-44 0.0M-66.0 38.11L-44.0 25.4M-66.0 38.11L-44.0 50.81M-66.0 38.11L-44 76.21M-66.0 38.11L-22.0 38.11M-66.0 63.51L-44 76.21M-66.0 88.91L-66.0 114.32M-66.0 88.91L-44 76.21M-66.0 114.32L-66.0 139.72M-66.0 114.32L-44 76.21M-66.0 114.32L-44.0 101.61M-66.0 114.32L-44.0 127.02M-66.0 114.32L-44 152.42M-66.0 114.32L-22.0 114.32M-66.0 139.72L-44 152.42M-66.0 165.12L-66.0 190.53M-66.0 165.12L-44 152.42M-66.0 190.53L-44 152.42M-66.0 190.53L-44.0 177.82M-44 -76.21L-44.0 -50.81M-44 -76.21L-22.0 -63.51M-44 -76.21L-22.0 -38.11M-44 -76.21L0 -76.21M-44.0 -50.81L-22.0 -38.11M-44.0 -25.4L-44 0.0M-44.0 -25.4L-22.0 -38.11M-44 0.0L-44.0 25.4M-44 0.0L-22.0 -38.11M-44 0.0L-22.0 -12.7M-44 0.0L-22.0 12.7M-44 0.0L-22.0 38.11M-44 0.0L0 0.0M-44.0 25.4L-22.0 38.11M-44.0 50.81L-44 76.21M-44.0 50.81L-22.0 38.11M-44 76.21L-44.0 101.61M-44 76.21L-22.0 38.11M-44 76.21L-22.0 63.51M-44 76.21L-22.0 88.91M-44 76.21L-22.0 114.32M-44 76.21L0 76.21M-44.0 101.61L-22.0 114.32M-44.0 127.02L-44 152.42M-44.0 127.02L-22.0 114.32M-44 152.42L-44.0 177.82M-44 152.42L-22.0 114.32M-44 152.42L-22.0 139.72M-44 152.42L-22.0 165.12M-44 152.42L-22.0 190.53M-44 152.42L0 152.42M-44.0 177.82L-22.0 190.53M-22.0 -63.51L-22.0 -38.11M-22.0 -63.51L0 -76.21M-22.0 -38.11L-22.0 -12.7M-22.0 -38.11L0 -76.21M-22.0 -38.11L0.0 -50.81M-22.0 -38.11L0.0 -25.4M-22.0 -38.11L0 0.0M-22.0 -38.11L22.0 -38.11M-22.0 -12.7L0 0.0M-22.0 12.7L-22.0 38.11M-22.0 12.7L0 0.0M-22.0 38.11L-22.0 63.51M-22.0 38.11L0 0.0M-22.0 38.11L0.0 25.4M-22.0 38.11L0.0 50.81M-22.0 38.11L0 76.21M-22.0 38.11L22.0 38.11M-22.0 63.51L0 76.21M-22.0 88.91L-22.0 114.32M-22.0 88.91L0 76.21M-22.0 114.32L-22.0 139.72M-22.0 114.32L0 76.21M-22.0 114.32L0.0 101.61M-22.0 114.32L0.0 127.02M-22.0 114.32L0 152.42M-22.0 114.32L22.0 114.32M-22.0 139.72L0 152.42M-22.0 165.12L-22.0 190.53M-22.0 165.12L0 152.42M-22.0 190.53L0 152.42M-22.0 190.53L0.0 177.82M0 -76.21L0.0 -50.81M0 -76.21L22.0 -63.51M0 -76.21L22.0 -38.11M0 -76.21L44 -76.21M0.0 -50.81L22.0 -38.11M0.0 -25.4L0 0.0M0.0 -25.4L22.0 -38.11M0 0.0L0.0 25.4M0 0.0L22.0 -38.11M0 0.0L22.0 -12.7M0 0.0L22.0 12.7M0 0.0L22.0 38.11M0 0.0L44 0.0M0.0 25.4L22.0 38.11M0.0 50.81L0 76.21M0.0 50.81L22.0 38.11M0 76.21L0.0 101.61M0 76.21L22.0 38.11M0 76.21L22.0 63.51M0 76.21L22.0 88.91M0 76.21L22.0 114.32M0 76.21L44 76.21M0.0 101.61L22.0 114.32M0.0 127.02L0 152.42M0.0 127.02L22.0 114.32M0 152.42L0.0 177.82M0 152.42L22.0 114.32M0 152.42L22.0 139.72M0 152.42L22.0 165.12M0 152.42L22.0 190.53M0 152.42L44 152.42M0.0 177.82L22.0 190.53M22.0 -63.51L22.0 -38.11M22.0 -63.51L44 -76.21M22.0 -38.11L22.0 -12.7M22.0 -38.11L44 -76.21M22.0 -38.11L44.0 -50.81M22.0 -38.11L44.0 -25.4M22.0 -38.11L44 0.0M22.0 -38.11L66.0 -38.11M22.0 -12.7L44 0.0M22.0 12.7L22.0 38.11M22.0 12.7L44 0.0M22.0 38.11L22.0 63.51M22.0 38.11L44 0.0M22.0 38.11L44.0 25.4M22.0 38.11L44.0 50.81M22.0 38.11L44 76.21M22.0 38.11L66.0 38.11M22.0 63.51L44 76.21M22.0 88.91L22.0 114.32M22.0 88.91L44 76.21M22.0 114.32L22.0 139.72M22.0 114.32L44 76.21M22.0 114.32L44.0 101.61M22.0 114.32L44.0 127.02M22.0 114.32L44 152.42M22.0 114.32L66.0 114.32M22.0 139.72L44 152.42M22.0 165.12L22.0 190.53M22.0 165.12L44 152.42M22.0 190.53L44 152.42M22.0 190.53L44.0 177.82M44 -76.21L44.0 -50.81M44 -76.21L66.0 -63.51M44 -76.21L66.0 -38.11M44 -76.21L88 -76.21M44.0 -50.81L66.0 -38.11M44.0 -25.4L44 0.0M44.0 -25.4L66.0 -38.11M44 0.0L44.0 25.4M44 0.0L66.0 -38.11M44 0.0L66.0 -12.7M44 0.0L66.0 12.7M44 0.0L66.0 38.11M44 0.0L88 0.0M44.0 25.4L66.0 38.11M44.0 50.81L44 76.21M44.0 50.81L66.0 38.11M44 76.21L44.0 101.61M44 76.21L66.0 38.11M44 76.21L66.0 63.51M44 76.21L66.0 88.91M44 76.21L66.0 114.32M44 76.21L88 76.21M44.0 101.61L66.0 114.32M44.0 127.02L44 152.42M44.0 127.02L66.0 114.32M44 152.42L44.0 177.82M44 152.42L66.0 114.32M44 152.42L66.0 139.72M44 152.42L66.0 165.12M44 152.42L66.0 190.53M44 152.42L88 152.42M44.0 177.82L66.0 190.53M66.0 -63.51L66.0 -38.11M66.0 -63.51L88 -76.21M66.0 -38.11L66.0 -12.7M66.0 -38.11L88 -76.21M66.0 -38.11L88.0 -50.81M66.0 -38.11L88.0 -25.4M66.0 -38.11L88 0.0M66.0 -38.11L110.0 -38.11M66.0 -12.7L88 0.0M66.0 12.7L66.0 38.11M66.0 12.7L88 0.0M66.0 38.11L66.0 63.51M66.0 38.11L88 0.0M66.0 38.11L88.0 25.4M66.0 38.11L88.0 50.81M66.0 38.11L88 76.21M66.0 38.11L110.0 38.11M66.0 63.51L88 76.21M66.0 88.91L66.0 114.32M66.0 88.91L88 76.21M66.0 114.32L66.0 139.72M66.0 114.32L88 76.21M66.0 114.32L88.0 101.61M66.0 114.32L88.0 127.02M66.0 114.32L88 152.42M66.0 114.32L110.0 114.32M66.0 139.72L88 152.42M66.0 165.12L66.0 190.53M66.0 165.12L88 152.42M66.0 190.53L88 152.42M66.0 190.53L88.0 177.82M88 -76.21L88.0 -50.81M88 -76.21L110.0 -63.51M88 -76.21L110.0 -38.11M88 -76.21L132 -76.21M88.0 -50.81L110.0 -38.11M88.0 -25.4L88 0.0M88.0 -25.4L110.0 -38.11M88 0.0L88.0 25.4M88 0.0L110.0 -38.11M88 0.0L110.0 -12.7M88 0.0L110.0 12.7M88 0.0L110.0 38.11M88 0.0L132 0.0M88.0 25.4L110.0 38.11M88.0 50.81L88 76.21M88.0 50.81L110.0 38.11M88 76.21L88.0 101.61M88 76.21L110.0 38.11M88 76.21L110.0 63.51M88 76.21L110.0 88.91M88 76.21L110.0 114.32M88 76.21L132 76.21M88.0 101.61L110.0 114.32M88.0 127.02L88 152.42M88.0 127.02L110.0 114.32M88 152.42L88.0 177.82M88 152.42L110.0 114.32M88 152.42L110.0 139.72M88 152.42L110.0 165.12M88 152.42L110.0 190.53M88 152.42L132 152.42M88.0 177.82L110.0 190.53M110.0 -63.51L110.0 -38.11M110.0 -63.51L132 -76.21M110.0 -38.11L110.0 -12.7M110.0 -38.11L132 -76.21M110.0 -38.11L132.0 -50.81M110.0 -38.11L132.0 -25.4M110.0 -38.11L132 0.0M110.0 -38.11L154.0 -38.11M110.0 -12.7L132 0.0M110.0 12.7L110.0 38.11M110.0 12.7L132 0.0M110.0 38.11L110.0 63.51M110.0 38.11L132 0.0M110.0 38.11L132.0 25.4M110.0 38.11L132.0 50.81M110.0 38.11L132 76.21M110.0 38.11L154.0 38.11M110.0 63.51L132 76.21M110.0 88.91L110.0 114.32M110.0 88.91L132 76.21M110.0 114.32L110.0 139.72M110.0 114.32L132 76.21M110.0 114.32L132.0 101.61M110.0 114.32L132.0 127.02M110.0 114.32L132 152.42M110.0 114.32L154.0 114.32M110.0 139.72L132 152.42M110.0 165.12L110.0 190.53M110.0 165.12L132 152.42M110.0 190.53L132 152.42M110.0 190.53L132.0 177.82M132 -76.21L132.0 -50.81M132 -76.21L154.0 -63.51M132 -76.21L154.0 -38.11M132 -76.21L176 -76.21M132.0 -50.81L154.0 -38.11M132.0 -25.4L132 0.0M132.0 -25.4L154.0 -38.11M132 0.0L132.0 25.4M132 0.0L154.0 -38.11M132 0.0L154.0 -12.7M132 0.0L154.0 12.7M132 0.0L154.0 38.11M132 0.0L176 0.0M132.0 25.4L154.0 38.11M132.0 50.81L132 76.21M132.0 50.81L154.0 38.11M132 76.21L132.0 101.61M132 76.21L154.0 38.11M132 76.21L154.0 63.51M132 76.21L154.0 88.91M132 76.21L154.0 114.32M132 76.21L176 76.21M132.0 101.61L154.0 114.32M132.0 127.02L132 152.42M132.0 127.02L154.0 114.32M132 152.42L132.0 177.82M132 152.42L154.0 114.32M132 152.42L154.0 139.72M132 152.42L154.0 165.12M132 152.42L154.0 190.53M132 152.42L176 152.42M132.0 177.82L154.0 190.53M154.0 -63.51L154.0 -38.11M154.0 -63.51L176 -76.21M154.0 -38.11L154.0 -12.7M154.0 -38.11L176.0 -25.4M154.0 -38.11L176 0.0M154.0 -38.11L198.0 -38.11M154.0 -12.7L176 0.0M154.0 12.7L154.0 38.11M154.0 12.7L176 0.0M154.0 38.11L154.0 63.51M154.0 38.11L176.0 50.81M154.0 38.11L176 76.21M154.0 38.11L198.0 38.11M154.0 63.51L176 76.21M154.0 88.91L154.0 114.32M154.0 88.91L176 76.21M154.0 114.32L154.0 139.72M154.0 114.32L176.0 127.02M154.0 114.32L176 152.42M154.0 114.32L198.0 114.32M154.0 139.72L176 152.42M154.0 165.12L154.0 190.53M154.0 165.12L176 152.42M176.0 -25.4L176 0.0M176.0 -25.4L198.0 -38.11M176.0 50.81L176 76.21M176.0 50.81L198.0 38.11M176.0 127.02L176 152.42M176.0 127.02L198.0 114.32' fill='none' stroke='%23d4af5a' stroke-opacity='0.26' stroke-width='0.9'/%3E%3C/svg%3E"); --kz-pattern-size:44.00px 76.21px; }
+html[data-bg="yozakura"] { --kz-bg1:#0b0f22; --kz-bg2:#17142e; --kz-bg3:#2a1c42; --kz-panel:#0f0d20; --kz-panel-a:rgba(14,12,30,.84); --kz-shade:10,7,22; --kz-fa1:.95; --kz-fa2:.82; --kz-card:#13102a; --kz-line:rgba(244,182,200,.18);
+  --kz-pattern:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1100' height='760' viewBox='0 0 1100 760'%3E%3Cg transform='translate(622 470) rotate(100) scale(1.23)' opacity='0.39'%3E%3Cpath d='M0 -7C4 -8 7 -3 5 3C4 6 1.6 7.4 0 5.2C-1.6 7.4 -4 6 -5 3C-7 -3 -4 -8 0 -7Z' fill='%23f9d3de'/%3E%3C/g%3E%3Cg transform='translate(949 658) rotate(235) scale(0.82)' opacity='0.38'%3E%3Cpath d='M0 -7C4 -8 7 -3 5 3C4 6 1.6 7.4 0 5.2C-1.6 7.4 -4 6 -5 3C-7 -3 -4 -8 0 -7Z' fill='%23f4b6c8'/%3E%3C/g%3E%3Cg transform='translate(553 697) rotate(160) scale(1.04)' opacity='0.48'%3E%3Cpath d='M0 -7C4 -8 7 -3 5 3C4 6 1.6 7.4 0 5.2C-1.6 7.4 -4 6 -5 3C-7 -3 -4 -8 0 -7Z' fill='%23f4b6c8'/%3E%3C/g%3E%3Cg transform='translate(688 245) rotate(179) scale(0.90)' opacity='0.20'%3E%3Cpath d='M0 -7C4 -8 7 -3 5 3C4 6 1.6 7.4 0 5.2C-1.6 7.4 -4 6 -5 3C-7 -3 -4 -8 0 -7Z' fill='%23f9d3de'/%3E%3C/g%3E%3Cg transform='translate(660 540) rotate(305) scale(0.98)' opacity='0.48'%3E%3Cpath d='M0 -7C4 -8 7 -3 5 3C4 6 1.6 7.4 0 5.2C-1.6 7.4 -4 6 -5 3C-7 -3 -4 -8 0 -7Z' fill='%23f4b6c8'/%3E%3C/g%3E%3Cg transform='translate(607 503) rotate(20) scale(0.78)' opacity='0.49'%3E%3Cpath d='M0 -7C4 -8 7 -3 5 3C4 6 1.6 7.4 0 5.2C-1.6 7.4 -4 6 -5 3C-7 -3 -4 -8 0 -7Z' fill='%23f4b6c8'/%3E%3C/g%3E%3Cg transform='translate(330 185) rotate(270) scale(1.28)' opacity='0.22'%3E%3Cpath d='M0 -7C4 -8 7 -3 5 3C4 6 1.6 7.4 0 5.2C-1.6 7.4 -4 6 -5 3C-7 -3 -4 -8 0 -7Z' fill='%23f9d3de'/%3E%3C/g%3E%3Cg transform='translate(368 205) rotate(2) scale(0.88)' opacity='0.35'%3E%3Cpath d='M0 -7C4 -8 7 -3 5 3C4 6 1.6 7.4 0 5.2C-1.6 7.4 -4 6 -5 3C-7 -3 -4 -8 0 -7Z' fill='%23f4b6c8'/%3E%3C/g%3E%3Cg transform='translate(350 308) rotate(40) scale(0.82)' opacity='0.19'%3E%3Cpath d='M0 -7C4 -8 7 -3 5 3C4 6 1.6 7.4 0 5.2C-1.6 7.4 -4 6 -5 3C-7 -3 -4 -8 0 -7Z' fill='%23f4b6c8'/%3E%3C/g%3E%3Cg transform='translate(930 548) rotate(45) scale(1.06)' opacity='0.23'%3E%3Cpath d='M0 -7C4 -8 7 -3 5 3C4 6 1.6 7.4 0 5.2C-1.6 7.4 -4 6 -5 3C-7 -3 -4 -8 0 -7Z' fill='%23f9d3de'/%3E%3C/g%3E%3Cg transform='translate(162 255) rotate(99) scale(0.74)' opacity='0.24'%3E%3Cpath d='M0 -7C4 -8 7 -3 5 3C4 6 1.6 7.4 0 5.2C-1.6 7.4 -4 6 -5 3C-7 -3 -4 -8 0 -7Z' fill='%23f4b6c8'/%3E%3C/g%3E%3Cg transform='translate(237 485) rotate(170) scale(1.00)' opacity='0.29'%3E%3Cpath d='M0 -7C4 -8 7 -3 5 3C4 6 1.6 7.4 0 5.2C-1.6 7.4 -4 6 -5 3C-7 -3 -4 -8 0 -7Z' fill='%23f4b6c8'/%3E%3C/g%3E%3Cg transform='translate(590 574) rotate(25) scale(0.90)' opacity='0.33'%3E%3Cpath d='M0 -7C4 -8 7 -3 5 3C4 6 1.6 7.4 0 5.2C-1.6 7.4 -4 6 -5 3C-7 -3 -4 -8 0 -7Z' fill='%23f9d3de'/%3E%3C/g%3E%3Cg transform='translate(427 571) rotate(314) scale(0.77)' opacity='0.18'%3E%3Cpath d='M0 -7C4 -8 7 -3 5 3C4 6 1.6 7.4 0 5.2C-1.6 7.4 -4 6 -5 3C-7 -3 -4 -8 0 -7Z' fill='%23f4b6c8'/%3E%3C/g%3E%3Cg transform='translate(593 342) rotate(320) scale(0.90)' opacity='0.40'%3E%3Cpath d='M0 -7C4 -8 7 -3 5 3C4 6 1.6 7.4 0 5.2C-1.6 7.4 -4 6 -5 3C-7 -3 -4 -8 0 -7Z' fill='%23f4b6c8'/%3E%3C/g%3E%3Cg transform='translate(206 377) rotate(12) scale(1.10)' opacity='0.21'%3E%3Cpath d='M0 -7C4 -8 7 -3 5 3C4 6 1.6 7.4 0 5.2C-1.6 7.4 -4 6 -5 3C-7 -3 -4 -8 0 -7Z' fill='%23f9d3de'/%3E%3C/g%3E%3Cg transform='translate(654 536) rotate(152) scale(1.00)' opacity='0.34'%3E%3Cpath d='M0 -7C4 -8 7 -3 5 3C4 6 1.6 7.4 0 5.2C-1.6 7.4 -4 6 -5 3C-7 -3 -4 -8 0 -7Z' fill='%23f4b6c8'/%3E%3C/g%3E%3Cg transform='translate(306 636) rotate(173) scale(1.33)' opacity='0.19'%3E%3Cpath d='M0 -7C4 -8 7 -3 5 3C4 6 1.6 7.4 0 5.2C-1.6 7.4 -4 6 -5 3C-7 -3 -4 -8 0 -7Z' fill='%23f4b6c8'/%3E%3C/g%3E%3Cg transform='translate(445 586) rotate(38) scale(0.91)' opacity='0.24'%3E%3Cpath d='M0 -7C4 -8 7 -3 5 3C4 6 1.6 7.4 0 5.2C-1.6 7.4 -4 6 -5 3C-7 -3 -4 -8 0 -7Z' fill='%23f9d3de'/%3E%3C/g%3E%3Cg transform='translate(766 463) rotate(224) scale(0.89)' opacity='0.42'%3E%3Cpath d='M0 -7C4 -8 7 -3 5 3C4 6 1.6 7.4 0 5.2C-1.6 7.4 -4 6 -5 3C-7 -3 -4 -8 0 -7Z' fill='%23f4b6c8'/%3E%3C/g%3E%3Cg transform='translate(1025 605) rotate(291) scale(0.98)' opacity='0.48'%3E%3Cpath d='M0 -7C4 -8 7 -3 5 3C4 6 1.6 7.4 0 5.2C-1.6 7.4 -4 6 -5 3C-7 -3 -4 -8 0 -7Z' fill='%23f4b6c8'/%3E%3C/g%3E%3Cg transform='translate(926 550) rotate(184) scale(1.08)' opacity='0.45'%3E%3Cpath d='M0 -7C4 -8 7 -3 5 3C4 6 1.6 7.4 0 5.2C-1.6 7.4 -4 6 -5 3C-7 -3 -4 -8 0 -7Z' fill='%23f9d3de'/%3E%3C/g%3E%3C/svg%3E"); --kz-pattern-size:1100px 760px; }
+#screen-landing::before, #screen-host::before, #screen-join::before { content:''; position:absolute; inset:0; pointer-events:none; background-image:var(--kz-pattern); background-size:var(--kz-pattern-size); }
+html[data-bg="yozakura"] #screen-landing::before { -webkit-mask-image:radial-gradient(ellipse 30% 55% at 22% 56%,rgba(0,0,0,.1) 0%,rgba(0,0,0,.1) 55%,#000 100%); mask-image:radial-gradient(ellipse 30% 55% at 22% 56%,rgba(0,0,0,.1) 0%,rgba(0,0,0,.1) 55%,#000 100%); animation:petal-drift 140s linear infinite; }
+html[data-bg="yozakura"] #screen-host::before, html[data-bg="yozakura"] #screen-join::before { -webkit-mask-image:none; mask-image:none; animation:petal-drift 140s linear infinite; }
+@keyframes petal-drift { to { background-position:1100px 760px; } }
+#screen-landing::after, #screen-host::after, #screen-join::after { content:''; position:absolute; width:560px; height:560px; right:-220px; bottom:-220px; border-radius:50%; pointer-events:none; background:radial-gradient(circle,rgba(212,175,90,.15) 0%,rgba(92,126,247,.14) 38%,transparent 68%); filter:blur(30px); }
+html[data-bg="yozakura"] #screen-landing::after, html[data-bg="yozakura"] #screen-host::after, html[data-bg="yozakura"] #screen-join::after { width:360px; height:360px; right:9%; bottom:auto; top:7%; filter:none; background:radial-gradient(circle,#f1e9d6 0,#f1e9d6 26px,rgba(241,233,214,.2) 27px,rgba(241,233,214,.07) 100px,transparent 175px); }
+html[data-bg="yozakura"] #screen-landing::after { left:22%; right:auto; z-index:2; }
+@media (max-width:960px) { html[data-bg="yozakura"] #screen-landing::after { width:240px; height:240px; left:auto; right:4%; top:3%; } }
+.lp-panel::before { content:''; position:absolute; inset:0; pointer-events:none; background:radial-gradient(ellipse 62% 64% at 50% 50%,rgba(var(--kz-shade),var(--kz-fa1)) 0%,rgba(var(--kz-shade),var(--kz-fa2)) 58%,rgba(var(--kz-shade),0) 100%); }
+.lp-panel-inner { position:relative; z-index:1; }
+@media (prefers-reduced-motion:reduce) { #screen-landing::before, #screen-host::before, #screen-join::before { animation:none !important; } }
 </style>
 </head>
 <body>
 
 <!-- LANDING: choose role -->
-<div id="screen-landing" style="min-height:100vh;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;background:linear-gradient(135deg,#0f0f14 0%,#1a1a2e 50%,#16213e 100%)">
-
-  <!-- Background SVG effects -->
-  <svg style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-      <pattern id="landing-dots" x="0" y="0" width="60" height="60" patternUnits="userSpaceOnUse">
-        <circle cx="30" cy="30" r="0.8" fill="white" opacity="0.08"/>
-      </pattern>
-    </defs>
-    <rect width="100%" height="100%" fill="url(#landing-dots)"/>
-  </svg>
-
-  <!-- Visible glow circles using divs -->
-  <div style="position:absolute;top:-150px;right:-150px;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(92,126,247,.5) 0%,rgba(92,126,247,.15) 40%,transparent 70%);pointer-events:none;filter:blur(40px)"></div>
-  <div style="position:absolute;bottom:-150px;left:-150px;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(118,75,162,.5) 0%,rgba(118,75,162,.15) 40%,transparent 70%);pointer-events:none;filter:blur(40px)"></div>
-  <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(245,158,11,.2) 0%,transparent 65%);pointer-events:none;filter:blur(30px)"></div>
-
-  <div style="width:100%;max-width:440px;padding:24px;z-index:1">
-
-    <!-- Logo + wordmark -->
-    <div style="text-align:center;margin-bottom:40px">
-      <div style="display:inline-flex;align-items:center;justify-content:center;margin-bottom:20px">
-        <svg width="84" height="84" viewBox="0 0 140 140" role="img" aria-label="Kaizen" style="display:block;"><circle cx="70" cy="70" r="70" fill="rgba(255,255,255,0.1)"/><circle cx="70" cy="70" r="68" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="2"/><text x="70" y="90" text-anchor="middle" font-size="54" font-weight="700" fill="#ffffff" font-family="'Hiragino Sans','Yu Gothic','Noto Sans JP','Meiryo','Microsoft YaHei',sans-serif">&#25913;</text><text x="70" y="124" text-anchor="middle" font-size="30" font-weight="700" fill="#5c7ef7" font-family="'Hiragino Sans','Yu Gothic','Noto Sans JP','Meiryo','Microsoft YaHei',sans-serif">&#21892;</text><circle cx="112" cy="26" r="9" fill="#e8472b"/></svg>
-      </div>
-      <div style="font-family:var(--serif);font-size:36px;font-weight:400;letter-spacing:-.5px;color:white;margin-bottom:6px">Kaizen</div>
-      <div id="brand-tagline" style="font-size:12px;color:rgba(255,255,255,.4);letter-spacing:2px;text-transform:uppercase;font-weight:500;transition:opacity .5s;min-height:16px">&#25913;&#21892; &middot; Continuous Improvement</div>
+<div id="screen-landing">
+  <section class="lp-brand">
+    <div class="lp-brand-top">
+      <div class="lp-logo"><svg width="46" height="46" viewBox="0 0 140 140" role="img" aria-label="Kaizen"><circle cx="70" cy="70" r="70" fill="rgba(255,255,255,0.1)"/><circle cx="70" cy="70" r="68" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="2"/><text x="70" y="90" text-anchor="middle" font-size="54" font-weight="700" fill="#ffffff" font-family="'Hiragino Sans','Yu Gothic','Noto Sans JP','Meiryo','Microsoft YaHei',sans-serif">&#25913;</text><text x="70" y="124" text-anchor="middle" font-size="30" font-weight="700" fill="#5c7ef7" font-family="'Hiragino Sans','Yu Gothic','Noto Sans JP','Meiryo','Microsoft YaHei',sans-serif">&#21892;</text><circle cx="112" cy="26" r="9" fill="#e8472b"/></svg><span class="lp-wordmark">Kaizen</span></div>
     </div>
 
-    <!-- Main card -->
-    <div style="background:rgba(255,255,255,0.05);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-radius:24px;padding:32px;border:1px solid rgba(255,255,255,0.1);box-shadow:0 8px 40px rgba(0,0,0,.4)">
+    <div class="lp-hero">
+      <div id="brand-tagline" class="lp-eyebrow">&#25913;&#21892; &middot; Continuous Improvement</div>
+      <h1 class="lp-headline">Retrospectives that turn feedback into action.</h1>
+      <p class="lp-lede">Run live team retros, follow through on every commitment, and see what is genuinely improving from sprint to sprint.</p>
 
-      <div style="font-family:var(--serif);font-size:20px;font-weight:400;color:white;margin-bottom:6px">Ready to improve?</div>
-      <div style="font-size:13px;color:rgba(255,255,255,.5);margin-bottom:24px">Running a retro or joining one?</div>
-
-      <!-- Primary CTA -->
-      <button onclick="showScreen('screen-host')"
-        style="font-family:var(--sans);width:100%;display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-radius:14px;margin-bottom:10px;background:linear-gradient(135deg,#ee5a3c,#d63a1f);box-shadow:0 6px 20px rgba(232,71,43,.35);border:none;cursor:pointer;transition:all .2s"
-        onmouseover="this.style.background='linear-gradient(135deg,#f06448,#c93a20)';this.style.transform='translateY(-1px)'"
-        onmouseout="this.style.background='linear-gradient(135deg,#ee5a3c,#d63a1f)';this.style.transform='translateY(0)'">
-        <div style="display:flex;align-items:center;gap:12px">
-          <div style="width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:18px">✦</div>
-          <div style="text-align:left">
-            <div style="font-weight:600;color:white;font-size:15px">Create a retro</div>
-            <div style="font-size:11px;color:rgba(255,255,255,.7);font-weight:400;margin-top:1px">I'm the host</div>
-          </div>
-        </div>
-        <span style="color:rgba(255,255,255,.7);font-size:18px">→</span>
-      </button>
-
-      <!-- Secondary CTA -->
-      <button onclick="showScreen('screen-join')"
-        style="font-family:var(--sans);width:100%;display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-radius:14px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);cursor:pointer;margin-bottom:24px;transition:all .2s"
-        onmouseover="this.style.background='rgba(255,255,255,.1)';this.style.transform='translateY(-1px)'"
-        onmouseout="this.style.background='rgba(255,255,255,.06)';this.style.transform='translateY(0)'">
-        <div style="display:flex;align-items:center;gap:12px">
-          <div style="width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font-size:18px">🔑</div>
-          <div style="text-align:left">
-            <div style="font-weight:600;color:white;font-size:15px">Join a retro</div>
-            <div style="font-size:11px;color:rgba(255,255,255,.5);font-weight:400;margin-top:1px">I have a room code</div>
-          </div>
-        </div>
-        <span style="color:rgba(255,255,255,.4);font-size:18px">→</span>
-      </button>
-
-      <!-- Divider -->
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
-        <div style="flex:1;height:1px;background:rgba(255,255,255,.1)"></div>
-        <span style="font-size:11px;color:rgba(255,255,255,.3);font-weight:500;text-transform:uppercase;letter-spacing:.5px">More</span>
-        <div style="flex:1;height:1px;background:rgba(255,255,255,.1)"></div>
-      </div>
-
-      <!-- Secondary actions -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-        <button onclick="showScreen('screen-teams')"
-          style="font-family:var(--sans);font-size:13px;font-weight:500;padding:11px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:rgba(255,255,255,.7);cursor:pointer;display:flex;align-items:center;gap:8px;transition:all .15s"
-          onmouseover="this.style.background='rgba(255,255,255,.1)';this.style.color='white'"
-          onmouseout="this.style.background='rgba(255,255,255,.04)';this.style.color='rgba(255,255,255,.7)'">
-          <span style="font-size:16px">👥</span> Teams
-        </button>
-        <button onclick="openHistory()"
-          style="font-family:var(--sans);font-size:13px;font-weight:500;padding:11px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:rgba(255,255,255,.7);cursor:pointer;display:flex;align-items:center;gap:8px;transition:all .15s"
-          onmouseover="this.style.background='rgba(255,255,255,.1)';this.style.color='white'"
-          onmouseout="this.style.background='rgba(255,255,255,.04)';this.style.color='rgba(255,255,255,.7)'">
-          <span style="font-size:16px">🕐</span> Past Retros
-        </button>
-      </div>
-      <button onclick="showScreen('screen-jira')"
-        style="font-family:var(--sans);font-size:13px;font-weight:500;padding:11px 16px;border-radius:10px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:rgba(255,255,255,.7);cursor:pointer;display:flex;align-items:center;gap:8px;width:100%;transition:all .15s"
-        onmouseover="this.style.background='rgba(255,255,255,.1)';this.style.color='white'"
-        onmouseout="this.style.background='rgba(255,255,255,.04)';this.style.color='rgba(255,255,255,.7)'">
-        <span style="font-size:16px">⚙️</span> Settings (Jira &amp; AI)
-      </button>
+      <ul class="lp-feats">
+        <li><span class="lp-feat-ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span><div><div class="lp-feat-t">Real-time collaboration</div><div class="lp-feat-d">Cards, votes and scores sync instantly across your whole team.</div></div></li>
+        <li><span class="lp-feat-ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></span><div><div class="lp-feat-t">Action-item follow-through</div><div class="lp-feat-d">Review last sprint's commitments before you start, and track your streak.</div></div></li>
+        <li><span class="lp-feat-ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg></span><div><div class="lp-feat-t">Jira-connected insights</div><div class="lp-feat-d">Live sprint stats and AI summaries, right on the board.</div></div></li>
+      </ul>
     </div>
 
-    <!-- Footer -->
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:20px;padding:0 4px">
-      <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:rgba(255,255,255,.3)"><span id="fb-enso" style="display:inline-flex;color:rgba(255,255,255,.45)"></span><div id="fb-status">Checking database…</div></div>
-      <button onclick="openThemePicker()" style="background:none;border:none;cursor:pointer;color:rgba(255,255,255,.4);font-size:12px;display:flex;align-items:center;gap:4px;font-family:var(--sans)">🎨 Theme</button>
+    <div class="lp-brand-foot">Small steps, every sprint.</div>
+  </section>
+
+  <section class="lp-panel">
+    <div class="lp-panel-inner">
+      <div class="lp-panel-brand"><svg width="34" height="34" viewBox="0 0 140 140" role="img" aria-label="Kaizen"><circle cx="70" cy="70" r="70" fill="rgba(255,255,255,0.1)"/><circle cx="70" cy="70" r="68" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="2"/><text x="70" y="90" text-anchor="middle" font-size="54" font-weight="700" fill="#ffffff" font-family="'Hiragino Sans','Yu Gothic','Noto Sans JP','Meiryo','Microsoft YaHei',sans-serif">&#25913;</text><text x="70" y="124" text-anchor="middle" font-size="30" font-weight="700" fill="#5c7ef7" font-family="'Hiragino Sans','Yu Gothic','Noto Sans JP','Meiryo','Microsoft YaHei',sans-serif">&#21892;</text><circle cx="112" cy="26" r="9" fill="#e8472b"/></svg><span class="lp-wordmark">Kaizen</span></div>
+
+      <h2 class="lp-h2">Get started</h2>
+      <p class="lp-sub">Create a retrospective for your team, or join one that is already in progress.</p>
+
+      <button class="lp-primary" onclick="showScreen('screen-host')">
+        <span class="lp-primary-l"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg><span>Create a retro</span></span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </button>
+      <div class="lp-hint">You'll be the host and control the timer.</div>
+
+      <div class="lp-or"><span>or join a session</span></div>
+
+      <div class="lp-join">
+        <input id="lp-room" type="text" placeholder="Room code, e.g. swift-falcon-42" maxlength="32" autocomplete="off" autocapitalize="off" spellcheck="false" onkeydown="if(event.key==='Enter') landingJoin()"/>
+        <button class="lp-join-btn" onclick="landingJoin()">Join</button>
+      </div>
+
+      <div class="lp-section">Workspace</div>
+      <div class="lp-list">
+        <button class="lp-row" onclick="showScreen('screen-teams')"><span class="lp-row-ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span><span class="lp-row-t"><strong>Teams</strong><small>Create and manage your teams</small></span><span class="lp-row-ch"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+        <button class="lp-row" onclick="openHistory()"><span class="lp-row-ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span><span class="lp-row-t"><strong>Past retros</strong><small>Browse and review completed sessions</small></span><span class="lp-row-ch"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+        <button class="lp-row" onclick="showScreen('screen-jira')"><span class="lp-row-ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg></span><span class="lp-row-t"><strong>Settings</strong><small>Jira and AI integrations, admin</small></span><span class="lp-row-ch"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+      </div>
+
+      <div class="lp-foot">
+        <div style="display:flex;align-items:center;gap:6px"><span id="fb-enso" style="display:inline-flex;color:rgba(255,255,255,.45)"></span><div id="fb-status">Checking database…</div></div>
+        <button class="lp-link" onclick="openThemePicker()">Appearance</button>
+      </div>
     </div>
-  </div>
+  </section>
 </div>
 
 <!-- HOST SCREEN -->
@@ -786,21 +840,8 @@ header {
       <div style="font-size:12px;color:rgba(255,255,255,.4);margin-top:4px">Configure your board then share the room code</div>
     </div>
     <!-- Form card -->
-    <div style="background:rgba(255,255,255,0.05);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-radius:24px;padding:28px;border:1px solid rgba(255,255,255,0.1);box-shadow:0 8px 40px rgba(0,0,0,.4)">
+    <div class="auth-card">
       <button onclick="showScreen('screen-landing')" style="background:none;border:none;cursor:pointer;color:rgba(255,255,255,.5);font-size:13px;font-family:var(--sans);padding:0;display:flex;align-items:center;gap:6px;margin-bottom:20px;transition:color .15s" onmouseover="this.style.color='white'" onmouseout="this.style.color='rgba(255,255,255,.5)'">← Back</button>
-
-      <style>
-        #screen-host label { color:rgba(255,255,255,.7) !important; }
-        #screen-host input, #screen-host select { background:rgba(255,255,255,.08) !important; border-color:rgba(255,255,255,.15) !important; color:white !important; }
-        #screen-host input::placeholder { color:rgba(255,255,255,.3) !important; }
-        #screen-host input:focus, #screen-host select:focus { border-color:rgba(92,126,247,.7) !important; background:rgba(255,255,255,.12) !important; }
-        #screen-host select option { background:#1a1a2e; color:white; }
-        #screen-host .room-hint { color:rgba(255,255,255,.35) !important; }
-        #screen-host .copy-strip { background:rgba(255,255,255,.06) !important; border-color:rgba(255,255,255,.12) !important; }
-        #screen-host #code-display { color:rgba(255,255,255,.8) !important; }
-        #screen-host .gen-btn { background:rgba(255,255,255,.1) !important; border-color:rgba(255,255,255,.2) !important; color:rgba(255,255,255,.8) !important; }
-        #screen-host .avatar-row .av { border-color:rgba(255,255,255,.2) !important; }
-      </style>
 
       <div class="field" id="jira-project-field" style="display:none">
         <label>Jira project <span style="color:rgba(255,255,255,.35);font-weight:400">(optional)</span></label>
@@ -864,17 +905,8 @@ header {
       <div style="font-size:12px;color:rgba(255,255,255,.4);margin-top:4px">Enter the room code your host shared</div>
     </div>
     <!-- Form card -->
-    <div style="background:rgba(255,255,255,0.05);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-radius:24px;padding:28px;border:1px solid rgba(255,255,255,0.1);box-shadow:0 8px 40px rgba(0,0,0,.4)">
+    <div class="auth-card">
       <button onclick="showScreen('screen-landing')" style="background:none;border:none;cursor:pointer;color:rgba(255,255,255,.5);font-size:13px;font-family:var(--sans);padding:0;display:flex;align-items:center;gap:6px;margin-bottom:20px;transition:color .15s" onmouseover="this.style.color='white'" onmouseout="this.style.color='rgba(255,255,255,.5)'">← Back</button>
-
-      <style>
-        #screen-join label { color:rgba(255,255,255,.7) !important; }
-        #screen-join input, #screen-join select { background:rgba(255,255,255,.08) !important; border-color:rgba(255,255,255,.15) !important; color:white !important; }
-        #screen-join input::placeholder { color:rgba(255,255,255,.3) !important; }
-        #screen-join input:focus { border-color:rgba(92,126,247,.7) !important; background:rgba(255,255,255,.12) !important; }
-        #screen-join .avatar-row .av { border-color:rgba(255,255,255,.2) !important; }
-        #screen-join #join-status { color:rgba(255,255,255,.5) !important; }
-      </style>
 
       <div class="field">
         <label>Room code</label>
@@ -1255,10 +1287,15 @@ header {
 <div id="theme-modal" style="display:none;position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.5);padding:24px">
   <div style="background:var(--surface);border-radius:20px;padding:28px 32px;max-width:440px;width:100%;box-shadow:0 12px 48px rgba(0,0,0,.25)">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
-      <h2 style="font-family:var(--serif);font-size:20px;font-weight:400">Choose a theme</h2>
+      <h2 style="font-family:var(--serif);font-size:20px;font-weight:400">Appearance</h2>
       <button onclick="closeThemePicker()" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:22px">×</button>
     </div>
+    <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:10px">Board theme</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px" id="theme-grid"></div>
+    <div style="margin-top:22px;padding-top:18px;border-top:1px solid var(--border)">
+      <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:10px">Sign-in background</div>
+      <div id="bg-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:10px"></div>
+    </div>
   </div>
 </div>
 
@@ -4295,6 +4332,29 @@ const THEMES = [
   { id:'rose',     name:'🌸 Sakura',     preview:['#fff5f7','#2c1018','#c040a0'] },
 ];
 
+const KZ_BGS = [
+  { id:'asanoha',  name:'Asanoha',  jp:'麻の葉', grad:'linear-gradient(155deg,#09112a,#17264b)', accent:'#d4af5a' },
+  { id:'yozakura', name:'Yozakura', jp:'夜桜',   grad:'linear-gradient(155deg,#0b0f22,#2a1c42)', accent:'#f4b6c8' },
+];
+function renderBgPicker() {
+  const cur = document.documentElement.dataset.bg || 'asanoha';
+  const grid = document.getElementById('bg-grid');
+  if (!grid) return;
+  grid.innerHTML = KZ_BGS.map(b => `
+    <button onclick="setKaizenBg('${b.id}')" style="font-family:var(--sans);cursor:pointer;text-align:left;padding:0;overflow:hidden;border-radius:12px;background:var(--surface);border:2px solid ${cur===b.id?'#5572e0':'var(--border)'};transition:all .15s">
+      <div style="height:46px;background:${b.grad};position:relative">
+        <span style="position:absolute;right:10px;top:9px;width:12px;height:12px;border-radius:50%;background:${b.accent};opacity:.9"></span>
+        <span style="position:absolute;left:10px;bottom:8px;width:34px;height:2px;border-radius:2px;background:#e8472b"></span>
+      </div>
+      <div style="padding:8px 10px;font-size:13px;font-weight:500;color:var(--text)">${b.name} <span style="color:var(--muted);font-weight:400">${b.jp}</span></div>
+    </button>`).join('');
+}
+function setKaizenBg(id) {
+  document.documentElement.dataset.bg = id;
+  try { localStorage.setItem('kaizen_bg', id); } catch (e) {}
+  renderBgPicker();
+}
+
 function openThemePicker() {
   const current = document.documentElement.dataset.theme || 'default';
   const grid = document.getElementById('theme-grid');
@@ -4308,6 +4368,7 @@ function openThemePicker() {
       </div>
       <span style="font-size:13px;font-weight:500;color:${t.preview[1]}">${t.name}</span>
     </button>`).join('');
+  renderBgPicker();
   document.getElementById('theme-modal').style.display = 'flex';
 }
 
@@ -5112,6 +5173,13 @@ async function renderKaizenCard(completedTs) {
   } catch (e) { console.error('renderKaizenCard failed:', e); }
 }
 
+function landingJoin() {
+  const code = (document.getElementById('lp-room')?.value || '').trim();
+  showScreen('screen-join');
+  const j = document.getElementById('join-room');
+  if (j && code) j.value = code;
+  setTimeout(() => document.getElementById(code ? 'join-name' : 'join-room')?.focus(), 80);
+}
 function esc(s='') { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 </script>
 </body>
