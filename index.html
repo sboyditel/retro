@@ -28,7 +28,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>Kaizen — Sprint Retrospectives</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;400;500;600&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@600&display=swap&text=%E6%94%B9%E5%96%84%E8%89%AF%E3%81%8B%E3%81%A3%E3%81%9F%E7%82%B9%E6%AC%A1%E3%81%AE%E4%B8%80%E6%AD%A9%E7%9B%AE%E6%A8%99%E6%AD%A2%E7%B6%99%E5%AE%8C%E4%BA%86" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@600&display=swap&text=%E6%94%B9%E5%96%84%E8%89%AF%E3%81%8B%E3%81%A3%E3%81%9F%E7%82%B9%E6%AC%A1%E3%81%AE%E4%B8%80%E6%AD%A9%E7%9B%AE%E6%A8%99%E6%AD%A2%E7%B6%99%E5%AE%8C%E4%BA%86%E6%A1%9C%E7%B4%85%E8%91%89%E9%9B%AA%E8%9B%8D%E5%9B%9B%E5%AD%A3%E9%A1%98%E9%81%94%E6%88%90%E5%A4%A7%E5%90%89%E4%B8%AD%E5%B0%8F%E6%9C%AB%E5%87%B6%E5%BE%A1%E7%A5%9E%E7%B1%A4%E7%99%BD%E9%BB%84%E6%A9%99%E7%B7%91%E9%9D%92%E8%8C%B6%E9%BB%92%E5%B8%AF%E5%88%9D%E6%AE%B5%E4%BA%8C%E4%B8%89%E4%BA%94%E3%81%8A%E3%81%BF%E3%81%8F%E3%81%98" rel="stylesheet">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
@@ -663,7 +663,8 @@ header {
 /* ── Landing (sign-in) ── */
 #screen-landing { min-height:100vh; display:flex; align-items:stretch; justify-content:flex-start; position:relative; overflow:hidden; background:linear-gradient(155deg,var(--kz-bg1) 0%,var(--kz-bg2) 52%,var(--kz-bg3) 100%); color:#fff; font-family:var(--sans); }
 .lp-brand { flex:1.2; position:relative; z-index:1; overflow:hidden; padding:48px 64px; display:flex; flex-direction:column; justify-content:space-between; background:transparent; }
-.lp-brand::before { content:''; position:absolute; inset:0; pointer-events:none; background:radial-gradient(ellipse 78% 74% at 34% 54%,rgba(var(--kz-shade),.74) 0%,rgba(var(--kz-shade),.5) 55%,rgba(var(--kz-shade),0) 100%); }
+.lp-brand::before { content:''; position:absolute; inset:0; pointer-events:none; background-image:var(--kz-pattern); background-size:var(--kz-pattern-size); }
+.lp-brand::after { content:''; position:absolute; inset:0; pointer-events:none; background:radial-gradient(ellipse 78% 74% at 34% 54%,rgba(var(--kz-shade),.74) 0%,rgba(var(--kz-shade),.5) 55%,rgba(var(--kz-shade),0) 100%); }
 
 .lp-brand > * { position:relative; z-index:1; }
 .lp-logo, .lp-panel-brand { display:flex; align-items:center; gap:14px; }
@@ -679,7 +680,7 @@ header {
 .lp-feat-d { font-size:13.5px; line-height:1.5; color:rgba(255,255,255,.52); }
 .lp-brand-foot { font-size:12.5px; color:rgba(255,255,255,.5); letter-spacing:.3px; }
 
-.lp-panel { flex:1; min-width:440px; background:rgba(var(--kz-shade),.2); border-left:1px solid var(--kz-line); position:relative; z-index:1; display:flex; align-items:center; justify-content:center; padding:48px 56px; }
+.lp-panel { flex:1; min-width:440px; background:var(--kz-panel); border-left:1px solid var(--kz-line); position:relative; z-index:1; overflow:hidden; display:flex; align-items:center; justify-content:center; padding:48px 56px; }
 .lp-panel-inner { width:100%; max-width:392px; }
 .lp-panel-brand { display:none; }
 .lp-h2 { font-family:var(--serif); font-weight:400; font-size:32px; letter-spacing:-.4px; margin-bottom:8px; color:#fff; }
@@ -747,18 +748,19 @@ header {
 
 /* ── Sign-in backgrounds: Asanoha (default) · Yozakura ── */
 :root { --kz-bg1:#09112a; --kz-bg2:#0e1a3a; --kz-bg3:#17264b; --kz-panel:#0b1328; --kz-panel-a:rgba(9,17,40,.84); --kz-shade:6,11,28; --kz-fa1:.8; --kz-fa2:.58; --kz-card:#0d1630; --kz-line:rgba(212,175,90,.2);
-  --kz-pattern:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44.00' height='76.21' viewBox='0 0 44.00 76.21'%3E%3Cpath d='M-110.0 -38.11L-88 -76.21M-110.0 -38.11L-88.0 -50.81M-110.0 38.11L-88 0.0M-110.0 38.11L-88.0 25.4M-110.0 114.32L-88 76.21M-110.0 114.32L-88.0 101.61M-110.0 190.53L-88 152.42M-110.0 190.53L-88.0 177.82M-88 -76.21L-88.0 -50.81M-88 -76.21L-66.0 -63.51M-88 -76.21L-66.0 -38.11M-88 -76.21L-44 -76.21M-88.0 -50.81L-66.0 -38.11M-88 0.0L-88.0 25.4M-88 0.0L-66.0 -38.11M-88 0.0L-66.0 -12.7M-88 0.0L-66.0 12.7M-88 0.0L-66.0 38.11M-88 0.0L-44 0.0M-88.0 25.4L-66.0 38.11M-88 76.21L-88.0 101.61M-88 76.21L-66.0 38.11M-88 76.21L-66.0 63.51M-88 76.21L-66.0 88.91M-88 76.21L-66.0 114.32M-88 76.21L-44 76.21M-88.0 101.61L-66.0 114.32M-88 152.42L-88.0 177.82M-88 152.42L-66.0 114.32M-88 152.42L-66.0 139.72M-88 152.42L-66.0 165.12M-88 152.42L-66.0 190.53M-88 152.42L-44 152.42M-88.0 177.82L-66.0 190.53M-66.0 -63.51L-66.0 -38.11M-66.0 -63.51L-44 -76.21M-66.0 -38.11L-66.0 -12.7M-66.0 -38.11L-44 -76.21M-66.0 -38.11L-44.0 -50.81M-66.0 -38.11L-44.0 -25.4M-66.0 -38.11L-44 0.0M-66.0 -38.11L-22.0 -38.11M-66.0 -12.7L-44 0.0M-66.0 12.7L-66.0 38.11M-66.0 12.7L-44 0.0M-66.0 38.11L-66.0 63.51M-66.0 38.11L-44 0.0M-66.0 38.11L-44.0 25.4M-66.0 38.11L-44.0 50.81M-66.0 38.11L-44 76.21M-66.0 38.11L-22.0 38.11M-66.0 63.51L-44 76.21M-66.0 88.91L-66.0 114.32M-66.0 88.91L-44 76.21M-66.0 114.32L-66.0 139.72M-66.0 114.32L-44 76.21M-66.0 114.32L-44.0 101.61M-66.0 114.32L-44.0 127.02M-66.0 114.32L-44 152.42M-66.0 114.32L-22.0 114.32M-66.0 139.72L-44 152.42M-66.0 165.12L-66.0 190.53M-66.0 165.12L-44 152.42M-66.0 190.53L-44 152.42M-66.0 190.53L-44.0 177.82M-44 -76.21L-44.0 -50.81M-44 -76.21L-22.0 -63.51M-44 -76.21L-22.0 -38.11M-44 -76.21L0 -76.21M-44.0 -50.81L-22.0 -38.11M-44.0 -25.4L-44 0.0M-44.0 -25.4L-22.0 -38.11M-44 0.0L-44.0 25.4M-44 0.0L-22.0 -38.11M-44 0.0L-22.0 -12.7M-44 0.0L-22.0 12.7M-44 0.0L-22.0 38.11M-44 0.0L0 0.0M-44.0 25.4L-22.0 38.11M-44.0 50.81L-44 76.21M-44.0 50.81L-22.0 38.11M-44 76.21L-44.0 101.61M-44 76.21L-22.0 38.11M-44 76.21L-22.0 63.51M-44 76.21L-22.0 88.91M-44 76.21L-22.0 114.32M-44 76.21L0 76.21M-44.0 101.61L-22.0 114.32M-44.0 127.02L-44 152.42M-44.0 127.02L-22.0 114.32M-44 152.42L-44.0 177.82M-44 152.42L-22.0 114.32M-44 152.42L-22.0 139.72M-44 152.42L-22.0 165.12M-44 152.42L-22.0 190.53M-44 152.42L0 152.42M-44.0 177.82L-22.0 190.53M-22.0 -63.51L-22.0 -38.11M-22.0 -63.51L0 -76.21M-22.0 -38.11L-22.0 -12.7M-22.0 -38.11L0 -76.21M-22.0 -38.11L0.0 -50.81M-22.0 -38.11L0.0 -25.4M-22.0 -38.11L0 0.0M-22.0 -38.11L22.0 -38.11M-22.0 -12.7L0 0.0M-22.0 12.7L-22.0 38.11M-22.0 12.7L0 0.0M-22.0 38.11L-22.0 63.51M-22.0 38.11L0 0.0M-22.0 38.11L0.0 25.4M-22.0 38.11L0.0 50.81M-22.0 38.11L0 76.21M-22.0 38.11L22.0 38.11M-22.0 63.51L0 76.21M-22.0 88.91L-22.0 114.32M-22.0 88.91L0 76.21M-22.0 114.32L-22.0 139.72M-22.0 114.32L0 76.21M-22.0 114.32L0.0 101.61M-22.0 114.32L0.0 127.02M-22.0 114.32L0 152.42M-22.0 114.32L22.0 114.32M-22.0 139.72L0 152.42M-22.0 165.12L-22.0 190.53M-22.0 165.12L0 152.42M-22.0 190.53L0 152.42M-22.0 190.53L0.0 177.82M0 -76.21L0.0 -50.81M0 -76.21L22.0 -63.51M0 -76.21L22.0 -38.11M0 -76.21L44 -76.21M0.0 -50.81L22.0 -38.11M0.0 -25.4L0 0.0M0.0 -25.4L22.0 -38.11M0 0.0L0.0 25.4M0 0.0L22.0 -38.11M0 0.0L22.0 -12.7M0 0.0L22.0 12.7M0 0.0L22.0 38.11M0 0.0L44 0.0M0.0 25.4L22.0 38.11M0.0 50.81L0 76.21M0.0 50.81L22.0 38.11M0 76.21L0.0 101.61M0 76.21L22.0 38.11M0 76.21L22.0 63.51M0 76.21L22.0 88.91M0 76.21L22.0 114.32M0 76.21L44 76.21M0.0 101.61L22.0 114.32M0.0 127.02L0 152.42M0.0 127.02L22.0 114.32M0 152.42L0.0 177.82M0 152.42L22.0 114.32M0 152.42L22.0 139.72M0 152.42L22.0 165.12M0 152.42L22.0 190.53M0 152.42L44 152.42M0.0 177.82L22.0 190.53M22.0 -63.51L22.0 -38.11M22.0 -63.51L44 -76.21M22.0 -38.11L22.0 -12.7M22.0 -38.11L44 -76.21M22.0 -38.11L44.0 -50.81M22.0 -38.11L44.0 -25.4M22.0 -38.11L44 0.0M22.0 -38.11L66.0 -38.11M22.0 -12.7L44 0.0M22.0 12.7L22.0 38.11M22.0 12.7L44 0.0M22.0 38.11L22.0 63.51M22.0 38.11L44 0.0M22.0 38.11L44.0 25.4M22.0 38.11L44.0 50.81M22.0 38.11L44 76.21M22.0 38.11L66.0 38.11M22.0 63.51L44 76.21M22.0 88.91L22.0 114.32M22.0 88.91L44 76.21M22.0 114.32L22.0 139.72M22.0 114.32L44 76.21M22.0 114.32L44.0 101.61M22.0 114.32L44.0 127.02M22.0 114.32L44 152.42M22.0 114.32L66.0 114.32M22.0 139.72L44 152.42M22.0 165.12L22.0 190.53M22.0 165.12L44 152.42M22.0 190.53L44 152.42M22.0 190.53L44.0 177.82M44 -76.21L44.0 -50.81M44 -76.21L66.0 -63.51M44 -76.21L66.0 -38.11M44 -76.21L88 -76.21M44.0 -50.81L66.0 -38.11M44.0 -25.4L44 0.0M44.0 -25.4L66.0 -38.11M44 0.0L44.0 25.4M44 0.0L66.0 -38.11M44 0.0L66.0 -12.7M44 0.0L66.0 12.7M44 0.0L66.0 38.11M44 0.0L88 0.0M44.0 25.4L66.0 38.11M44.0 50.81L44 76.21M44.0 50.81L66.0 38.11M44 76.21L44.0 101.61M44 76.21L66.0 38.11M44 76.21L66.0 63.51M44 76.21L66.0 88.91M44 76.21L66.0 114.32M44 76.21L88 76.21M44.0 101.61L66.0 114.32M44.0 127.02L44 152.42M44.0 127.02L66.0 114.32M44 152.42L44.0 177.82M44 152.42L66.0 114.32M44 152.42L66.0 139.72M44 152.42L66.0 165.12M44 152.42L66.0 190.53M44 152.42L88 152.42M44.0 177.82L66.0 190.53M66.0 -63.51L66.0 -38.11M66.0 -63.51L88 -76.21M66.0 -38.11L66.0 -12.7M66.0 -38.11L88 -76.21M66.0 -38.11L88.0 -50.81M66.0 -38.11L88.0 -25.4M66.0 -38.11L88 0.0M66.0 -38.11L110.0 -38.11M66.0 -12.7L88 0.0M66.0 12.7L66.0 38.11M66.0 12.7L88 0.0M66.0 38.11L66.0 63.51M66.0 38.11L88 0.0M66.0 38.11L88.0 25.4M66.0 38.11L88.0 50.81M66.0 38.11L88 76.21M66.0 38.11L110.0 38.11M66.0 63.51L88 76.21M66.0 88.91L66.0 114.32M66.0 88.91L88 76.21M66.0 114.32L66.0 139.72M66.0 114.32L88 76.21M66.0 114.32L88.0 101.61M66.0 114.32L88.0 127.02M66.0 114.32L88 152.42M66.0 114.32L110.0 114.32M66.0 139.72L88 152.42M66.0 165.12L66.0 190.53M66.0 165.12L88 152.42M66.0 190.53L88 152.42M66.0 190.53L88.0 177.82M88 -76.21L88.0 -50.81M88 -76.21L110.0 -63.51M88 -76.21L110.0 -38.11M88 -76.21L132 -76.21M88.0 -50.81L110.0 -38.11M88.0 -25.4L88 0.0M88.0 -25.4L110.0 -38.11M88 0.0L88.0 25.4M88 0.0L110.0 -38.11M88 0.0L110.0 -12.7M88 0.0L110.0 12.7M88 0.0L110.0 38.11M88 0.0L132 0.0M88.0 25.4L110.0 38.11M88.0 50.81L88 76.21M88.0 50.81L110.0 38.11M88 76.21L88.0 101.61M88 76.21L110.0 38.11M88 76.21L110.0 63.51M88 76.21L110.0 88.91M88 76.21L110.0 114.32M88 76.21L132 76.21M88.0 101.61L110.0 114.32M88.0 127.02L88 152.42M88.0 127.02L110.0 114.32M88 152.42L88.0 177.82M88 152.42L110.0 114.32M88 152.42L110.0 139.72M88 152.42L110.0 165.12M88 152.42L110.0 190.53M88 152.42L132 152.42M88.0 177.82L110.0 190.53M110.0 -63.51L110.0 -38.11M110.0 -63.51L132 -76.21M110.0 -38.11L110.0 -12.7M110.0 -38.11L132 -76.21M110.0 -38.11L132.0 -50.81M110.0 -38.11L132.0 -25.4M110.0 -38.11L132 0.0M110.0 -38.11L154.0 -38.11M110.0 -12.7L132 0.0M110.0 12.7L110.0 38.11M110.0 12.7L132 0.0M110.0 38.11L110.0 63.51M110.0 38.11L132 0.0M110.0 38.11L132.0 25.4M110.0 38.11L132.0 50.81M110.0 38.11L132 76.21M110.0 38.11L154.0 38.11M110.0 63.51L132 76.21M110.0 88.91L110.0 114.32M110.0 88.91L132 76.21M110.0 114.32L110.0 139.72M110.0 114.32L132 76.21M110.0 114.32L132.0 101.61M110.0 114.32L132.0 127.02M110.0 114.32L132 152.42M110.0 114.32L154.0 114.32M110.0 139.72L132 152.42M110.0 165.12L110.0 190.53M110.0 165.12L132 152.42M110.0 190.53L132 152.42M110.0 190.53L132.0 177.82M132 -76.21L132.0 -50.81M132 -76.21L154.0 -63.51M132 -76.21L154.0 -38.11M132 -76.21L176 -76.21M132.0 -50.81L154.0 -38.11M132.0 -25.4L132 0.0M132.0 -25.4L154.0 -38.11M132 0.0L132.0 25.4M132 0.0L154.0 -38.11M132 0.0L154.0 -12.7M132 0.0L154.0 12.7M132 0.0L154.0 38.11M132 0.0L176 0.0M132.0 25.4L154.0 38.11M132.0 50.81L132 76.21M132.0 50.81L154.0 38.11M132 76.21L132.0 101.61M132 76.21L154.0 38.11M132 76.21L154.0 63.51M132 76.21L154.0 88.91M132 76.21L154.0 114.32M132 76.21L176 76.21M132.0 101.61L154.0 114.32M132.0 127.02L132 152.42M132.0 127.02L154.0 114.32M132 152.42L132.0 177.82M132 152.42L154.0 114.32M132 152.42L154.0 139.72M132 152.42L154.0 165.12M132 152.42L154.0 190.53M132 152.42L176 152.42M132.0 177.82L154.0 190.53M154.0 -63.51L154.0 -38.11M154.0 -63.51L176 -76.21M154.0 -38.11L154.0 -12.7M154.0 -38.11L176.0 -25.4M154.0 -38.11L176 0.0M154.0 -38.11L198.0 -38.11M154.0 -12.7L176 0.0M154.0 12.7L154.0 38.11M154.0 12.7L176 0.0M154.0 38.11L154.0 63.51M154.0 38.11L176.0 50.81M154.0 38.11L176 76.21M154.0 38.11L198.0 38.11M154.0 63.51L176 76.21M154.0 88.91L154.0 114.32M154.0 88.91L176 76.21M154.0 114.32L154.0 139.72M154.0 114.32L176.0 127.02M154.0 114.32L176 152.42M154.0 114.32L198.0 114.32M154.0 139.72L176 152.42M154.0 165.12L154.0 190.53M154.0 165.12L176 152.42M176.0 -25.4L176 0.0M176.0 -25.4L198.0 -38.11M176.0 50.81L176 76.21M176.0 50.81L198.0 38.11M176.0 127.02L176 152.42M176.0 127.02L198.0 114.32' fill='none' stroke='%23d4af5a' stroke-opacity='0.26' stroke-width='0.9'/%3E%3C/svg%3E"); --kz-pattern-size:44.00px 76.21px; }
+  --kz-pattern:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44.00' height='76.21' viewBox='0 0 44.00 76.21'%3E%3Cpath d='M-110.0 -38.11L-88 -76.21M-110.0 -38.11L-88.0 -50.81M-110.0 38.11L-88 0.0M-110.0 38.11L-88.0 25.4M-110.0 114.32L-88 76.21M-110.0 114.32L-88.0 101.61M-110.0 190.53L-88 152.42M-110.0 190.53L-88.0 177.82M-88 -76.21L-88.0 -50.81M-88 -76.21L-66.0 -63.51M-88 -76.21L-66.0 -38.11M-88 -76.21L-44 -76.21M-88.0 -50.81L-66.0 -38.11M-88 0.0L-88.0 25.4M-88 0.0L-66.0 -38.11M-88 0.0L-66.0 -12.7M-88 0.0L-66.0 12.7M-88 0.0L-66.0 38.11M-88 0.0L-44 0.0M-88.0 25.4L-66.0 38.11M-88 76.21L-88.0 101.61M-88 76.21L-66.0 38.11M-88 76.21L-66.0 63.51M-88 76.21L-66.0 88.91M-88 76.21L-66.0 114.32M-88 76.21L-44 76.21M-88.0 101.61L-66.0 114.32M-88 152.42L-88.0 177.82M-88 152.42L-66.0 114.32M-88 152.42L-66.0 139.72M-88 152.42L-66.0 165.12M-88 152.42L-66.0 190.53M-88 152.42L-44 152.42M-88.0 177.82L-66.0 190.53M-66.0 -63.51L-66.0 -38.11M-66.0 -63.51L-44 -76.21M-66.0 -38.11L-66.0 -12.7M-66.0 -38.11L-44 -76.21M-66.0 -38.11L-44.0 -50.81M-66.0 -38.11L-44.0 -25.4M-66.0 -38.11L-44 0.0M-66.0 -38.11L-22.0 -38.11M-66.0 -12.7L-44 0.0M-66.0 12.7L-66.0 38.11M-66.0 12.7L-44 0.0M-66.0 38.11L-66.0 63.51M-66.0 38.11L-44 0.0M-66.0 38.11L-44.0 25.4M-66.0 38.11L-44.0 50.81M-66.0 38.11L-44 76.21M-66.0 38.11L-22.0 38.11M-66.0 63.51L-44 76.21M-66.0 88.91L-66.0 114.32M-66.0 88.91L-44 76.21M-66.0 114.32L-66.0 139.72M-66.0 114.32L-44 76.21M-66.0 114.32L-44.0 101.61M-66.0 114.32L-44.0 127.02M-66.0 114.32L-44 152.42M-66.0 114.32L-22.0 114.32M-66.0 139.72L-44 152.42M-66.0 165.12L-66.0 190.53M-66.0 165.12L-44 152.42M-66.0 190.53L-44 152.42M-66.0 190.53L-44.0 177.82M-44 -76.21L-44.0 -50.81M-44 -76.21L-22.0 -63.51M-44 -76.21L-22.0 -38.11M-44 -76.21L0 -76.21M-44.0 -50.81L-22.0 -38.11M-44.0 -25.4L-44 0.0M-44.0 -25.4L-22.0 -38.11M-44 0.0L-44.0 25.4M-44 0.0L-22.0 -38.11M-44 0.0L-22.0 -12.7M-44 0.0L-22.0 12.7M-44 0.0L-22.0 38.11M-44 0.0L0 0.0M-44.0 25.4L-22.0 38.11M-44.0 50.81L-44 76.21M-44.0 50.81L-22.0 38.11M-44 76.21L-44.0 101.61M-44 76.21L-22.0 38.11M-44 76.21L-22.0 63.51M-44 76.21L-22.0 88.91M-44 76.21L-22.0 114.32M-44 76.21L0 76.21M-44.0 101.61L-22.0 114.32M-44.0 127.02L-44 152.42M-44.0 127.02L-22.0 114.32M-44 152.42L-44.0 177.82M-44 152.42L-22.0 114.32M-44 152.42L-22.0 139.72M-44 152.42L-22.0 165.12M-44 152.42L-22.0 190.53M-44 152.42L0 152.42M-44.0 177.82L-22.0 190.53M-22.0 -63.51L-22.0 -38.11M-22.0 -63.51L0 -76.21M-22.0 -38.11L-22.0 -12.7M-22.0 -38.11L0 -76.21M-22.0 -38.11L0.0 -50.81M-22.0 -38.11L0.0 -25.4M-22.0 -38.11L0 0.0M-22.0 -38.11L22.0 -38.11M-22.0 -12.7L0 0.0M-22.0 12.7L-22.0 38.11M-22.0 12.7L0 0.0M-22.0 38.11L-22.0 63.51M-22.0 38.11L0 0.0M-22.0 38.11L0.0 25.4M-22.0 38.11L0.0 50.81M-22.0 38.11L0 76.21M-22.0 38.11L22.0 38.11M-22.0 63.51L0 76.21M-22.0 88.91L-22.0 114.32M-22.0 88.91L0 76.21M-22.0 114.32L-22.0 139.72M-22.0 114.32L0 76.21M-22.0 114.32L0.0 101.61M-22.0 114.32L0.0 127.02M-22.0 114.32L0 152.42M-22.0 114.32L22.0 114.32M-22.0 139.72L0 152.42M-22.0 165.12L-22.0 190.53M-22.0 165.12L0 152.42M-22.0 190.53L0 152.42M-22.0 190.53L0.0 177.82M0 -76.21L0.0 -50.81M0 -76.21L22.0 -63.51M0 -76.21L22.0 -38.11M0 -76.21L44 -76.21M0.0 -50.81L22.0 -38.11M0.0 -25.4L0 0.0M0.0 -25.4L22.0 -38.11M0 0.0L0.0 25.4M0 0.0L22.0 -38.11M0 0.0L22.0 -12.7M0 0.0L22.0 12.7M0 0.0L22.0 38.11M0 0.0L44 0.0M0.0 25.4L22.0 38.11M0.0 50.81L0 76.21M0.0 50.81L22.0 38.11M0 76.21L0.0 101.61M0 76.21L22.0 38.11M0 76.21L22.0 63.51M0 76.21L22.0 88.91M0 76.21L22.0 114.32M0 76.21L44 76.21M0.0 101.61L22.0 114.32M0.0 127.02L0 152.42M0.0 127.02L22.0 114.32M0 152.42L0.0 177.82M0 152.42L22.0 114.32M0 152.42L22.0 139.72M0 152.42L22.0 165.12M0 152.42L22.0 190.53M0 152.42L44 152.42M0.0 177.82L22.0 190.53M22.0 -63.51L22.0 -38.11M22.0 -63.51L44 -76.21M22.0 -38.11L22.0 -12.7M22.0 -38.11L44 -76.21M22.0 -38.11L44.0 -50.81M22.0 -38.11L44.0 -25.4M22.0 -38.11L44 0.0M22.0 -38.11L66.0 -38.11M22.0 -12.7L44 0.0M22.0 12.7L22.0 38.11M22.0 12.7L44 0.0M22.0 38.11L22.0 63.51M22.0 38.11L44 0.0M22.0 38.11L44.0 25.4M22.0 38.11L44.0 50.81M22.0 38.11L44 76.21M22.0 38.11L66.0 38.11M22.0 63.51L44 76.21M22.0 88.91L22.0 114.32M22.0 88.91L44 76.21M22.0 114.32L22.0 139.72M22.0 114.32L44 76.21M22.0 114.32L44.0 101.61M22.0 114.32L44.0 127.02M22.0 114.32L44 152.42M22.0 114.32L66.0 114.32M22.0 139.72L44 152.42M22.0 165.12L22.0 190.53M22.0 165.12L44 152.42M22.0 190.53L44 152.42M22.0 190.53L44.0 177.82M44 -76.21L44.0 -50.81M44 -76.21L66.0 -63.51M44 -76.21L66.0 -38.11M44 -76.21L88 -76.21M44.0 -50.81L66.0 -38.11M44.0 -25.4L44 0.0M44.0 -25.4L66.0 -38.11M44 0.0L44.0 25.4M44 0.0L66.0 -38.11M44 0.0L66.0 -12.7M44 0.0L66.0 12.7M44 0.0L66.0 38.11M44 0.0L88 0.0M44.0 25.4L66.0 38.11M44.0 50.81L44 76.21M44.0 50.81L66.0 38.11M44 76.21L44.0 101.61M44 76.21L66.0 38.11M44 76.21L66.0 63.51M44 76.21L66.0 88.91M44 76.21L66.0 114.32M44 76.21L88 76.21M44.0 101.61L66.0 114.32M44.0 127.02L44 152.42M44.0 127.02L66.0 114.32M44 152.42L44.0 177.82M44 152.42L66.0 114.32M44 152.42L66.0 139.72M44 152.42L66.0 165.12M44 152.42L66.0 190.53M44 152.42L88 152.42M44.0 177.82L66.0 190.53M66.0 -63.51L66.0 -38.11M66.0 -63.51L88 -76.21M66.0 -38.11L66.0 -12.7M66.0 -38.11L88 -76.21M66.0 -38.11L88.0 -50.81M66.0 -38.11L88.0 -25.4M66.0 -38.11L88 0.0M66.0 -38.11L110.0 -38.11M66.0 -12.7L88 0.0M66.0 12.7L66.0 38.11M66.0 12.7L88 0.0M66.0 38.11L66.0 63.51M66.0 38.11L88 0.0M66.0 38.11L88.0 25.4M66.0 38.11L88.0 50.81M66.0 38.11L88 76.21M66.0 38.11L110.0 38.11M66.0 63.51L88 76.21M66.0 88.91L66.0 114.32M66.0 88.91L88 76.21M66.0 114.32L66.0 139.72M66.0 114.32L88 76.21M66.0 114.32L88.0 101.61M66.0 114.32L88.0 127.02M66.0 114.32L88 152.42M66.0 114.32L110.0 114.32M66.0 139.72L88 152.42M66.0 165.12L66.0 190.53M66.0 165.12L88 152.42M66.0 190.53L88 152.42M66.0 190.53L88.0 177.82M88 -76.21L88.0 -50.81M88 -76.21L110.0 -63.51M88 -76.21L110.0 -38.11M88 -76.21L132 -76.21M88.0 -50.81L110.0 -38.11M88.0 -25.4L88 0.0M88.0 -25.4L110.0 -38.11M88 0.0L88.0 25.4M88 0.0L110.0 -38.11M88 0.0L110.0 -12.7M88 0.0L110.0 12.7M88 0.0L110.0 38.11M88 0.0L132 0.0M88.0 25.4L110.0 38.11M88.0 50.81L88 76.21M88.0 50.81L110.0 38.11M88 76.21L88.0 101.61M88 76.21L110.0 38.11M88 76.21L110.0 63.51M88 76.21L110.0 88.91M88 76.21L110.0 114.32M88 76.21L132 76.21M88.0 101.61L110.0 114.32M88.0 127.02L88 152.42M88.0 127.02L110.0 114.32M88 152.42L88.0 177.82M88 152.42L110.0 114.32M88 152.42L110.0 139.72M88 152.42L110.0 165.12M88 152.42L110.0 190.53M88 152.42L132 152.42M88.0 177.82L110.0 190.53M110.0 -63.51L110.0 -38.11M110.0 -63.51L132 -76.21M110.0 -38.11L110.0 -12.7M110.0 -38.11L132 -76.21M110.0 -38.11L132.0 -50.81M110.0 -38.11L132.0 -25.4M110.0 -38.11L132 0.0M110.0 -38.11L154.0 -38.11M110.0 -12.7L132 0.0M110.0 12.7L110.0 38.11M110.0 12.7L132 0.0M110.0 38.11L110.0 63.51M110.0 38.11L132 0.0M110.0 38.11L132.0 25.4M110.0 38.11L132.0 50.81M110.0 38.11L132 76.21M110.0 38.11L154.0 38.11M110.0 63.51L132 76.21M110.0 88.91L110.0 114.32M110.0 88.91L132 76.21M110.0 114.32L110.0 139.72M110.0 114.32L132 76.21M110.0 114.32L132.0 101.61M110.0 114.32L132.0 127.02M110.0 114.32L132 152.42M110.0 114.32L154.0 114.32M110.0 139.72L132 152.42M110.0 165.12L110.0 190.53M110.0 165.12L132 152.42M110.0 190.53L132 152.42M110.0 190.53L132.0 177.82M132 -76.21L132.0 -50.81M132 -76.21L154.0 -63.51M132 -76.21L154.0 -38.11M132 -76.21L176 -76.21M132.0 -50.81L154.0 -38.11M132.0 -25.4L132 0.0M132.0 -25.4L154.0 -38.11M132 0.0L132.0 25.4M132 0.0L154.0 -38.11M132 0.0L154.0 -12.7M132 0.0L154.0 12.7M132 0.0L154.0 38.11M132 0.0L176 0.0M132.0 25.4L154.0 38.11M132.0 50.81L132 76.21M132.0 50.81L154.0 38.11M132 76.21L132.0 101.61M132 76.21L154.0 38.11M132 76.21L154.0 63.51M132 76.21L154.0 88.91M132 76.21L154.0 114.32M132 76.21L176 76.21M132.0 101.61L154.0 114.32M132.0 127.02L132 152.42M132.0 127.02L154.0 114.32M132 152.42L132.0 177.82M132 152.42L154.0 114.32M132 152.42L154.0 139.72M132 152.42L154.0 165.12M132 152.42L154.0 190.53M132 152.42L176 152.42M132.0 177.82L154.0 190.53M154.0 -63.51L154.0 -38.11M154.0 -63.51L176 -76.21M154.0 -38.11L154.0 -12.7M154.0 -38.11L176.0 -25.4M154.0 -38.11L176 0.0M154.0 -38.11L198.0 -38.11M154.0 -12.7L176 0.0M154.0 12.7L154.0 38.11M154.0 12.7L176 0.0M154.0 38.11L154.0 63.51M154.0 38.11L176.0 50.81M154.0 38.11L176 76.21M154.0 38.11L198.0 38.11M154.0 63.51L176 76.21M154.0 88.91L154.0 114.32M154.0 88.91L176 76.21M154.0 114.32L154.0 139.72M154.0 114.32L176.0 127.02M154.0 114.32L176 152.42M154.0 114.32L198.0 114.32M154.0 139.72L176 152.42M154.0 165.12L154.0 190.53M154.0 165.12L176 152.42M176.0 -25.4L176 0.0M176.0 -25.4L198.0 -38.11M176.0 50.81L176 76.21M176.0 50.81L198.0 38.11M176.0 127.02L176 152.42M176.0 127.02L198.0 114.32' fill='none' stroke='%23d4af5a' stroke-opacity='0.26' stroke-width='0.9'/%3E%3C/svg%3E"); --kz-pattern-size:44.00px 76.21px; --kz-pattern-r:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Cg fill='none' stroke='%23d4af5a' stroke-opacity='0.34' stroke-width='1'%3E%3Ccircle cx='0' cy='0' r='33.94'/%3E%3Ccircle cx='0' cy='48' r='33.94'/%3E%3Ccircle cx='48' cy='0' r='33.94'/%3E%3Ccircle cx='48' cy='48' r='33.94'/%3E%3Ccircle cx='24.0' cy='24.0' r='5.76'/%3E%3C/g%3E%3C/svg%3E"); --kz-pattern-r-size:48px 48px; }
 html[data-bg="yozakura"] { --kz-bg1:#0b0f22; --kz-bg2:#17142e; --kz-bg3:#2a1c42; --kz-panel:#0f0d20; --kz-panel-a:rgba(14,12,30,.84); --kz-shade:10,7,22; --kz-fa1:.95; --kz-fa2:.82; --kz-card:#13102a; --kz-line:rgba(244,182,200,.18);
-  --kz-pattern:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1100' height='760' viewBox='0 0 1100 760'%3E%3Cg transform='translate(622 470) rotate(100) scale(1.23)' opacity='0.39'%3E%3Cpath d='M0 -7C4 -8 7 -3 5 3C4 6 1.6 7.4 0 5.2C-1.6 7.4 -4 6 -5 3C-7 -3 -4 -8 0 -7Z' fill='%23f9d3de'/%3E%3C/g%3E%3Cg transform='translate(949 658) rotate(235) scale(0.82)' opacity='0.38'%3E%3Cpath d='M0 -7C4 -8 7 -3 5 3C4 6 1.6 7.4 0 5.2C-1.6 7.4 -4 6 -5 3C-7 -3 -4 -8 0 -7Z' fill='%23f4b6c8'/%3E%3C/g%3E%3Cg transform='translate(553 697) rotate(160) scale(1.04)' opacity='0.48'%3E%3Cpath d='M0 -7C4 -8 7 -3 5 3C4 6 1.6 7.4 0 5.2C-1.6 7.4 -4 6 -5 3C-7 -3 -4 -8 0 -7Z' fill='%23f4b6c8'/%3E%3C/g%3E%3Cg transform='translate(688 245) rotate(179) scale(0.90)' opacity='0.20'%3E%3Cpath d='M0 -7C4 -8 7 -3 5 3C4 6 1.6 7.4 0 5.2C-1.6 7.4 -4 6 -5 3C-7 -3 -4 -8 0 -7Z' fill='%23f9d3de'/%3E%3C/g%3E%3Cg transform='translate(660 540) rotate(305) scale(0.98)' opacity='0.48'%3E%3Cpath d='M0 -7C4 -8 7 -3 5 3C4 6 1.6 7.4 0 5.2C-1.6 7.4 -4 6 -5 3C-7 -3 -4 -8 0 -7Z' fill='%23f4b6c8'/%3E%3C/g%3E%3Cg transform='translate(607 503) rotate(20) scale(0.78)' opacity='0.49'%3E%3Cpath d='M0 -7C4 -8 7 -3 5 3C4 6 1.6 7.4 0 5.2C-1.6 7.4 -4 6 -5 3C-7 -3 -4 -8 0 -7Z' fill='%23f4b6c8'/%3E%3C/g%3E%3Cg transform='translate(330 185) rotate(270) scale(1.28)' opacity='0.22'%3E%3Cpath d='M0 -7C4 -8 7 -3 5 3C4 6 1.6 7.4 0 5.2C-1.6 7.4 -4 6 -5 3C-7 -3 -4 -8 0 -7Z' fill='%23f9d3de'/%3E%3C/g%3E%3Cg transform='translate(368 205) rotate(2) scale(0.88)' opacity='0.35'%3E%3Cpath d='M0 -7C4 -8 7 -3 5 3C4 6 1.6 7.4 0 5.2C-1.6 7.4 -4 6 -5 3C-7 -3 -4 -8 0 -7Z' fill='%23f4b6c8'/%3E%3C/g%3E%3Cg transform='translate(350 308) rotate(40) scale(0.82)' opacity='0.19'%3E%3Cpath d='M0 -7C4 -8 7 -3 5 3C4 6 1.6 7.4 0 5.2C-1.6 7.4 -4 6 -5 3C-7 -3 -4 -8 0 -7Z' fill='%23f4b6c8'/%3E%3C/g%3E%3Cg transform='translate(930 548) rotate(45) scale(1.06)' opacity='0.23'%3E%3Cpath d='M0 -7C4 -8 7 -3 5 3C4 6 1.6 7.4 0 5.2C-1.6 7.4 -4 6 -5 3C-7 -3 -4 -8 0 -7Z' fill='%23f9d3de'/%3E%3C/g%3E%3Cg transform='translate(162 255) rotate(99) scale(0.74)' opacity='0.24'%3E%3Cpath d='M0 -7C4 -8 7 -3 5 3C4 6 1.6 7.4 0 5.2C-1.6 7.4 -4 6 -5 3C-7 -3 -4 -8 0 -7Z' fill='%23f4b6c8'/%3E%3C/g%3E%3Cg transform='translate(237 485) rotate(170) scale(1.00)' opacity='0.29'%3E%3Cpath d='M0 -7C4 -8 7 -3 5 3C4 6 1.6 7.4 0 5.2C-1.6 7.4 -4 6 -5 3C-7 -3 -4 -8 0 -7Z' fill='%23f4b6c8'/%3E%3C/g%3E%3Cg transform='translate(590 574) rotate(25) scale(0.90)' opacity='0.33'%3E%3Cpath d='M0 -7C4 -8 7 -3 5 3C4 6 1.6 7.4 0 5.2C-1.6 7.4 -4 6 -5 3C-7 -3 -4 -8 0 -7Z' fill='%23f9d3de'/%3E%3C/g%3E%3Cg transform='translate(427 571) rotate(314) scale(0.77)' opacity='0.18'%3E%3Cpath d='M0 -7C4 -8 7 -3 5 3C4 6 1.6 7.4 0 5.2C-1.6 7.4 -4 6 -5 3C-7 -3 -4 -8 0 -7Z' fill='%23f4b6c8'/%3E%3C/g%3E%3Cg transform='translate(593 342) rotate(320) scale(0.90)' opacity='0.40'%3E%3Cpath d='M0 -7C4 -8 7 -3 5 3C4 6 1.6 7.4 0 5.2C-1.6 7.4 -4 6 -5 3C-7 -3 -4 -8 0 -7Z' fill='%23f4b6c8'/%3E%3C/g%3E%3Cg transform='translate(206 377) rotate(12) scale(1.10)' opacity='0.21'%3E%3Cpath d='M0 -7C4 -8 7 -3 5 3C4 6 1.6 7.4 0 5.2C-1.6 7.4 -4 6 -5 3C-7 -3 -4 -8 0 -7Z' fill='%23f9d3de'/%3E%3C/g%3E%3Cg transform='translate(654 536) rotate(152) scale(1.00)' opacity='0.34'%3E%3Cpath d='M0 -7C4 -8 7 -3 5 3C4 6 1.6 7.4 0 5.2C-1.6 7.4 -4 6 -5 3C-7 -3 -4 -8 0 -7Z' fill='%23f4b6c8'/%3E%3C/g%3E%3Cg transform='translate(306 636) rotate(173) scale(1.33)' opacity='0.19'%3E%3Cpath d='M0 -7C4 -8 7 -3 5 3C4 6 1.6 7.4 0 5.2C-1.6 7.4 -4 6 -5 3C-7 -3 -4 -8 0 -7Z' fill='%23f4b6c8'/%3E%3C/g%3E%3Cg transform='translate(445 586) rotate(38) scale(0.91)' opacity='0.24'%3E%3Cpath d='M0 -7C4 -8 7 -3 5 3C4 6 1.6 7.4 0 5.2C-1.6 7.4 -4 6 -5 3C-7 -3 -4 -8 0 -7Z' fill='%23f9d3de'/%3E%3C/g%3E%3Cg transform='translate(766 463) rotate(224) scale(0.89)' opacity='0.42'%3E%3Cpath d='M0 -7C4 -8 7 -3 5 3C4 6 1.6 7.4 0 5.2C-1.6 7.4 -4 6 -5 3C-7 -3 -4 -8 0 -7Z' fill='%23f4b6c8'/%3E%3C/g%3E%3Cg transform='translate(1025 605) rotate(291) scale(0.98)' opacity='0.48'%3E%3Cpath d='M0 -7C4 -8 7 -3 5 3C4 6 1.6 7.4 0 5.2C-1.6 7.4 -4 6 -5 3C-7 -3 -4 -8 0 -7Z' fill='%23f4b6c8'/%3E%3C/g%3E%3Cg transform='translate(926 550) rotate(184) scale(1.08)' opacity='0.45'%3E%3Cpath d='M0 -7C4 -8 7 -3 5 3C4 6 1.6 7.4 0 5.2C-1.6 7.4 -4 6 -5 3C-7 -3 -4 -8 0 -7Z' fill='%23f9d3de'/%3E%3C/g%3E%3C/svg%3E"); --kz-pattern-size:1100px 760px; }
-#screen-landing::before, #screen-host::before, #screen-join::before { content:''; position:absolute; inset:0; pointer-events:none; background-image:var(--kz-pattern); background-size:var(--kz-pattern-size); }
-html[data-bg="yozakura"] #screen-landing::before { -webkit-mask-image:radial-gradient(ellipse 30% 55% at 22% 56%,rgba(0,0,0,.1) 0%,rgba(0,0,0,.1) 55%,#000 100%); mask-image:radial-gradient(ellipse 30% 55% at 22% 56%,rgba(0,0,0,.1) 0%,rgba(0,0,0,.1) 55%,#000 100%); animation:petal-drift 140s linear infinite; }
+  --kz-pattern:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1100' height='760' viewBox='0 0 1100 760'%3E%3Cg transform='translate(622 470) rotate(100) scale(1.23)' opacity='0.39'%3E%3Cpath d='M0 -7C4 -8 7 -3 5 3C4 6 1.6 7.4 0 5.2C-1.6 7.4 -4 6 -5 3C-7 -3 -4 -8 0 -7Z' fill='%23f9d3de'/%3E%3C/g%3E%3Cg transform='translate(949 658) rotate(235) scale(0.82)' opacity='0.38'%3E%3Cpath d='M0 -7C4 -8 7 -3 5 3C4 6 1.6 7.4 0 5.2C-1.6 7.4 -4 6 -5 3C-7 -3 -4 -8 0 -7Z' fill='%23f4b6c8'/%3E%3C/g%3E%3Cg transform='translate(553 697) rotate(160) scale(1.04)' opacity='0.48'%3E%3Cpath d='M0 -7C4 -8 7 -3 5 3C4 6 1.6 7.4 0 5.2C-1.6 7.4 -4 6 -5 3C-7 -3 -4 -8 0 -7Z' fill='%23f4b6c8'/%3E%3C/g%3E%3Cg transform='translate(688 245) rotate(179) scale(0.90)' opacity='0.20'%3E%3Cpath d='M0 -7C4 -8 7 -3 5 3C4 6 1.6 7.4 0 5.2C-1.6 7.4 -4 6 -5 3C-7 -3 -4 -8 0 -7Z' fill='%23f9d3de'/%3E%3C/g%3E%3Cg transform='translate(660 540) rotate(305) scale(0.98)' opacity='0.48'%3E%3Cpath d='M0 -7C4 -8 7 -3 5 3C4 6 1.6 7.4 0 5.2C-1.6 7.4 -4 6 -5 3C-7 -3 -4 -8 0 -7Z' fill='%23f4b6c8'/%3E%3C/g%3E%3Cg transform='translate(607 503) rotate(20) scale(0.78)' opacity='0.49'%3E%3Cpath d='M0 -7C4 -8 7 -3 5 3C4 6 1.6 7.4 0 5.2C-1.6 7.4 -4 6 -5 3C-7 -3 -4 -8 0 -7Z' fill='%23f4b6c8'/%3E%3C/g%3E%3Cg transform='translate(330 185) rotate(270) scale(1.28)' opacity='0.22'%3E%3Cpath d='M0 -7C4 -8 7 -3 5 3C4 6 1.6 7.4 0 5.2C-1.6 7.4 -4 6 -5 3C-7 -3 -4 -8 0 -7Z' fill='%23f9d3de'/%3E%3C/g%3E%3Cg transform='translate(368 205) rotate(2) scale(0.88)' opacity='0.35'%3E%3Cpath d='M0 -7C4 -8 7 -3 5 3C4 6 1.6 7.4 0 5.2C-1.6 7.4 -4 6 -5 3C-7 -3 -4 -8 0 -7Z' fill='%23f4b6c8'/%3E%3C/g%3E%3Cg transform='translate(350 308) rotate(40) scale(0.82)' opacity='0.19'%3E%3Cpath d='M0 -7C4 -8 7 -3 5 3C4 6 1.6 7.4 0 5.2C-1.6 7.4 -4 6 -5 3C-7 -3 -4 -8 0 -7Z' fill='%23f4b6c8'/%3E%3C/g%3E%3Cg transform='translate(930 548) rotate(45) scale(1.06)' opacity='0.23'%3E%3Cpath d='M0 -7C4 -8 7 -3 5 3C4 6 1.6 7.4 0 5.2C-1.6 7.4 -4 6 -5 3C-7 -3 -4 -8 0 -7Z' fill='%23f9d3de'/%3E%3C/g%3E%3Cg transform='translate(162 255) rotate(99) scale(0.74)' opacity='0.24'%3E%3Cpath d='M0 -7C4 -8 7 -3 5 3C4 6 1.6 7.4 0 5.2C-1.6 7.4 -4 6 -5 3C-7 -3 -4 -8 0 -7Z' fill='%23f4b6c8'/%3E%3C/g%3E%3Cg transform='translate(237 485) rotate(170) scale(1.00)' opacity='0.29'%3E%3Cpath d='M0 -7C4 -8 7 -3 5 3C4 6 1.6 7.4 0 5.2C-1.6 7.4 -4 6 -5 3C-7 -3 -4 -8 0 -7Z' fill='%23f4b6c8'/%3E%3C/g%3E%3Cg transform='translate(590 574) rotate(25) scale(0.90)' opacity='0.33'%3E%3Cpath d='M0 -7C4 -8 7 -3 5 3C4 6 1.6 7.4 0 5.2C-1.6 7.4 -4 6 -5 3C-7 -3 -4 -8 0 -7Z' fill='%23f9d3de'/%3E%3C/g%3E%3Cg transform='translate(427 571) rotate(314) scale(0.77)' opacity='0.18'%3E%3Cpath d='M0 -7C4 -8 7 -3 5 3C4 6 1.6 7.4 0 5.2C-1.6 7.4 -4 6 -5 3C-7 -3 -4 -8 0 -7Z' fill='%23f4b6c8'/%3E%3C/g%3E%3Cg transform='translate(593 342) rotate(320) scale(0.90)' opacity='0.40'%3E%3Cpath d='M0 -7C4 -8 7 -3 5 3C4 6 1.6 7.4 0 5.2C-1.6 7.4 -4 6 -5 3C-7 -3 -4 -8 0 -7Z' fill='%23f4b6c8'/%3E%3C/g%3E%3Cg transform='translate(206 377) rotate(12) scale(1.10)' opacity='0.21'%3E%3Cpath d='M0 -7C4 -8 7 -3 5 3C4 6 1.6 7.4 0 5.2C-1.6 7.4 -4 6 -5 3C-7 -3 -4 -8 0 -7Z' fill='%23f9d3de'/%3E%3C/g%3E%3Cg transform='translate(654 536) rotate(152) scale(1.00)' opacity='0.34'%3E%3Cpath d='M0 -7C4 -8 7 -3 5 3C4 6 1.6 7.4 0 5.2C-1.6 7.4 -4 6 -5 3C-7 -3 -4 -8 0 -7Z' fill='%23f4b6c8'/%3E%3C/g%3E%3Cg transform='translate(306 636) rotate(173) scale(1.33)' opacity='0.19'%3E%3Cpath d='M0 -7C4 -8 7 -3 5 3C4 6 1.6 7.4 0 5.2C-1.6 7.4 -4 6 -5 3C-7 -3 -4 -8 0 -7Z' fill='%23f4b6c8'/%3E%3C/g%3E%3Cg transform='translate(445 586) rotate(38) scale(0.91)' opacity='0.24'%3E%3Cpath d='M0 -7C4 -8 7 -3 5 3C4 6 1.6 7.4 0 5.2C-1.6 7.4 -4 6 -5 3C-7 -3 -4 -8 0 -7Z' fill='%23f9d3de'/%3E%3C/g%3E%3Cg transform='translate(766 463) rotate(224) scale(0.89)' opacity='0.42'%3E%3Cpath d='M0 -7C4 -8 7 -3 5 3C4 6 1.6 7.4 0 5.2C-1.6 7.4 -4 6 -5 3C-7 -3 -4 -8 0 -7Z' fill='%23f4b6c8'/%3E%3C/g%3E%3Cg transform='translate(1025 605) rotate(291) scale(0.98)' opacity='0.48'%3E%3Cpath d='M0 -7C4 -8 7 -3 5 3C4 6 1.6 7.4 0 5.2C-1.6 7.4 -4 6 -5 3C-7 -3 -4 -8 0 -7Z' fill='%23f4b6c8'/%3E%3C/g%3E%3Cg transform='translate(926 550) rotate(184) scale(1.08)' opacity='0.45'%3E%3Cpath d='M0 -7C4 -8 7 -3 5 3C4 6 1.6 7.4 0 5.2C-1.6 7.4 -4 6 -5 3C-7 -3 -4 -8 0 -7Z' fill='%23f9d3de'/%3E%3C/g%3E%3C/svg%3E"); --kz-pattern-size:1100px 760px; --kz-pattern-r:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='20' viewBox='0 0 40 20'%3E%3Crect width='40' height='20' fill='%230f0d20'/%3E%3Ccircle cx='-20.0' cy='-10.0' r='20.00' fill='%230f0d20' stroke='%23f4b6c8' stroke-opacity='0.32' stroke-width='1'/%3E%3Ccircle cx='-20.0' cy='-10.0' r='14.40' fill='%230f0d20' stroke='%23f4b6c8' stroke-opacity='0.32' stroke-width='1'/%3E%3Ccircle cx='-20.0' cy='-10.0' r='9.20' fill='%230f0d20' stroke='%23f4b6c8' stroke-opacity='0.32' stroke-width='1'/%3E%3Ccircle cx='-20.0' cy='-10.0' r='4.00' fill='%230f0d20' stroke='%23f4b6c8' stroke-opacity='0.32' stroke-width='1'/%3E%3Ccircle cx='20.0' cy='-10.0' r='20.00' fill='%230f0d20' stroke='%23f4b6c8' stroke-opacity='0.32' stroke-width='1'/%3E%3Ccircle cx='20.0' cy='-10.0' r='14.40' fill='%230f0d20' stroke='%23f4b6c8' stroke-opacity='0.32' stroke-width='1'/%3E%3Ccircle cx='20.0' cy='-10.0' r='9.20' fill='%230f0d20' stroke='%23f4b6c8' stroke-opacity='0.32' stroke-width='1'/%3E%3Ccircle cx='20.0' cy='-10.0' r='4.00' fill='%230f0d20' stroke='%23f4b6c8' stroke-opacity='0.32' stroke-width='1'/%3E%3Ccircle cx='60.0' cy='-10.0' r='20.00' fill='%230f0d20' stroke='%23f4b6c8' stroke-opacity='0.32' stroke-width='1'/%3E%3Ccircle cx='60.0' cy='-10.0' r='14.40' fill='%230f0d20' stroke='%23f4b6c8' stroke-opacity='0.32' stroke-width='1'/%3E%3Ccircle cx='60.0' cy='-10.0' r='9.20' fill='%230f0d20' stroke='%23f4b6c8' stroke-opacity='0.32' stroke-width='1'/%3E%3Ccircle cx='60.0' cy='-10.0' r='4.00' fill='%230f0d20' stroke='%23f4b6c8' stroke-opacity='0.32' stroke-width='1'/%3E%3Ccircle cx='100.0' cy='-10.0' r='20.00' fill='%230f0d20' stroke='%23f4b6c8' stroke-opacity='0.32' stroke-width='1'/%3E%3Ccircle cx='100.0' cy='-10.0' r='14.40' fill='%230f0d20' stroke='%23f4b6c8' stroke-opacity='0.32' stroke-width='1'/%3E%3Ccircle cx='100.0' cy='-10.0' r='9.20' fill='%230f0d20' stroke='%23f4b6c8' stroke-opacity='0.32' stroke-width='1'/%3E%3Ccircle cx='100.0' cy='-10.0' r='4.00' fill='%230f0d20' stroke='%23f4b6c8' stroke-opacity='0.32' stroke-width='1'/%3E%3Ccircle cx='-40.0' cy='0.0' r='20.00' fill='%230f0d20' stroke='%23f4b6c8' stroke-opacity='0.32' stroke-width='1'/%3E%3Ccircle cx='-40.0' cy='0.0' r='14.40' fill='%230f0d20' stroke='%23f4b6c8' stroke-opacity='0.32' stroke-width='1'/%3E%3Ccircle cx='-40.0' cy='0.0' r='9.20' fill='%230f0d20' stroke='%23f4b6c8' stroke-opacity='0.32' stroke-width='1'/%3E%3Ccircle cx='-40.0' cy='0.0' r='4.00' fill='%230f0d20' stroke='%23f4b6c8' stroke-opacity='0.32' stroke-width='1'/%3E%3Ccircle cx='0.0' cy='0.0' r='20.00' fill='%230f0d20' stroke='%23f4b6c8' stroke-opacity='0.32' stroke-width='1'/%3E%3Ccircle cx='0.0' cy='0.0' r='14.40' fill='%230f0d20' stroke='%23f4b6c8' stroke-opacity='0.32' stroke-width='1'/%3E%3Ccircle cx='0.0' cy='0.0' r='9.20' fill='%230f0d20' stroke='%23f4b6c8' stroke-opacity='0.32' stroke-width='1'/%3E%3Ccircle cx='0.0' cy='0.0' r='4.00' fill='%230f0d20' stroke='%23f4b6c8' stroke-opacity='0.32' stroke-width='1'/%3E%3Ccircle cx='40.0' cy='0.0' r='20.00' fill='%230f0d20' stroke='%23f4b6c8' stroke-opacity='0.32' stroke-width='1'/%3E%3Ccircle cx='40.0' cy='0.0' r='14.40' fill='%230f0d20' stroke='%23f4b6c8' stroke-opacity='0.32' stroke-width='1'/%3E%3Ccircle cx='40.0' cy='0.0' r='9.20' fill='%230f0d20' stroke='%23f4b6c8' stroke-opacity='0.32' stroke-width='1'/%3E%3Ccircle cx='40.0' cy='0.0' r='4.00' fill='%230f0d20' stroke='%23f4b6c8' stroke-opacity='0.32' stroke-width='1'/%3E%3Ccircle cx='80.0' cy='0.0' r='20.00' fill='%230f0d20' stroke='%23f4b6c8' stroke-opacity='0.32' stroke-width='1'/%3E%3Ccircle cx='80.0' cy='0.0' r='14.40' fill='%230f0d20' stroke='%23f4b6c8' stroke-opacity='0.32' stroke-width='1'/%3E%3Ccircle cx='80.0' cy='0.0' r='9.20' fill='%230f0d20' stroke='%23f4b6c8' stroke-opacity='0.32' stroke-width='1'/%3E%3Ccircle cx='80.0' cy='0.0' r='4.00' fill='%230f0d20' stroke='%23f4b6c8' stroke-opacity='0.32' stroke-width='1'/%3E%3Ccircle cx='-20.0' cy='10.0' r='20.00' fill='%230f0d20' stroke='%23f4b6c8' stroke-opacity='0.32' stroke-width='1'/%3E%3Ccircle cx='-20.0' cy='10.0' r='14.40' fill='%230f0d20' stroke='%23f4b6c8' stroke-opacity='0.32' stroke-width='1'/%3E%3Ccircle cx='-20.0' cy='10.0' r='9.20' fill='%230f0d20' stroke='%23f4b6c8' stroke-opacity='0.32' stroke-width='1'/%3E%3Ccircle cx='-20.0' cy='10.0' r='4.00' fill='%230f0d20' stroke='%23f4b6c8' stroke-opacity='0.32' stroke-width='1'/%3E%3Ccircle cx='20.0' cy='10.0' r='20.00' fill='%230f0d20' stroke='%23f4b6c8' stroke-opacity='0.32' stroke-width='1'/%3E%3Ccircle cx='20.0' cy='10.0' r='14.40' fill='%230f0d20' stroke='%23f4b6c8' stroke-opacity='0.32' stroke-width='1'/%3E%3Ccircle cx='20.0' cy='10.0' r='9.20' fill='%230f0d20' stroke='%23f4b6c8' stroke-opacity='0.32' stroke-width='1'/%3E%3Ccircle cx='20.0' cy='10.0' r='4.00' fill='%230f0d20' stroke='%23f4b6c8' stroke-opacity='0.32' stroke-width='1'/%3E%3Ccircle cx='60.0' cy='10.0' r='20.00' fill='%230f0d20' stroke='%23f4b6c8' stroke-opacity='0.32' stroke-width='1'/%3E%3Ccircle cx='60.0' cy='10.0' r='14.40' fill='%230f0d20' stroke='%23f4b6c8' stroke-opacity='0.32' stroke-width='1'/%3E%3Ccircle cx='60.0' cy='10.0' r='9.20' fill='%230f0d20' stroke='%23f4b6c8' stroke-opacity='0.32' stroke-width='1'/%3E%3Ccircle cx='60.0' cy='10.0' r='4.00' fill='%230f0d20' stroke='%23f4b6c8' stroke-opacity='0.32' stroke-width='1'/%3E%3Ccircle cx='100.0' cy='10.0' r='20.00' fill='%230f0d20' stroke='%23f4b6c8' stroke-opacity='0.32' stroke-width='1'/%3E%3Ccircle cx='100.0' cy='10.0' r='14.40' fill='%230f0d20' stroke='%23f4b6c8' stroke-opacity='0.32' stroke-width='1'/%3E%3Ccircle cx='100.0' cy='10.0' r='9.20' fill='%230f0d20' stroke='%23f4b6c8' stroke-opacity='0.32' stroke-width='1'/%3E%3Ccircle cx='100.0' cy='10.0' r='4.00' fill='%230f0d20' stroke='%23f4b6c8' stroke-opacity='0.32' stroke-width='1'/%3E%3Ccircle cx='-40.0' cy='20.0' r='20.00' fill='%230f0d20' stroke='%23f4b6c8' stroke-opacity='0.32' stroke-width='1'/%3E%3Ccircle cx='-40.0' cy='20.0' r='14.40' fill='%230f0d20' stroke='%23f4b6c8' stroke-opacity='0.32' stroke-width='1'/%3E%3Ccircle cx='-40.0' cy='20.0' r='9.20' fill='%230f0d20' stroke='%23f4b6c8' stroke-opacity='0.32' stroke-width='1'/%3E%3Ccircle cx='-40.0' cy='20.0' r='4.00' fill='%230f0d20' stroke='%23f4b6c8' stroke-opacity='0.32' stroke-width='1'/%3E%3Ccircle cx='0.0' cy='20.0' r='20.00' fill='%230f0d20' stroke='%23f4b6c8' stroke-opacity='0.32' stroke-width='1'/%3E%3Ccircle cx='0.0' cy='20.0' r='14.40' fill='%230f0d20' stroke='%23f4b6c8' stroke-opacity='0.32' stroke-width='1'/%3E%3Ccircle cx='0.0' cy='20.0' r='9.20' fill='%230f0d20' stroke='%23f4b6c8' stroke-opacity='0.32' stroke-width='1'/%3E%3Ccircle cx='0.0' cy='20.0' r='4.00' fill='%230f0d20' stroke='%23f4b6c8' stroke-opacity='0.32' stroke-width='1'/%3E%3Ccircle cx='40.0' cy='20.0' r='20.00' fill='%230f0d20' stroke='%23f4b6c8' stroke-opacity='0.32' stroke-width='1'/%3E%3Ccircle cx='40.0' cy='20.0' r='14.40' fill='%230f0d20' stroke='%23f4b6c8' stroke-opacity='0.32' stroke-width='1'/%3E%3Ccircle cx='40.0' cy='20.0' r='9.20' fill='%230f0d20' stroke='%23f4b6c8' stroke-opacity='0.32' stroke-width='1'/%3E%3Ccircle cx='40.0' cy='20.0' r='4.00' fill='%230f0d20' stroke='%23f4b6c8' stroke-opacity='0.32' stroke-width='1'/%3E%3Ccircle cx='80.0' cy='20.0' r='20.00' fill='%230f0d20' stroke='%23f4b6c8' stroke-opacity='0.32' stroke-width='1'/%3E%3Ccircle cx='80.0' cy='20.0' r='14.40' fill='%230f0d20' stroke='%23f4b6c8' stroke-opacity='0.32' stroke-width='1'/%3E%3Ccircle cx='80.0' cy='20.0' r='9.20' fill='%230f0d20' stroke='%23f4b6c8' stroke-opacity='0.32' stroke-width='1'/%3E%3Ccircle cx='80.0' cy='20.0' r='4.00' fill='%230f0d20' stroke='%23f4b6c8' stroke-opacity='0.32' stroke-width='1'/%3E%3Ccircle cx='-20.0' cy='30.0' r='20.00' fill='%230f0d20' stroke='%23f4b6c8' stroke-opacity='0.32' stroke-width='1'/%3E%3Ccircle cx='-20.0' cy='30.0' r='14.40' fill='%230f0d20' stroke='%23f4b6c8' stroke-opacity='0.32' stroke-width='1'/%3E%3Ccircle cx='-20.0' cy='30.0' r='9.20' fill='%230f0d20' stroke='%23f4b6c8' stroke-opacity='0.32' stroke-width='1'/%3E%3Ccircle cx='-20.0' cy='30.0' r='4.00' fill='%230f0d20' stroke='%23f4b6c8' stroke-opacity='0.32' stroke-width='1'/%3E%3Ccircle cx='20.0' cy='30.0' r='20.00' fill='%230f0d20' stroke='%23f4b6c8' stroke-opacity='0.32' stroke-width='1'/%3E%3Ccircle cx='20.0' cy='30.0' r='14.40' fill='%230f0d20' stroke='%23f4b6c8' stroke-opacity='0.32' stroke-width='1'/%3E%3Ccircle cx='20.0' cy='30.0' r='9.20' fill='%230f0d20' stroke='%23f4b6c8' stroke-opacity='0.32' stroke-width='1'/%3E%3Ccircle cx='20.0' cy='30.0' r='4.00' fill='%230f0d20' stroke='%23f4b6c8' stroke-opacity='0.32' stroke-width='1'/%3E%3Ccircle cx='60.0' cy='30.0' r='20.00' fill='%230f0d20' stroke='%23f4b6c8' stroke-opacity='0.32' stroke-width='1'/%3E%3Ccircle cx='60.0' cy='30.0' r='14.40' fill='%230f0d20' stroke='%23f4b6c8' stroke-opacity='0.32' stroke-width='1'/%3E%3Ccircle cx='60.0' cy='30.0' r='9.20' fill='%230f0d20' stroke='%23f4b6c8' stroke-opacity='0.32' stroke-width='1'/%3E%3Ccircle cx='60.0' cy='30.0' r='4.00' fill='%230f0d20' stroke='%23f4b6c8' stroke-opacity='0.32' stroke-width='1'/%3E%3Ccircle cx='100.0' cy='30.0' r='20.00' fill='%230f0d20' stroke='%23f4b6c8' stroke-opacity='0.32' stroke-width='1'/%3E%3Ccircle cx='100.0' cy='30.0' r='14.40' fill='%230f0d20' stroke='%23f4b6c8' stroke-opacity='0.32' stroke-width='1'/%3E%3Ccircle cx='100.0' cy='30.0' r='9.20' fill='%230f0d20' stroke='%23f4b6c8' stroke-opacity='0.32' stroke-width='1'/%3E%3Ccircle cx='100.0' cy='30.0' r='4.00' fill='%230f0d20' stroke='%23f4b6c8' stroke-opacity='0.32' stroke-width='1'/%3E%3C/svg%3E"); --kz-pattern-r-size:40px 20px; }
+#screen-host::before, #screen-join::before { content:''; position:absolute; inset:0; pointer-events:none; background-image:var(--kz-pattern); background-size:var(--kz-pattern-size); }
+html[data-bg="yozakura"] .lp-brand::before { -webkit-mask-image:radial-gradient(ellipse 66% 56% at 38% 56%,rgba(0,0,0,.1) 0%,rgba(0,0,0,.1) 55%,#000 100%); mask-image:radial-gradient(ellipse 66% 56% at 38% 56%,rgba(0,0,0,.1) 0%,rgba(0,0,0,.1) 55%,#000 100%); animation:petal-drift 140s linear infinite; }
 html[data-bg="yozakura"] #screen-host::before, html[data-bg="yozakura"] #screen-join::before { -webkit-mask-image:none; mask-image:none; animation:petal-drift 140s linear infinite; }
 @keyframes petal-drift { to { background-position:1100px 760px; } }
 #screen-landing::after, #screen-host::after, #screen-join::after { content:''; position:absolute; width:560px; height:560px; right:-220px; bottom:-220px; border-radius:50%; pointer-events:none; background:radial-gradient(circle,rgba(212,175,90,.15) 0%,rgba(92,126,247,.14) 38%,transparent 68%); filter:blur(30px); }
 html[data-bg="yozakura"] #screen-landing::after, html[data-bg="yozakura"] #screen-host::after, html[data-bg="yozakura"] #screen-join::after { width:360px; height:360px; right:9%; bottom:auto; top:7%; filter:none; background:radial-gradient(circle,#f1e9d6 0,#f1e9d6 26px,rgba(241,233,214,.2) 27px,rgba(241,233,214,.07) 100px,transparent 175px); }
 html[data-bg="yozakura"] #screen-landing::after { left:22%; right:auto; z-index:2; }
-@media (max-width:960px) { html[data-bg="yozakura"] #screen-landing::after { width:240px; height:240px; left:auto; right:4%; top:3%; } }
-.lp-panel::before { content:''; position:absolute; inset:0; pointer-events:none; background:radial-gradient(ellipse 62% 64% at 50% 50%,rgba(var(--kz-shade),var(--kz-fa1)) 0%,rgba(var(--kz-shade),var(--kz-fa2)) 58%,rgba(var(--kz-shade),0) 100%); }
+@media (max-width:960px) { html[data-bg="yozakura"] #screen-landing::after { width:170px; height:170px; left:auto; right:6%; top:-40px; background:radial-gradient(circle,#f1e9d6 0,#f1e9d6 20px,rgba(241,233,214,.2) 21px,rgba(241,233,214,.07) 48px,transparent 84px); } }
+.lp-panel::before { content:''; position:absolute; inset:0; pointer-events:none; background-image:var(--kz-pattern-r); background-size:var(--kz-pattern-r-size); }
+.lp-panel::after { content:''; position:absolute; inset:0; pointer-events:none; background:radial-gradient(ellipse 62% 64% at 50% 50%,rgba(var(--kz-shade),var(--kz-fa1)) 0%,rgba(var(--kz-shade),var(--kz-fa2)) 58%,rgba(var(--kz-shade),0) 100%); }
 .lp-panel-inner { position:relative; z-index:1; }
 @media (prefers-reduced-motion:reduce) { #screen-landing::before, #screen-host::before, #screen-join::before { animation:none !important; } }
 
@@ -933,6 +935,72 @@ html:not([data-theme]) body::after { opacity:.55; }
   50%  { transform:rotateX(70deg)  rotateY(20deg)  rotateZ(40deg); }
   100% { transform:rotateX(-30deg) rotateY(-50deg) rotateZ(120deg); }
 }
+
+/* ── seasonal particles ── */
+.sk.snow i { filter:drop-shadow(0 0 1.5px rgba(70,100,160,.7)); }
+.sk.maple i { filter:drop-shadow(0 1px 1px rgba(60,15,5,.35)); }
+.sk.ff { top:auto; perspective:none; animation-name:ff-float; animation-timing-function:ease-in-out; }
+.sk.ff i { border-radius:50%; background:radial-gradient(circle,#fbffc4 0%,#dcf36e 42%,rgba(200,235,70,0) 74%); box-shadow:0 0 12px 5px rgba(205,235,80,.5); filter:none; animation-name:ff-blink; animation-direction:alternate; animation-iteration-count:infinite; }
+@keyframes ff-float {
+  0%   { transform:translate3d(0,0,0); opacity:0; }
+  12%  { opacity:1; }
+  30%  { transform:translate3d(var(--x1),-22vh,0); }
+  55%  { transform:translate3d(var(--x2),-46vh,0); }
+  80%  { transform:translate3d(var(--x3),-70vh,0); opacity:1; }
+  100% { transform:translate3d(var(--x4),-92vh,0); opacity:0; }
+}
+@keyframes ff-blink { 0% { opacity:.2; transform:scale(.65); } 100% { opacity:1; transform:scale(1.2); } }
+
+/* ── Daruma ── */
+#sprint-goal-display { flex:0 1 auto; }
+.daruma-btn { background:none; border:none; cursor:pointer; padding:0 4px 0 0; display:flex; align-items:flex-end; transform-origin:50% 100%; transition:transform .2s; }
+.daruma-btn:hover { transform:rotate(-7deg) scale(1.08); }
+.daruma-btn.pop { animation:daruma-pop .9s ease-out; }
+@keyframes daruma-pop { 0%{transform:rotate(0)} 18%{transform:rotate(-16deg)} 38%{transform:rotate(12deg)} 58%{transform:rotate(-7deg)} 78%{transform:rotate(3deg)} 100%{transform:rotate(0)} }
+#ceremony .cer-goal { margin-top:22px; display:flex; align-items:center; gap:12px; color:rgba(255,255,255,.75); font-size:14px; opacity:0; }
+#ceremony.show .cer-goal { animation:cer-fade .6s ease 1.4s forwards; }
+#ceremony .cer-goal span { font-family:var(--mincho); }
+
+/* ── Kaizen belts ── */
+.belt { display:inline-flex; align-items:center; gap:8px; padding:3px 12px 3px 6px; border-radius:20px; background:rgba(128,128,128,.12); border:1px solid var(--border); font-size:12px; font-weight:600; color:var(--text); white-space:nowrap; }
+.belt b { font-family:var(--mincho); font-weight:600; letter-spacing:.5px; }
+.belt .belt-t { font-weight:500; color:var(--muted); }
+.belt-bar { position:relative; display:inline-block; width:26px; height:10px; border-radius:2px; background:var(--belt); box-shadow:inset 0 0 0 1px var(--edge); flex-shrink:0; }
+.belt-bar::after { content:''; position:absolute; left:50%; top:-2px; width:8px; height:14px; margin-left:-4px; border-radius:2px; background:var(--belt); box-shadow:inset 0 0 0 1px var(--edge); }
+.belt-bar s { position:absolute; top:1px; width:2px; height:8px; background:#d4af5a; text-decoration:none; }
+
+/* ── Omikuji ── */
+.omi-card { background:var(--surface); color:var(--text); border:1px solid var(--border); border-radius:20px; width:100%; max-width:720px; max-height:90vh; overflow-y:auto; padding:30px 32px; box-shadow:0 20px 60px rgba(0,0,0,.35); }
+.omi-title { font-family:var(--serif); font-size:26px; font-weight:400; }
+.omi-title .jp { font-family:var(--mincho); font-size:15px; color:var(--muted); margin-left:6px; }
+.omi-sub { font-size:13px; color:var(--muted); margin-top:2px; }
+.omi-stage { display:flex; gap:28px; align-items:center; margin:22px 0; min-height:240px; }
+.omi-left { width:128px; flex-shrink:0; display:flex; flex-direction:column; align-items:center; gap:8px; }
+.omi-box { background:none; border:none; padding:0; cursor:pointer; transform-origin:50% 100%; }
+.omi-box:hover { transform:rotate(-3deg); }
+.omi-box.idle { cursor:default; animation:omi-bob 2.6s ease-in-out infinite; }
+.omi-box.shaking { animation:omi-shake .95s ease-in-out; }
+@keyframes omi-shake { 0%,100%{transform:rotate(0) translateY(0)} 10%{transform:rotate(-12deg) translateY(-6px)} 25%{transform:rotate(10deg) translateY(-2px)} 40%{transform:rotate(-9deg) translateY(-7px)} 55%{transform:rotate(8deg) translateY(-2px)} 70%{transform:rotate(-5deg) translateY(-4px)} 85%{transform:rotate(3deg)} }
+@keyframes omi-bob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
+.omi-cta { font-size:12px; color:var(--muted); text-align:center; }
+.omi-right { flex:1; min-width:0; }
+.omi-reading { font-size:13px; color:var(--muted); margin-bottom:10px; }
+.omi-reading b { font-family:var(--mincho); font-size:22px; color:var(--brand); margin-right:8px; }
+.omi-question { font-family:var(--serif); font-size:25px; line-height:1.3; color:var(--text); }
+.omi-slip { position:relative; width:92px; min-height:226px; background:#fbf4e0; border:1px solid #d9c9a0; border-radius:3px; padding:30px 8px 14px; text-align:center; box-shadow:0 10px 24px rgba(0,0,0,.3); transform-origin:50% 0; }
+.omi-slip::before { content:''; position:absolute; left:-1px; right:-1px; top:-1px; height:16px; background:var(--brand); border-radius:3px 3px 0 0; }
+.omi-slip.unroll { animation:omi-unroll .8s cubic-bezier(.2,.8,.25,1); }
+@keyframes omi-unroll { 0%{transform:scaleY(.06);opacity:.3} 55%{opacity:1} 100%{transform:scaleY(1)} }
+.omi-kanji { writing-mode:vertical-rl; text-orientation:upright; display:inline-block; font-family:var(--mincho); font-weight:600; font-size:44px; line-height:1.08; letter-spacing:.08em; color:var(--brand); }
+.omi-slip.kyo .omi-kanji { color:#2b2d42; }
+.omi-en { margin-top:12px; font-size:11px; letter-spacing:.3px; color:#6b5f45; font-family:var(--sans); }
+@media (max-width:560px) { .omi-stage { flex-direction:column; text-align:center; } }
+@media (prefers-reduced-motion:reduce) { .omi-box.shaking, .omi-box.idle, .omi-slip.unroll { animation:none; } }
+
+/* ── Share card ── */
+.share-wrap { background:var(--surface); color:var(--text); border:1px solid var(--border); border-radius:18px; padding:22px; width:100%; max-width:860px; max-height:94vh; overflow:auto; box-shadow:0 20px 60px rgba(0,0,0,.4); }
+.share-opts { display:flex; flex-wrap:wrap; gap:8px 22px; margin-top:14px; font-size:13px; color:var(--muted); }
+.share-opts label { display:flex; align-items:center; gap:7px; cursor:pointer; }
 </style>
 </head>
 <body>
@@ -1126,8 +1194,8 @@ html:not([data-theme]) body::after { opacity:.55; }
     <button class="btn" onclick="openCotd()" title="Card of the Day" style="display:flex;align-items:center;gap:5px">
       ⭐ Top Card
     </button>
-    <button class="btn" id="icebreaker-btn" onclick="openIcebreaker()" title="Icebreaker" style="display:flex;align-items:center;gap:5px">
-      🧊 Icebreaker
+    <button class="btn" id="icebreaker-btn" onclick="openIcebreaker()" title="Icebreaker — draw an omikuji fortune" style="display:flex;align-items:center;gap:5px">
+      🎴 Omikuji
     </button>
     <button class="btn" onclick="openThemePicker()" title="Change theme" style="font-size:16px;padding:6px 10px">🎨</button>
     <button class="btn ai-btn" onclick="openAI()">
@@ -1163,7 +1231,7 @@ html:not([data-theme]) body::after { opacity:.55; }
       </div>
       mood
     </div>
-    <div class="stat"><span id="streak-chip" style="display:none;align-items:center;gap:4px;font-size:12px;font-weight:600;padding:2px 10px;border-radius:20px;background:var(--brand-soft);color:var(--brand-dark);cursor:default"></span></div>
+    <div class="stat"><span id="streak-chip" style="display:none;align-items:center;cursor:default"></span></div>
     <div class="spacer"></div>
     <div class="stat" style="font-size:12px;color:#b0aca5"><span id="s-online">1 online</span></div>
   </div>
@@ -1184,8 +1252,11 @@ html:not([data-theme]) body::after { opacity:.55; }
 
   <!-- Sprint goal bar -->
   <div class="sprint-goal-bar" id="sprint-goal-bar" style="display:none">
+    <button id="daruma-btn" class="daruma-btn" onclick="toggleGoalAchieved()" aria-label="Sprint goal progress"></button>
     <span class="sprint-goal-label">Sprint Goal <span class="jp-s">目標</span></span>
     <span class="sprint-goal-display" id="sprint-goal-display"></span>
+    <span id="goal-status" style="font-family:var(--mincho);font-weight:600;color:var(--brand);font-size:13px;letter-spacing:1px;white-space:nowrap"></span>
+    <span style="flex:1"></span>
     <button id="prev-actions-btn" onclick="document.getElementById('prev-actions-overlay').classList.add('open')" style="display:none;margin-left:auto;font-family:var(--sans);font-size:12px;padding:4px 12px;border-radius:20px;border:1px solid #f5e6a3;background:#fffbf0;color:#92710a;cursor:pointer;white-space:nowrap">
       📋 View last retro's actions
     </button>
@@ -1293,6 +1364,7 @@ html:not([data-theme]) body::after { opacity:.55; }
     </div>
 
     <div id="sum-kaizen" class="sum-card" style="display:none;margin-bottom:20px;border-left:4px solid var(--brand)"></div>
+    <div id="sum-goal" class="sum-card" style="display:none;margin-bottom:20px"></div>
 
     <div class="summary-grid">
       <div class="sum-card sum-score-card">
@@ -1341,6 +1413,7 @@ html:not([data-theme]) body::after { opacity:.55; }
 
     <div class="summary-actions">
       <button class="btn primary" onclick="exportRetro()">Export summary</button>
+      <button class="btn" onclick="openShareCard()">Share card</button>
       <button class="btn" onclick="reopenRetro()">← Back to board</button>
     </div>
   </div>
@@ -1465,6 +1538,10 @@ html:not([data-theme]) body::after { opacity:.55; }
       <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:10px">Sign-in background</div>
       <div id="bg-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:10px"></div>
     </div>
+    <div style="margin-top:22px;padding-top:18px;border-top:1px solid var(--border)">
+      <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:10px">Celebration effect</div>
+      <div id="fx-grid" style="display:flex;flex-wrap:wrap;gap:8px"></div>
+    </div>
   </div>
 </div>
 
@@ -1547,28 +1624,29 @@ html:not([data-theme]) body::after { opacity:.55; }
   </div>
 </div>
 
-<!-- Icebreaker overlay -->
+<!-- Icebreaker overlay (omikuji) -->
 <div id="icebreaker-overlay" style="display:none;position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.7)">
   <div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;padding:24px">
-  <div style="background:var(--surface);border-radius:24px;width:100%;max-width:680px;max-height:88vh;overflow-y:auto;padding:36px;box-shadow:0 20px 60px rgba(0,0,0,.3)">
-    <div style="text-align:center;margin-bottom:24px">
-      <div style="font-size:48px;margin-bottom:12px">🧊</div>
-      <h2 style="font-family:var(--serif);font-size:28px;font-weight:400;margin-bottom:8px">Icebreaker</h2>
-      <div id="icebreaker-question" style="font-size:20px;font-weight:600;color:var(--action);padding:16px 24px;background:var(--action-light);border-radius:12px;line-height:1.4"></div>
+  <div class="omi-card">
+    <h2 class="omi-title">Omikuji <span class="jp">おみくじ</span></h2>
+    <div class="omi-sub">Draw a fortune to choose the icebreaker.</div>
+    <div class="omi-stage">
+      <div id="omi-left" class="omi-left"></div>
+      <div class="omi-right">
+        <div id="omi-reading" class="omi-reading"></div>
+        <div id="icebreaker-question" class="omi-question"></div>
+      </div>
     </div>
-    <!-- Answer input -->
-    <div id="icebreaker-input-area" style="display:flex;gap:8px;margin-bottom:20px">
+    <div id="icebreaker-input-area" style="display:none;gap:8px;margin-bottom:20px">
       <input id="icebreaker-answer" type="text" placeholder="Type your answer…" maxlength="120"
         style="flex:1;font-family:var(--sans);font-size:14px;padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text);outline:none"
         onkeydown="if(event.key==='Enter') submitIcebreakerAnswer()"/>
-      <button onclick="submitIcebreakerAnswer()" style="font-family:var(--sans);font-size:14px;font-weight:600;padding:10px 20px;border-radius:10px;border:none;background:var(--action);color:#fff;cursor:pointer">Send ✓</button>
+      <button onclick="submitIcebreakerAnswer()" style="font-family:var(--sans);font-size:14px;font-weight:600;padding:10px 20px;border-radius:10px;border:none;background:var(--brand);color:#fff;cursor:pointer">Send ✓</button>
     </div>
-    <!-- Live answers feed -->
     <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:10px">Answers</div>
-    <div id="icebreaker-answers" style="display:flex;flex-direction:column;gap:8px;max-height:300px;overflow-y:auto"></div>
-    <!-- Host controls -->
+    <div id="icebreaker-answers" style="display:flex;flex-direction:column;gap:8px;max-height:260px;overflow-y:auto"></div>
     <div id="icebreaker-host-controls" style="display:none;gap:10px;margin-top:20px;border-top:1px solid var(--border);padding-top:16px">
-      <button onclick="nextIcebreakerQuestion()" style="font-family:var(--sans);font-size:13px;padding:8px 16px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);cursor:pointer">🎲 New question</button>
+      <button onclick="drawOmikuji()" style="font-family:var(--sans);font-size:13px;padding:8px 16px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);cursor:pointer">🎴 Draw again</button>
       <button onclick="closeIcebreaker()" style="font-family:var(--sans);font-size:13px;padding:8px 16px;border-radius:8px;border:none;background:var(--inv);color:#fff;cursor:pointer">End icebreaker</button>
     </div>
     <button id="icebreaker-close-btn" onclick="closeIcebreaker()" style="display:none;font-family:var(--sans);font-size:13px;padding:8px 16px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--muted);cursor:pointer;margin-top:16px">Close</button>
@@ -1592,6 +1670,28 @@ html:not([data-theme]) body::after { opacity:.55; }
     <button onclick="savePrevActionsAndClose()" style="font-family:var(--sans);font-size:14px;font-weight:600;padding:10px 24px;border-radius:10px;border:none;background:var(--inv);color:#fff;cursor:pointer;width:100%;margin-bottom:8px">Done — Start Retro →</button>
     <button onclick="closePrevActions()" style="font-family:var(--sans);font-size:13px;padding:8px 24px;border-radius:10px;border:1px solid var(--border);background:none;color:var(--muted);cursor:pointer;width:100%">Skip →</button>
   </div>
+  </div>
+</div>
+
+<!-- Share card -->
+<div id="share-overlay" style="display:none;position:fixed;inset:0;z-index:310;background:rgba(0,0,0,.72)">
+  <div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;padding:24px">
+    <div class="share-wrap">
+      <div style="display:flex;align-items:center;margin-bottom:14px">
+        <h2 style="font-family:var(--serif);font-size:22px;font-weight:400;flex:1">Share card <span class="jp-s" style="font-size:13px">共有</span></h2>
+        <button onclick="closeShareCard()" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:24px;line-height:1">×</button>
+      </div>
+      <canvas id="share-canvas" style="width:100%;height:auto;border-radius:12px;display:block;background:#0a1228"></canvas>
+      <div class="share-opts">
+        <label><input type="checkbox" id="share-opt-card" checked onchange="renderShareCard()"> Include the top-voted card</label>
+        <label><input type="checkbox" id="share-opt-score" checked onchange="renderShareCard()"> Include the sprint score</label>
+        <label><input type="checkbox" id="share-opt-goal" checked onchange="renderShareCard()"> Include the sprint goal</label>
+      </div>
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px">
+        <button class="btn" onclick="copyShareCard()">Copy image</button>
+        <button class="btn primary" onclick="downloadShareCard()">Download PNG</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -2480,6 +2580,7 @@ function setSprintGoal(goal) {
   const display = document.getElementById('sprint-goal-display');
   if (goal) { display.textContent = goal; bar.style.display = 'flex'; }
   else { bar.style.display = 'none'; }
+  renderDaruma();
 }
 
 async function loadSprintGoal() {
@@ -2594,6 +2695,7 @@ function startSync() {
   loadRetroName();
   loadScores();
   loadSprintGoal();
+  loadGoalAchieved();
   initScoreBar();
   setInterval(tick, 4000);
   setInterval(pingPresence, 8000);
@@ -2609,6 +2711,7 @@ async function tick() {
   if (tickCount % 3 === 0) await loadScores();
   // Load name every 4th tick (16s)
   if (tickCount % 4 === 0) await loadRetroName();
+  if (tickCount % 3 === 1) await loadGoalAchieved();
   await checkSoundEvent();
   await checkTimerSync();
   await checkEmojiReact();
@@ -3282,6 +3385,7 @@ async function completeRetro() {
   document.getElementById('app').style.display = 'none';
   document.getElementById('summary-page').style.display = 'block';
   renderSummary();
+  renderGoalCard();
   const _completedTs = Date.now();
   playCompletionCeremony();
   // Save snapshot to history, then work out what improved
@@ -3307,6 +3411,8 @@ async function saveToHistory() {
       teamName: currentTeamId && teams[currentTeamId] ? teams[currentTeamId].name : '',
       score: avg,
       scoreCount: vals.length,
+      sprintGoal: (document.getElementById('sprint-goal-display')?.textContent || '').trim(),
+      goalAchieved: !!goalAchieved,
       participants: Object.values(presence).map(u => ({ name: u.name, color: u.color })),
       userStats: userStats,
       carried:   board.action.filter(c=>c.carry).map(c=>({text:c.text, wantTo:!!c.carryYes, dontWant:!!c.carryNo})),
@@ -3922,31 +4028,86 @@ function exportRetro() {
 }
 
 // Confetti
-// Cherry blossoms (sakura) — replaces the old confetti everywhere it was used
-const _petalCache = {};
-function petalUrl(fill) {
-  if (_petalCache[fill]) return _petalCache[fill];
-  const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='-9 -9 18 18'><path d='M0 -7.4C4.2 -8.4 7.4 -3.2 5.3 3C4.2 6.2 1.7 7.8 0 5.5C-1.7 7.8 -4.2 6.2 -5.3 3C-7.4 -3.2 -4.2 -8.4 0 -7.4Z' fill='${fill}'/><path d='M0 5 C0.4 1.5 0.4 -2 0 -5.2' fill='none' stroke='#c2587a' stroke-opacity='.28' stroke-width='.7' stroke-linecap='round'/></svg>`;
-  return (_petalCache[fill] = 'url("data:image/svg+xml,' + encodeURIComponent(svg).replace(/'/g, '%27') + '")');
+// ── Seasons (四季): the celebration effect follows the calendar ──
+// spring: sakura · summer: fireflies · autumn: maple · winter: snow   (override in Appearance)
+const FX_KINDS = ['sakura', 'maple', 'snow', 'fireflies'];
+function currentFx() {
+  const pref = localStorage.getItem('kaizen_fx') || 'auto';
+  if (FX_KINDS.includes(pref)) return pref;
+  const m = new Date().getMonth();                        // 0 = Jan
+  return m >= 2 && m <= 4 ? 'sakura' : m >= 5 && m <= 7 ? 'fireflies' : m >= 8 && m <= 10 ? 'maple' : 'snow';
 }
-function confetti(n) {
+const _fxCache = {};
+function _svgUrl(key, svg) {
+  return _fxCache[key] || (_fxCache[key] = 'url("data:image/svg+xml,' + encodeURIComponent(svg).replace(/'/g, '%27') + '")');
+}
+const MAPLE_D = "M8.4 15.1 L6.9 15.1 L5.6 14.8 L6.6 13.9 L7.9 13.3 L9.5 12.7 L6.9 10.8 L5.7 9.4 L4.9 7.7 L6.8 8.0 L8.5 8.9 L10.9 10.9 L10.5 6.9 L11.0 4.7 L12.0 2.8 L13.0 4.7 L13.5 6.9 L13.1 10.9 L15.5 8.9 L17.2 8.0 L19.1 7.7 L18.3 9.4 L17.1 10.8 L14.5 12.7 L16.1 13.3 L17.4 13.9 L18.4 14.8 L17.1 15.1 L15.6 15.1 L12.0 16.6Z";
+const FX_SHAPES = {
+  sakura: f => `<svg xmlns='http://www.w3.org/2000/svg' viewBox='-9 -9 18 18'><path d='M0 -7.4C4.2 -8.4 7.4 -3.2 5.3 3C4.2 6.2 1.7 7.8 0 5.5C-1.7 7.8 -4.2 6.2 -5.3 3C-7.4 -3.2 -4.2 -8.4 0 -7.4Z' fill='${f}'/><path d='M0 5 C0.4 1.5 0.4 -2 0 -5.2' fill='none' stroke='#c2587a' stroke-opacity='.28' stroke-width='.7' stroke-linecap='round'/></svg>`,
+  maple:  f => `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='${MAPLE_D}' fill='${f}' stroke='rgba(120,30,15,.55)' stroke-width='.45' stroke-linejoin='round'/><path d='M12 13.2L12 22' stroke='rgba(120,30,15,.7)' stroke-width='1' stroke-linecap='round'/><path d='M12 13.2V4M12 13.2L5.6 9M12 13.2L18.4 9' stroke='rgba(100,25,10,.45)' stroke-width='.4' fill='none'/></svg>`,
+  snow:   f => `<svg xmlns='http://www.w3.org/2000/svg' viewBox='-10 -10 20 20'><g stroke='${f}' stroke-width='1.35' stroke-linecap='round' fill='none'><path d='M0 -8.5V8.5M-7.4 -4.25L7.4 4.25M-7.4 4.25L7.4 -4.25'/><path d='M0 -6l-2 -1.6M0 -6l2 -1.6M0 6l-2 1.6M0 6l2 1.6M-5.2 -3l.3 2.4M-5.2 -3l2.3 -.7M5.2 3l-.3 -2.4M5.2 3l-2.3 .7M5.2 -3l-.3 2.4M5.2 -3l-2.3 -.7M-5.2 3l.3 -2.4M-5.2 3l2.3 .7'/></g></svg>`,
+  flake:  f => `<svg xmlns='http://www.w3.org/2000/svg' viewBox='-5 -5 10 10'><circle r='3.4' fill='${f}'/></svg>`,
+};
+const FX_CFG = {
+  sakura: { cols:['#f9d3de','#f4b6c8','#ee9bb4','#fbe4ea','#f2a8bf'], shape:'sakura', size:[14,28], dur:[4,7.2], sway:70, dx:140 },
+  maple:  { cols:['#c0392b','#d9482b','#e8883a','#d9a23a','#a8321f'], shape:'maple',  size:[18,32], dur:[4.5,7.5], sway:80, dx:160 },
+  snow:   { cols:['#ffffff','#eef4ff','#dbe8ff'],                     shape:'snow',   size:[9,20],  dur:[6,10],  sway:36, dx:70 },
+};
+function confetti(n) {                                    // name kept: every celebration calls this
   if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   if (document.querySelectorAll('.sk').length > 120) return;          // never pile up
   const count = typeof n === 'number' ? n : 24;
-  const cols = ['#f9d3de', '#f4b6c8', '#ee9bb4', '#fbe4ea', '#f2a8bf'];
+  const kind = currentFx();
+  if (kind === 'fireflies') return fireflyFx(Math.max(4, Math.round(count * 0.7)));
+  const cfg = FX_CFG[kind];
+  const rnd = (a, b) => a + Math.random() * (b - a);
   for (let i = 0; i < count; i++) {
+    const shape = (kind === 'snow' && i % 2) ? 'flake' : cfg.shape;
+    const size = rnd(cfg.size[0], cfg.size[1]);
     const el = document.createElement('div');
-    el.className = 'sk';
-    const size = 14 + Math.random() * 14;
-    el.style.cssText = `left:${(Math.random() * 98).toFixed(1)}vw;width:${size.toFixed(0)}px;height:${size.toFixed(0)}px;` +
-      `--sway:${((Math.random() * 2 - 1) * 70).toFixed(0)}px;--dx:${((Math.random() * 2 - 1) * 140).toFixed(0)}px;` +
-      `animation-duration:${(4 + Math.random() * 3.2).toFixed(2)}s;animation-delay:${(Math.random() * 1.3).toFixed(2)}s;`;
+    el.className = 'sk ' + kind;
+    el.style.cssText = `left:${rnd(0, 98).toFixed(1)}vw;width:${size.toFixed(0)}px;height:${size.toFixed(0)}px;` +
+      `--sway:${((Math.random() * 2 - 1) * cfg.sway).toFixed(0)}px;--dx:${((Math.random() * 2 - 1) * cfg.dx).toFixed(0)}px;` +
+      `animation-duration:${rnd(cfg.dur[0], cfg.dur[1]).toFixed(2)}s;animation-delay:${rnd(0, 1.3).toFixed(2)}s;`;
+    const col = cfg.cols[i % cfg.cols.length];
     const p = document.createElement('i');
-    p.style.cssText = `background-image:${petalUrl(cols[i % cols.length])};animation-duration:${(1.6 + Math.random() * 2).toFixed(2)}s;animation-delay:${(Math.random()).toFixed(2)}s;`;
+    p.style.cssText = `background-image:${_svgUrl(shape + col, FX_SHAPES[shape](col))};animation-duration:${rnd(1.6, 3.6).toFixed(2)}s;animation-delay:${rnd(0, 1).toFixed(2)}s;`;
     el.appendChild(p);
     document.body.appendChild(el);
     el.addEventListener('animationend', ev => { if (ev.target === el) el.remove(); });
   }
+}
+function fireflyFx(count) {                               // hotaru (蛍): glowing lights that drift upward and blink
+  const rnd = (a, b) => a + Math.random() * (b - a);
+  for (let i = 0; i < count; i++) {
+    const size = rnd(7, 14), r = () => ((Math.random() * 2 - 1) * 90).toFixed(0) + 'px';
+    const el = document.createElement('div');
+    el.className = 'sk ff';
+    el.style.cssText = `left:${rnd(4, 96).toFixed(1)}vw;bottom:${rnd(2, 32).toFixed(1)}vh;width:${size.toFixed(0)}px;height:${size.toFixed(0)}px;` +
+      `--x1:${r()};--x2:${r()};--x3:${r()};--x4:${r()};animation-duration:${rnd(5, 9).toFixed(2)}s;animation-delay:${rnd(0, 1.5).toFixed(2)}s;`;
+    const p = document.createElement('i');
+    p.style.cssText = `animation-duration:${rnd(.7, 1.8).toFixed(2)}s;animation-delay:${rnd(0, 1).toFixed(2)}s;`;
+    el.appendChild(p);
+    document.body.appendChild(el);
+    el.addEventListener('animationend', ev => { if (ev.target === el) el.remove(); });
+  }
+}
+// Appearance: pick the falling effect
+const KZ_FX_OPTS = [
+  { id:'auto', name:'By season', jp:'四季' }, { id:'sakura', name:'Sakura', jp:'桜' }, { id:'maple', name:'Maple', jp:'紅葉' },
+  { id:'snow', name:'Snow', jp:'雪' }, { id:'fireflies', name:'Fireflies', jp:'蛍' },
+];
+function renderFxPicker() {
+  const grid = document.getElementById('fx-grid'); if (!grid) return;
+  const cur = localStorage.getItem('kaizen_fx') || 'auto';
+  grid.innerHTML = KZ_FX_OPTS.map(o => `
+    <button onclick="setKaizenFx('${o.id}')" style="font-family:var(--sans);cursor:pointer;padding:8px 12px;border-radius:10px;background:var(--surface);color:var(--text);font-size:13px;font-weight:500;border:2px solid ${cur === o.id ? '#5572e0' : 'var(--border)'}">
+      ${o.name} <span style="color:var(--muted);font-family:var(--mincho)">${o.jp}</span></button>`).join('');
+}
+function setKaizenFx(id) {
+  try { localStorage.setItem('kaizen_fx', id); } catch (e) {}
+  renderFxPicker();
+  confetti(12);                                           // preview
 }
 
 function openSoundPicker() {
@@ -4517,6 +4678,7 @@ function openThemePicker() {
       <span style="font-size:13px;font-weight:500;color:${t.preview[1]}">${t.name}</span>
     </button>`).join('');
   renderBgPicker();
+  renderFxPicker();
   document.getElementById('theme-modal').style.display = 'flex';
 }
 
@@ -4950,91 +5112,164 @@ function stopMusicAndReset() {
   _origStopMusicAndReset();
 }
 
-// ── Icebreaker ──
-const ICEBREAKER_QUESTIONS = [
-  "If you could have any superpower for just today, what would it be?",
-  "What's one word that describes how you're feeling about this sprint?",
-  "What's something you learned last sprint that surprised you?",
-  "If this sprint were a movie genre, what would it be?",
-  "What's your go-to comfort food when work gets stressful?",
-  "If you could add one hour to your day, what would you do with it?",
-  "What emoji best describes your week so far?",
-  "What's one thing you wish the team knew about you?",
-  "If the team were a band, what instrument would you play?",
-  "What's the best thing that happened to you this week?",
-  "What skill would you love to learn in the next sprint?",
-  "If you could swap jobs with anyone on the team for a day, who and why?",
-  "What's your productivity secret weapon?",
-  "Desert island: laptop, whiteboard, or sticky notes?",
-  "What song title best describes your week?",
+// ── Omikuji (おみくじ): the icebreaker is a fortune slip; each fortune picks the question ──
+const OMIKUJI = [
+  { id:'daikichi', jp:'大吉', en:'Great blessing',  hint:'celebrate a win', w:12, qs:[
+    "What's one win from this sprint you're proud of?",
+    "What's the best thing that happened to you this week, work or personal?",
+    "Who deserves a shout-out right now, and why?" ] },
+  { id:'chukichi', jp:'中吉', en:'Middle blessing', hint:'share what you learned', w:20, qs:[
+    "What's something you learned recently that surprised you?",
+    "Who helped you this sprint, and how?",
+    "What skill would you love to learn in the next sprint?" ] },
+  { id:'shokichi', jp:'小吉', en:'Small blessing',  hint:'notice the small things', w:22, qs:[
+    "What small thing made your week easier?",
+    "What's your go-to comfort food when work gets stressful?",
+    "What's your productivity secret weapon?" ] },
+  { id:'kichi',    jp:'吉',   en:'Blessing',        hint:'check in', w:22, qs:[
+    "What's one word that describes how you're feeling about this sprint?",
+    "If this sprint were a movie genre, what would it be?",
+    "What song title best describes your week?" ] },
+  { id:'suekichi', jp:'末吉', en:'Future blessing', hint:'look ahead', w:14, qs:[
+    "What are you most looking forward to next sprint?",
+    "If you could add one hour to your day, what would you do with it?",
+    "What would make next sprint feel like a success?" ] },
+  { id:'kyo',      jp:'凶',   en:'A little rain',   hint:'clear the clouds together', w:10, qs:[
+    "What slowed you down this sprint that we could fix together?",
+    "What would you do differently if you could replay this sprint?",
+    "What's a small frustration the team could clear for you?" ] },
 ];
+let icebreakerAnswered = false, icebreakerCheckInterval = null, omiShown = '', omiDrawing = false, omiLastLocalDraw = 0;
 
-let icebreakerAnswered = false;
-let icebreakerCheckInterval = null;
-
-function openIcebreaker() {
+function pickOmikuji() {
+  const total = OMIKUJI.reduce((s, f) => s + f.w, 0);
+  let r = Math.random() * total, f = OMIKUJI[0];
+  for (const x of OMIKUJI) { r -= x.w; if (r <= 0) { f = x; break; } }
+  return { fortune:f.id, question:f.qs[Math.floor(Math.random() * f.qs.length)] };
+}
+function omikujiBoxSvg() {                                     // the wooden fortune box with sticks poking out
+  const F = "'Shippori Mincho','Hiragino Mincho ProN','Yu Mincho','Noto Serif CJK JP',serif";
+  return `<svg width="92" height="138" viewBox="0 0 80 120" aria-hidden="true">
+    <g stroke="#e8d3a0" stroke-width="3.4" stroke-linecap="round"><path d="M28 30L24 7"/><path d="M38 30L40 2"/><path d="M49 30L56 9"/></g>
+    <g fill="#e8472b"><circle cx="24" cy="7" r="2.2"/><circle cx="40" cy="2" r="2.2"/><circle cx="56" cy="9" r="2.2"/></g>
+    <path d="M14 30H66L70 108Q70 114 64 114H16Q10 114 10 108Z" fill="#b4743a"/>
+    <path d="M10 100H70L70 108Q70 114 64 114H16Q10 114 10 108Z" fill="#8c5426"/>
+    <ellipse cx="40" cy="30" rx="26" ry="5.4" fill="#5e3a1a"/>
+    <rect x="22" y="43" width="36" height="52" rx="3" fill="#f6e7c4" stroke="#c9a96a" stroke-width=".8"/>
+    <g font-family="${F}" font-weight="700" font-size="14" fill="#2b2d42" text-anchor="middle"><text x="40" y="59">御</text><text x="40" y="74">神</text><text x="40" y="90">籤</text></g>
+  </svg>`;
+}
+function omikujiRattle() {                                      // bamboo sticks rattling in the box
+  try {
+    if (localStorage.getItem('kaizen_chime') === 'off') return;
+    const ctx = getAudioCtx(); if (ctx.state === 'suspended') ctx.resume();
+    const t = ctx.currentTime + 0.02;
+    for (let i = 0; i < 10; i++) {
+      const len = Math.floor(ctx.sampleRate * 0.05), buf = ctx.createBuffer(1, len, ctx.sampleRate), d = buf.getChannelData(0);
+      for (let j = 0; j < len; j++) d[j] = (Math.random() * 2 - 1) * Math.pow(1 - j / len, 2);
+      const src = ctx.createBufferSource(); src.buffer = buf;
+      const f = ctx.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = 1800 + Math.random() * 1800; f.Q.value = 1.3;
+      const g = ctx.createGain(); g.gain.value = 0.32;
+      src.connect(f); f.connect(g); g.connect(ctx.destination); src.start(t + i * 0.085 + Math.random() * 0.03);
+    }
+  } catch (e) {}
+}
+function renderOmikuji(fortuneId, question, animate) {
+  const left = document.getElementById('omi-left'), reading = document.getElementById('omi-reading');
+  const qEl = document.getElementById('icebreaker-question'), inputArea = document.getElementById('icebreaker-input-area');
+  const f = OMIKUJI.find(x => x.id === fortuneId);
+  if (!f) {                                                     // before the draw
+    left.innerHTML = isHost
+      ? `<button class="omi-box" onclick="drawOmikuji()" aria-label="Draw a fortune">${omikujiBoxSvg()}</button><div class="omi-cta">Shake to draw</div>`
+      : `<div class="omi-box idle">${omikujiBoxSvg()}</div><div class="omi-cta">Waiting for the host…</div>`;
+    reading.textContent = '';
+    qEl.textContent = isHost ? 'Shake the box to draw a fortune. It picks the icebreaker question.' : 'The host is about to draw a fortune…';
+    inputArea.style.display = 'none';
+    omiShown = 'none';
+    return;
+  }
+  left.innerHTML = `<div class="omi-slip${f.id === 'kyo' ? ' kyo' : ''}${animate ? ' unroll' : ''}"><div class="omi-kanji">${f.jp}</div><div class="omi-en">${f.en}</div></div>`;
+  reading.innerHTML = `<b>${f.jp}</b>${f.en} — ${f.hint}`;
+  qEl.textContent = question;
+  inputArea.style.display = 'flex';
+  omiShown = f.id + '|' + question;
+}
+function resetIcebreakerInput() {
   icebreakerAnswered = false;
   const input = document.getElementById('icebreaker-answer');
   input.value = ''; input.disabled = false; input.placeholder = 'Type your answer…';
-  const hc = document.getElementById('icebreaker-host-controls');
-  const cb = document.getElementById('icebreaker-close-btn');
-  if (isHost) { hc.style.display = 'flex'; cb.style.display = 'none'; }
-  else { hc.style.display = 'none'; cb.style.display = 'block'; }
+}
+function openIcebreaker() {
+  resetIcebreakerInput();
+  const hc = document.getElementById('icebreaker-host-controls'), cb = document.getElementById('icebreaker-close-btn');
+  if (isHost) { hc.style.display = 'flex'; cb.style.display = 'none'; } else { hc.style.display = 'none'; cb.style.display = 'block'; }
   document.getElementById('icebreaker-overlay').style.display = 'flex';
-  if (isHost) {
-    const q = ICEBREAKER_QUESTIONS[Math.floor(Math.random() * ICEBREAKER_QUESTIONS.length)];
-    document.getElementById('icebreaker-question').textContent = q;
-    fbSet(`rooms/${roomKey}/icebreaker`, { question: q, answers: {} });
-  }
+  omiShown = '';
   loadIcebreakerAnswers();
   icebreakerCheckInterval = setInterval(loadIcebreakerAnswers, 3000);
 }
-
 function closeIcebreaker() {
   document.getElementById('icebreaker-overlay').style.display = 'none';
   clearInterval(icebreakerCheckInterval);
 }
-
-function nextIcebreakerQuestion() {
-  const q = ICEBREAKER_QUESTIONS[Math.floor(Math.random() * ICEBREAKER_QUESTIONS.length)];
-  document.getElementById('icebreaker-question').textContent = q;
-  document.getElementById('icebreaker-answers').innerHTML = '';
-  document.getElementById('icebreaker-answer').value = '';
-  document.getElementById('icebreaker-answer').disabled = false;
-  icebreakerAnswered = false;
-  fbSet(`rooms/${roomKey}/icebreaker`, { question: q, answers: {} });
+async function drawOmikuji() {
+  if (omiDrawing || !isHost) return;
+  omiDrawing = true;
+  try {
+    renderOmikuji('', '');                                       // back to the box, then shake it
+    const box = document.querySelector('#omi-left .omi-box');
+    if (box) box.classList.add('shaking');
+    omikujiRattle();
+    await new Promise(r => setTimeout(r, 950));
+    const pick = pickOmikuji();
+    resetIcebreakerInput();
+    document.getElementById('icebreaker-answers').innerHTML = '';
+    renderOmikuji(pick.fortune, pick.question, true);
+    kaizenChime('start');
+    omiLastLocalDraw = Date.now();
+    try { await fbSet(`rooms/${roomKey}/icebreaker`, { fortune:pick.fortune, question:pick.question, answers:{}, ts:Date.now() }); } catch (e) {}
+  } finally { omiDrawing = false; }
 }
-
 async function submitIcebreakerAnswer() {
   const input = document.getElementById('icebreaker-answer');
   const answer = input.value.trim();
   if (!answer || icebreakerAnswered) return;
   icebreakerAnswered = true;
   input.disabled = true; input.placeholder = 'Answer submitted ✓';
-  await fbSet(`rooms/${roomKey}/icebreaker/answers/${me.id}`, {
-    name: me.name, color: me.color, answer, ts: Date.now()
-  });
+  await fbSet(`rooms/${roomKey}/icebreaker/answers/${me.id}`, { name: me.name, color: me.color, answer, ts: Date.now() });
   loadIcebreakerAnswers();
 }
-
 async function loadIcebreakerAnswers() {
   try {
     const data = await fbGet(`rooms/${roomKey}/icebreaker`);
-    if (!data) return;
-    if (data.question) document.getElementById('icebreaker-question').textContent = data.question;
-    const answers = data.answers ? Object.values(data.answers).sort((a,b) => a.ts - b.ts) : [];
-    const container = document.getElementById('icebreaker-answers');
-    if (!answers.length) {
-      container.innerHTML = '<div style="color:var(--muted);font-size:13px;text-align:center;padding:16px">No answers yet — be first!</div>';
-      return;
+    const hostJustDrew = isHost && (omiDrawing || Date.now() - omiLastLocalDraw < 5000);   // don't let a stale poll undo a fresh draw
+    if (!hostJustDrew) {
+      if (!data || !data.fortune) {
+        if (omiShown !== 'none') renderOmikuji('', '');
+      } else {
+        const key = data.fortune + '|' + data.question;
+        if (key !== omiShown) {
+          const isNewDraw = omiShown !== '' && omiShown !== 'none';
+          if (isNewDraw || omiShown === 'none') resetIcebreakerInput();
+          renderOmikuji(data.fortune, data.question, true);
+          if (!isHost) kaizenChime('start');
+        }
+      }
     }
+    if (!data) return;
+    const mine = data.answers && me && data.answers[me.id];
+    if (mine && !icebreakerAnswered) { icebreakerAnswered = true; const i = document.getElementById('icebreaker-answer'); i.disabled = true; i.placeholder = 'Answer submitted ✓'; }
+    const answers = data.answers ? Object.values(data.answers).sort((a, b) => a.ts - b.ts) : [];
+    const container = document.getElementById('icebreaker-answers');
+    if (!data.fortune) { container.innerHTML = ''; return; }
+    if (!answers.length) { container.innerHTML = '<div style="color:var(--muted);font-size:13px;text-align:center;padding:16px">No answers yet — be first!</div>'; return; }
     container.innerHTML = answers.map(a => `
       <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:var(--bg);border-radius:10px;border:1px solid var(--border)">
         <div style="width:28px;height:28px;border-radius:50%;background:${a.color};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0">${esc(a.name[0].toUpperCase())}</div>
         <div><div style="font-size:11px;font-weight:600;color:var(--muted);margin-bottom:2px">${esc(a.name)}</div>
         <div style="font-size:14px;color:var(--text)">${esc(a.answer)}</div></div>
       </div>`).join('');
-  } catch(e) {}
+  } catch (e) {}
 }
 
 // ── Action Item Follow-up ──
@@ -5242,12 +5477,15 @@ function playCompletionCeremony() {
   const vals = Object.values(scores).map(s => s.value);
   const avg = vals.length ? (vals.reduce((a, b) => a + b, 0) / vals.length).toFixed(1) : null;
   const name = (document.getElementById('badge-text')?.textContent || '').replace('✦ ', '').trim();
+  const goalTxt = (document.getElementById('sprint-goal-display')?.textContent || '').trim();
+  const goalHtml = goalTxt ? `<div class="cer-goal">${darumaSvg(46, goalAchieved ? 2 : 1)}<span>${goalAchieved ? '達成 · Goal achieved' : 'Goal in progress'}</span></div>` : '';
   const el = document.createElement('div');
   el.id = 'ceremony';
   el.innerHTML = `
     <div class="cer-stage"><div class="cer-ripple"></div><div class="cer-seal">${sealSvg(170, { rough:true })}</div></div>
     <div class="cer-title">Another step forward.</div>
     <div class="cer-sub">${esc(name || 'Retrospective complete')}${avg ? ' · ' + avg + ' / 10' : ''}</div>
+    ${goalHtml}
     <div class="cer-hint">click to continue</div>`;
   el.addEventListener('click', () => closeCeremony(el));
   document.body.appendChild(el);
@@ -5287,8 +5525,7 @@ async function refreshStreakChip() {
     if (!chip) return;
     if (n >= 1) {
       chip.style.display = 'inline-flex';
-      chip.textContent = `🔥 ${n}-retro Kaizen streak`;
-      chip.title = 'Consecutive retros where the team closed at least one action item';
+      chip.innerHTML = beltChip(n);
     } else chip.style.display = 'none';
   } catch (e) {}
 }
@@ -5323,12 +5560,13 @@ async function renderKaizenCard(completedTs) {
       if (!lines.length) { headline = 'Pick one thing'; lines.push('Choose a single action item to finish before the next retro. Small steps count.'); }
     }
     const streak = computeKaizenStreak(prev);
+    window.kaizenSummary = { headline, lines: lines.slice(), streak };
     box.innerHTML = `<div style="display:flex;gap:16px;align-items:flex-start">
       <div style="flex-shrink:0">${sealSvg(52)}</div>
       <div style="flex:1">
         <div class="sum-card-label" style="color:var(--brand)">${headline}</div>
         ${lines.map(l => `<div style="font-size:14px;margin:6px 0;color:var(--text)">${l}</div>`).join('')}
-        ${streak ? `<div style="display:inline-flex;align-items:center;gap:4px;margin-top:8px;font-size:12px;font-weight:600;padding:3px 12px;border-radius:20px;background:var(--brand-soft);color:var(--brand-dark)">🔥 ${streak}-retro Kaizen streak</div>` : ''}
+        ${streak ? `<div style="margin-top:8px">${beltChip(streak)}</div>` : ''}
       </div></div>`;
     box.style.display = 'block';
   } catch (e) { console.error('renderKaizenCard failed:', e); }
@@ -5341,6 +5579,298 @@ function landingJoin() {
   if (j && code) j.value = code;
   setTimeout(() => document.getElementById(code ? 'join-name' : 'join-room')?.focus(), 80);
 }
+// ── Daruma sprint goal (達磨): one eye when the goal is set, the second when it is achieved ──
+let goalAchieved = false;
+function darumaSvg(size, eyes) {                       // eyes: 0 none · 1 first painted · 2 both
+  const eye = (cx, painted) => `<circle cx="${cx}" cy="29" r="5.4" fill="#fff" stroke="#1a1917" stroke-width=".8"/>` +
+    (painted ? `<circle cx="${cx}" cy="29.2" r="2.9" fill="#1a1917"/><circle cx="${cx + .9}" cy="28.2" r=".9" fill="#fff"/>` : '');
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${Math.round(size * 1.125)}" viewBox="0 0 64 72" role="img" aria-label="Daruma doll" style="display:block;overflow:visible">
+    <ellipse cx="32" cy="69" rx="21" ry="2.6" fill="rgba(0,0,0,.2)"/>
+    <ellipse cx="32" cy="42" rx="27" ry="28" fill="#e8472b"/>
+    <ellipse cx="32" cy="42" rx="27" ry="28" fill="none" stroke="#b9341b" stroke-width="1"/>
+    <ellipse cx="22" cy="33" rx="8" ry="13" fill="#fff" fill-opacity=".13" transform="rotate(-18 22 33)"/>
+    <ellipse cx="32" cy="31" rx="19.5" ry="15.5" fill="#fdf1df" stroke="#c9a37a" stroke-width=".6"/>
+    ${eye(23, eyes >= 2)}${eye(41, eyes >= 1)}
+    <path d="M12.5 22.5C17 13.5 26 14.5 29.5 21.5" fill="none" stroke="#1a1917" stroke-width="2.5" stroke-linecap="round"/>
+    <path d="M51.5 22.5C47 13.5 38 14.5 34.5 21.5" fill="none" stroke="#1a1917" stroke-width="2.5" stroke-linecap="round"/>
+    <path d="M32 37.5C28 33.5 22 34.5 18.5 40M32 37.5C36 33.5 42 34.5 45.5 40" fill="none" stroke="#1a1917" stroke-width="2" stroke-linecap="round"/>
+    <path d="M23.5 44C28 48.5 36 48.5 40.5 44" fill="none" stroke="#1a1917" stroke-width="1.7" stroke-linecap="round"/>
+    <text x="32" y="64" text-anchor="middle" font-size="14" font-weight="700" fill="#f6d36a" font-family="'Shippori Mincho','Hiragino Mincho ProN','Yu Mincho','Noto Serif CJK JP',serif">願</text>
+  </svg>`;
+}
+function renderDaruma() {
+  const b = document.getElementById('daruma-btn'); if (!b) return;
+  const hasGoal = !!(document.getElementById('sprint-goal-display')?.textContent || '').trim();
+  const eyes = !hasGoal ? 0 : (goalAchieved ? 2 : 1);
+  b.innerHTML = darumaSvg(34, eyes);
+  b.title = !hasGoal ? 'Set a sprint goal to paint the first eye'
+    : goalAchieved ? (isHost ? 'Goal achieved! Click to undo' : 'Goal achieved!')
+    : (isHost ? 'Goal achieved? Click to paint the second eye' : 'First eye painted — the second comes when the goal is achieved');
+  const st = document.getElementById('goal-status'); if (st) st.textContent = goalAchieved ? '達成' : '';
+}
+function goalCelebrate() {
+  const b = document.getElementById('daruma-btn');
+  if (b) { b.classList.remove('pop'); void b.offsetWidth; b.classList.add('pop'); }     // the doll wobbles upright
+  confetti(26); kaizenChime('start');
+  toast('達成 — second eye painted. Goal achieved!');
+}
+async function toggleGoalAchieved() {
+  const hasGoal = !!(document.getElementById('sprint-goal-display')?.textContent || '').trim();
+  if (!hasGoal) return;
+  if (!isHost) { toast('Only the host can paint the second eye'); return; }
+  goalAchieved = !goalAchieved;
+  renderDaruma();
+  try { await fbSet(sessionPath('goalAchieved'), goalAchieved); } catch (e) {}
+  if (goalAchieved) goalCelebrate();
+}
+async function loadGoalAchieved() {
+  try {
+    const v = !!(await fbGet(sessionPath('goalAchieved')));
+    if (v !== goalAchieved) {
+      const was = goalAchieved; goalAchieved = v; renderDaruma();
+      if (v && !was && !isHost) goalCelebrate();
+    }
+  } catch (e) {}
+}
+function renderGoalCard() {
+  const box = document.getElementById('sum-goal'); if (!box) return;
+  const goal = (document.getElementById('sprint-goal-display')?.textContent || '').trim();
+  if (!goal) { box.style.display = 'none'; return; }
+  box.innerHTML = `<div style="display:flex;gap:16px;align-items:center">
+    <div style="flex-shrink:0">${darumaSvg(58, goalAchieved ? 2 : 1)}</div>
+    <div style="flex:1"><div class="sum-card-label">Sprint goal <span class="jp-s">目標</span></div>
+      <div style="font-size:15px;margin:4px 0">${esc(goal)}</div>
+      <div style="font-size:12.5px;font-weight:600;color:${goalAchieved ? 'var(--well)' : 'var(--muted)'}">${goalAchieved ? '達成 · Goal achieved — both eyes painted' : 'One eye painted — goal not marked as achieved'}</div></div></div>`;
+  box.style.display = 'block';
+}
+
+// ── Kaizen belts (帯): the streak earns a belt ──
+const KZ_BELTS = [
+  { min:1, jp:'白帯', name:'White belt',  color:'#f3efe6', edge:'#c9c1ae' },
+  { min:2, jp:'黄帯', name:'Yellow belt', color:'#f2c94c', edge:'#b8941f' },
+  { min:3, jp:'橙帯', name:'Orange belt', color:'#f2994a', edge:'#b86a1e' },
+  { min:4, jp:'緑帯', name:'Green belt',  color:'#3fae6a', edge:'#27774a' },
+  { min:5, jp:'青帯', name:'Blue belt',   color:'#3b7ddd', edge:'#2757a6' },
+  { min:7, jp:'茶帯', name:'Brown belt',  color:'#8a5a3c', edge:'#5e3a22' },
+];
+const KZ_DAN_JP = ['初段', '二段', '三段', '四段', '五段'];
+function kaizenRank(n) {
+  if (n >= 9) {                                           // black belt from 9 in a row; a new dan every 4 more
+    const dan = Math.min(5, 1 + Math.floor((n - 9) / 4));
+    return { n, color:'#1b1b24', edge:'#000', dan, jp:'黒帯 ' + KZ_DAN_JP[dan - 1], name:'Black belt · ' + ['1st','2nd','3rd','4th','5th'][dan - 1] + ' dan',
+             toNext: dan < 5 ? (9 + dan * 4) - n : 0, nextName: dan < 5 ? ['2nd','3rd','4th','5th'][dan - 1] + ' dan' : '' };
+  }
+  let r = KZ_BELTS[0], i = 0;
+  KZ_BELTS.forEach((b, k) => { if (n >= b.min) { r = b; i = k; } });
+  const nxt = KZ_BELTS[i + 1];
+  return { n, color:r.color, edge:r.edge, dan:0, jp:r.jp, name:r.name,
+           toNext: nxt ? nxt.min - n : 9 - n, nextName: nxt ? nxt.name : 'Black belt' };
+}
+function beltChip(n) {
+  if (!n || n < 1) return '';
+  const r = kaizenRank(n);
+  const stripes = Array.from({ length: r.dan }, (_, k) => `<s style="right:${3 + k * 4}px"></s>`).join('');
+  const hint = r.toNext ? ` · ${r.toNext} more to ${r.nextName}` : ' · top rank';
+  return `<span class="belt" title="Consecutive retros where the team closed at least one action item${hint}">` +
+    `<i class="belt-bar" style="--belt:${r.color};--edge:${r.edge}">${stripes}</i>` +
+    `<b>${r.jp}</b><span class="belt-t">${r.name} · ${n} in a row</span></span>`;
+}
+
+// ── Shareable summary card ──
+const KZ_SERIF = '"DM Serif Display", Georgia, "Times New Roman", serif';
+const KZ_MINCHO = '"Shippori Mincho","Hiragino Mincho ProN","Yu Mincho","Noto Serif CJK JP","Noto Serif JP",serif';
+const KZ_SANS = '"DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif';
+function cvRound(ctx, x, y, w, h, r) {
+  ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
+}
+function cvWrap(ctx, text, x, y, maxW, lineH, maxLines) {                // wrap + ellipsis; returns lines drawn
+  const tokens = [];
+  String(text).split(/\s+/).forEach(w => {
+    if (ctx.measureText(w).width <= maxW) tokens.push(w);
+    else { let buf = ''; for (const ch of w) { if (ctx.measureText(buf + ch).width > maxW && buf) { tokens.push(buf); buf = ch; } else buf += ch; } if (buf) tokens.push(buf); }
+  });
+  let lines = [], line = '';
+  tokens.forEach(t => { const tt = line ? line + ' ' + t : t; if (ctx.measureText(tt).width > maxW && line) { lines.push(line); line = t; } else line = tt; });
+  if (line) lines.push(line);
+  if (lines.length > maxLines) {
+    lines = lines.slice(0, maxLines); let l = lines[maxLines - 1];
+    while (ctx.measureText(l + '…').width > maxW && l.length > 1) l = l.slice(0, -1);
+    lines[maxLines - 1] = l.replace(/[\s.,;:!?-]+$/, '') + '…';
+  }
+  lines.forEach((l, i) => ctx.fillText(l, x, y + i * lineH));
+  return lines.length;
+}
+function cvAsanoha(ctx, W, H, s, color) {                                // hemp-leaf lattice
+  const h = s * Math.sqrt(3) / 2, seen = new Set();
+  ctx.strokeStyle = color; ctx.lineWidth = 1; ctx.beginPath();
+  const add = (a, b) => {
+    const k1 = a[0].toFixed(1) + ',' + a[1].toFixed(1) + ',' + b[0].toFixed(1) + ',' + b[1].toFixed(1);
+    const k2 = b[0].toFixed(1) + ',' + b[1].toFixed(1) + ',' + a[0].toFixed(1) + ',' + a[1].toFixed(1);
+    if (seen.has(k1) || seen.has(k2)) return; seen.add(k1); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]);
+  };
+  const pt = (r, c) => [c * s + (r % 2 ? s / 2 : 0), r * h];
+  for (let r = -2; r <= Math.ceil(H / h) + 2; r++) for (let c = -2; c <= Math.ceil(W / s) + 2; c++) {
+    const P = pt(r, c), R = pt(r, c + 1), a = pt(r + 1, r % 2 === 0 ? c - 1 : c), b = pt(r + 1, r % 2 === 0 ? c : c + 1);
+    add(P, R); add(P, a); add(P, b);
+    [[P, R, b], [P, a, b]].forEach(tri => { const g = [(tri[0][0] + tri[1][0] + tri[2][0]) / 3, (tri[0][1] + tri[1][1] + tri[2][1]) / 3]; tri.forEach(q => add(g, q)); });
+  }
+  ctx.stroke();
+}
+function cvSeigaiha(ctx, x, y, w, h, r, bg, stroke) {                    // wave band, clipped to a rectangle
+  ctx.save(); ctx.beginPath(); ctx.rect(x, y, w, h); ctx.clip();
+  for (let row = -1; row < Math.ceil(h / (r / 2)) + 3; row++) {
+    const off = row % 2 ? r : 0;
+    for (let col = -1; col < Math.ceil(w / (2 * r)) + 2; col++) {
+      const cx = x + col * 2 * r + off, cy = y + row * (r / 2);
+      [r, r * .72, r * .46, r * .2].forEach(rr => { ctx.beginPath(); ctx.arc(cx, cy, rr, 0, Math.PI * 2); ctx.fillStyle = bg; ctx.fill(); ctx.strokeStyle = stroke; ctx.lineWidth = 1; ctx.stroke(); });
+    }
+  }
+  ctx.restore();
+}
+function cvSeal(ctx, cx, cy, size, rot) {
+  ctx.save(); ctx.translate(cx, cy); ctx.rotate(rot); const s = size / 120; ctx.scale(s, s); ctx.translate(-60, -60);
+  ctx.shadowColor = 'rgba(0,0,0,.45)'; ctx.shadowBlur = 18; ctx.shadowOffsetY = 6;
+  cvRound(ctx, 4, 4, 112, 112, 14); ctx.fillStyle = '#e8472b'; ctx.fill();
+  ctx.shadowColor = 'transparent';
+  cvRound(ctx, 12, 12, 96, 96, 8); ctx.strokeStyle = 'rgba(255,247,239,.85)'; ctx.lineWidth = 3; ctx.stroke();
+  ctx.fillStyle = '#fff7ef'; ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+  ctx.font = '700 44px ' + KZ_MINCHO; ctx.fillText('改', 60, 62);
+  ctx.font = '700 36px ' + KZ_MINCHO; ctx.fillText('善', 60, 100);
+  ctx.restore();
+}
+function svgToImage(svg) {
+  return new Promise((res, rej) => { const img = new Image(); img.onload = () => res(img); img.onerror = rej; img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg); });
+}
+function openShareCard() { document.getElementById('share-overlay').style.display = 'flex'; renderShareCard(); }
+function closeShareCard() { document.getElementById('share-overlay').style.display = 'none'; }
+async function renderShareCard() {
+  const cv = document.getElementById('share-canvas'); if (!cv) return;
+  const W = 1200, H = 630, S = 2;
+  cv.width = W * S; cv.height = H * S;
+  const ctx = cv.getContext('2d'); ctx.setTransform(S, 0, 0, S, 0, 0);
+  try { await Promise.all([document.fonts.load('400 48px "DM Serif Display"'), document.fonts.load('600 40px "Shippori Mincho"', '改善')]); } catch (e) {}
+  const on = id => document.getElementById(id)?.checked !== false;
+
+  // ---- data
+  const name = (document.getElementById('badge-text')?.textContent || 'Retrospective').replace('✦ ', '').trim();
+  const vals = Object.values(typeof scores !== 'undefined' ? scores : {}).map(s => s.value);
+  const avg = vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : null;
+  let top = null;
+  [['What went well', board.well], ['What could be better', board.better], ['Action items', board.action]].forEach(([label, arr]) =>
+    arr.forEach(cd => { if (cd.text && (cd.votes || 0) > 0 && (!top || cd.votes > top.votes)) top = { text:cd.text, votes:cd.votes, label }; }));
+  const goal = (document.getElementById('sprint-goal-display')?.textContent || '').trim();
+  const ks = window.kaizenSummary || {}, streak = ks.streak || 0;
+  const plain = l => String(l).replace(/^[^\p{L}\p{N}]+/u, '');
+  const team = (currentTeamId && teams[currentTeamId]) ? teams[currentTeamId].name : '';
+  const date = new Date().toLocaleDateString(undefined, { month:'long', day:'numeric', year:'numeric' });
+  const site = /^https?:/.test(location.protocol) ? (location.host + location.pathname).replace(/\/$/, '') : '';
+
+  // ---- background
+  const bg = ctx.createLinearGradient(0, 0, W, H); bg.addColorStop(0, '#0a1228'); bg.addColorStop(.55, '#0e1a3a'); bg.addColorStop(1, '#16213e');
+  ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+  cvAsanoha(ctx, W, H, 46, 'rgba(212,175,90,.13)');
+  const v = ctx.createRadialGradient(330, 300, 60, 330, 300, 620); v.addColorStop(0, 'rgba(8,13,32,.78)'); v.addColorStop(1, 'rgba(8,13,32,0)');
+  ctx.fillStyle = v; ctx.fillRect(0, 0, W, H);
+  const glow = ctx.createRadialGradient(1060, 90, 0, 1060, 90, 380); glow.addColorStop(0, 'rgba(92,126,247,.22)'); glow.addColorStop(1, 'rgba(92,126,247,0)');
+  ctx.fillStyle = glow; ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = '#e8472b'; ctx.fillRect(0, 0, W, 6);
+  cvSeigaiha(ctx, 0, H - 30, W, 30, 15, '#0a1228', 'rgba(212,175,90,.42)');
+  ctx.textBaseline = 'alphabetic'; ctx.textAlign = 'left';
+
+  // ---- header: logo + wordmark, team/date
+  ctx.beginPath(); ctx.arc(86, 60, 22, 0, Math.PI * 2); ctx.fillStyle = 'rgba(255,255,255,.1)'; ctx.fill();
+  ctx.strokeStyle = 'rgba(255,255,255,.2)'; ctx.lineWidth = 1.5; ctx.stroke();
+  ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.font = '700 17px ' + KZ_MINCHO; ctx.fillText('改', 86, 59);
+  ctx.fillStyle = '#7f98ff'; ctx.font = '700 10px ' + KZ_MINCHO; ctx.fillText('善', 86, 72);
+  ctx.beginPath(); ctx.arc(100, 46, 3.6, 0, Math.PI * 2); ctx.fillStyle = '#e8472b'; ctx.fill();
+  ctx.textAlign = 'left'; ctx.fillStyle = '#f6efe2'; ctx.font = '26px ' + KZ_SERIF; ctx.fillText('Kaizen', 120, 68);
+  ctx.textAlign = 'right'; ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.font = '500 15px ' + KZ_SANS;
+  ctx.fillText((team ? team.toUpperCase() + '  ·  ' : '') + date, W - 64, 66);
+
+  // ---- title
+  ctx.textAlign = 'left'; ctx.fillStyle = '#f6efe2'; ctx.font = '48px ' + KZ_SERIF;
+  const tl = cvWrap(ctx, name, 64, 168, 700, 56, 2);
+  ctx.fillStyle = 'rgba(255,255,255,.5)'; ctx.font = '600 13px ' + KZ_SANS; ctx.fillText('SPRINT RETROSPECTIVE  ·  改善', 66, 112);
+
+  // ---- score
+  if (on('share-opt-score') && avg !== null) {
+    const sy = tl > 1 ? 356 : 306;
+    ctx.fillStyle = '#e9c978'; ctx.font = '112px ' + KZ_SERIF;
+    const txt = avg !== null ? avg.toFixed(1) : '—'; ctx.fillText(txt, 64, sy);
+    const tw = ctx.measureText(txt).width;
+    ctx.fillStyle = 'rgba(255,255,255,.5)'; ctx.font = '36px ' + KZ_SERIF; ctx.fillText(avg !== null ? '/ 10' : '', 64 + tw + 14, sy);
+    ctx.fillStyle = 'rgba(255,255,255,.12)'; cvRound(ctx, 64, sy + 22, 380, 8, 4); ctx.fill();
+    if (avg !== null) { const g = ctx.createLinearGradient(64, 0, 444, 0); g.addColorStop(0, '#e8472b'); g.addColorStop(1, '#e9c978'); ctx.fillStyle = g; cvRound(ctx, 64, sy + 22, Math.max(8, 380 * avg / 10), 8, 4); ctx.fill(); }
+    ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.font = '500 15px ' + KZ_SANS;
+    ctx.fillText('Overall sprint score · ' + vals.length + ' vote' + (vals.length !== 1 ? 's' : ''), 64, sy + 56);
+  }
+
+  // ---- seal
+  cvSeal(ctx, 952, 192, 148, -0.1);
+
+  // ---- Kaizen of the sprint + belt (right column)
+  let ry = 306, budget = 3;                                   // at most three lines of text in this column
+  ctx.textAlign = 'left'; ctx.fillStyle = '#ff7a5a'; ctx.font = '700 12px ' + KZ_SANS; ctx.fillText('KAIZEN OF THE SPRINT', 818, ry); ry += 26;
+  ctx.fillStyle = 'rgba(255,255,255,.88)'; ctx.font = '500 16px ' + KZ_SANS;
+  for (const l of (ks.lines || []).slice(0, 3)) {
+    if (budget <= 0) break;
+    const n = cvWrap(ctx, plain(l), 818, ry, 318, 22, Math.min(2, budget)); budget -= n; ry += n * 22 + 5;
+  }
+  if (!(ks.lines || []).length) { ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.fillText('Small steps, every sprint.', 818, ry); ry += 26; }
+  if (streak >= 1) {
+    const rk = kaizenRank(streak), by = Math.min(Math.max(ry + 14, 408), 430);
+    const edge = streak >= 9 ? 'rgba(255,255,255,.6)' : rk.edge;
+    ctx.fillStyle = rk.color; cvRound(ctx, 818, by - 10, 38, 14, 3); ctx.fill(); ctx.strokeStyle = edge; ctx.lineWidth = 1.2; ctx.stroke();
+    ctx.fillStyle = rk.color; cvRound(ctx, 832, by - 13, 10, 20, 3); ctx.fill(); ctx.stroke();
+    for (let k = 0; k < rk.dan; k++) { ctx.fillStyle = '#d4af5a'; ctx.fillRect(846 + k * 3.4, by - 8, 1.8, 10); }
+    ctx.fillStyle = '#f6efe2'; ctx.font = '600 15px ' + KZ_MINCHO; ctx.fillText(rk.jp, 868, by + 3);
+    const jw = ctx.measureText(rk.jp).width;
+    ctx.fillStyle = 'rgba(255,255,255,.62)'; ctx.font = '500 13px ' + KZ_SANS;
+    const ex = 868 + jw + 10; let en = rk.name + ' · ' + streak + ' in a row';
+    if (ex + ctx.measureText(en).width > 1136) en = rk.name + ' · ' + streak;
+    ctx.fillText(en, ex, by + 3);
+  }
+
+  // ---- bottom row: top-voted card (left) + sprint goal (right)
+  const showGoal = goal && on('share-opt-goal'), showTop = top && on('share-opt-card');
+  const cy = 456, ch = 106;
+  if (showTop) {
+    const cw = showGoal ? 640 : 1072;
+    cvRound(ctx, 64, cy, cw, ch, 16); ctx.fillStyle = 'rgba(255,255,255,.06)'; ctx.fill(); ctx.strokeStyle = 'rgba(255,255,255,.14)'; ctx.lineWidth = 1; ctx.stroke();
+    ctx.fillStyle = '#e8472b'; cvRound(ctx, 64, cy + 18, 4, ch - 36, 2); ctx.fill();
+    ctx.textAlign = 'left'; ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.font = '700 12px ' + KZ_SANS; ctx.fillText('TOP-VOTED  ·  ' + top.label.toUpperCase(), 90, cy + 30);
+    ctx.fillStyle = '#f6efe2'; ctx.font = '23px ' + KZ_SERIF; cvWrap(ctx, '“' + top.text + '”', 90, cy + 60, cw - 150, 29, 2);
+    ctx.textAlign = 'right'; ctx.fillStyle = '#ff7a5a'; ctx.font = '700 22px ' + KZ_SANS; ctx.fillText('♥ ' + top.votes, 64 + cw - 22, cy + 34);
+  }
+  if (showGoal) {
+    const gx = showTop ? 732 : 64, gw = showTop ? 404 : 1072;
+    cvRound(ctx, gx, cy, gw, ch, 16); ctx.fillStyle = 'rgba(255,255,255,.06)'; ctx.fill(); ctx.strokeStyle = 'rgba(255,255,255,.14)'; ctx.lineWidth = 1; ctx.stroke();
+    try { const img = await svgToImage(darumaSvg(64, goalAchieved ? 2 : 1)); ctx.drawImage(img, gx + 18, cy + 14, 64, 72); } catch (e) {}
+    ctx.textAlign = 'left'; ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.font = '700 12px ' + KZ_SANS; ctx.fillText('SPRINT GOAL  ·  目標', gx + 98, cy + 30);
+    ctx.fillStyle = '#f6efe2'; ctx.font = '500 16px ' + KZ_SANS; cvWrap(ctx, goal, gx + 98, cy + 54, gw - 118, 21, 2);
+    ctx.fillStyle = goalAchieved ? '#58d5a8' : 'rgba(255,255,255,.5)'; ctx.font = '700 13px ' + KZ_SANS;
+    ctx.fillText(goalAchieved ? '達成  ·  Goal achieved' : 'In progress', gx + 98, cy + 98);
+  }
+
+  // ---- footer
+  ctx.textAlign = 'left'; ctx.fillStyle = 'rgba(255,255,255,.5)'; ctx.font = '500 13px ' + KZ_SANS;
+  ctx.fillText('改善  ·  Small steps, every sprint.', 64, 588);
+  if (site) { ctx.textAlign = 'right'; ctx.fillText(site, W - 64, 588); }
+}
+function downloadShareCard() {
+  const cv = document.getElementById('share-canvas'); if (!cv) return;
+  const name = (document.getElementById('badge-text')?.textContent || 'retro').replace('✦ ', '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'retro';
+  const a = document.createElement('a'); a.download = `kaizen-${name}-${new Date().toISOString().slice(0, 10)}.png`; a.href = cv.toDataURL('image/png'); a.click();
+}
+function copyShareCard() {
+  const cv = document.getElementById('share-canvas'); if (!cv) return;
+  cv.toBlob(async blob => {
+    try { await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]); toast('Image copied — paste it into Slack or Teams'); }
+    catch (e) { toast('Copy isn’t supported here — use Download PNG'); }
+  }, 'image/png');
+}
+
 function esc(s='') { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 </script>
 </body>
