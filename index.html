@@ -28,7 +28,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>Kaizen — Sprint Retrospectives</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;400;500;600&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@600&display=swap&text=%E6%94%B9%E5%96%84%E8%89%AF%E3%81%8B%E3%81%A3%E3%81%9F%E7%82%B9%E6%AC%A1%E3%81%AE%E4%B8%80%E6%AD%A9%E7%9B%AE%E6%A8%99%E6%AD%A2%E7%B6%99%E5%AE%8C%E4%BA%86%E6%A1%9C%E7%B4%85%E8%91%89%E9%9B%AA%E8%9B%8D%E5%9B%9B%E5%AD%A3%E9%A1%98%E9%81%94%E6%88%90%E5%A4%A7%E5%90%89%E4%B8%AD%E5%B0%8F%E6%9C%AB%E5%87%B6%E5%BE%A1%E7%A5%9E%E7%B1%A4%E7%99%BD%E9%BB%84%E6%A9%99%E7%B7%91%E9%9D%92%E8%8C%B6%E9%BB%92%E5%B8%AF%E5%88%9D%E6%AE%B5%E4%BA%8C%E4%B8%89%E4%BA%94%E3%81%8A%E3%81%BF%E3%81%8F%E3%81%98" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@600&display=swap&text=%E6%94%B9%E5%96%84%E8%89%AF%E3%81%8B%E3%81%A3%E3%81%9F%E7%82%B9%E6%AC%A1%E3%81%AE%E4%B8%80%E6%AD%A9%E7%9B%AE%E6%A8%99%E6%AD%A2%E7%B6%99%E5%AE%8C%E4%BA%86%E6%A1%9C%E7%B4%85%E8%91%89%E9%9B%AA%E8%9B%8D%E5%9B%9B%E5%AD%A3%E9%A1%98%E9%81%94%E6%88%90%E5%A4%A7%E5%90%89%E4%B8%AD%E5%B0%8F%E6%9C%AB%E5%87%B6%E5%BE%A1%E7%A5%9E%E7%B1%A4%E7%99%BD%E9%BB%84%E6%A9%99%E7%B7%91%E9%9D%92%E8%8C%B6%E9%BB%92%E5%B8%AF%E5%88%9D%E6%AE%B5%E4%BA%8C%E4%B8%89%E4%BA%94%E3%81%8A%E3%81%BF%E3%81%8F%E3%81%98%E9%81%93%E5%A0%B4" rel="stylesheet">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
@@ -967,6 +967,9 @@ html:not([data-theme]) body::after { opacity:.55; }
 .belt .belt-t { font-weight:500; color:var(--muted); }
 .belt-bar { position:relative; display:inline-block; width:26px; height:10px; border-radius:2px; background:var(--belt); box-shadow:inset 0 0 0 1px var(--edge); flex-shrink:0; }
 .belt-bar::after { content:''; position:absolute; left:50%; top:-2px; width:8px; height:14px; margin-left:-4px; border-radius:2px; background:var(--belt); box-shadow:inset 0 0 0 1px var(--edge); }
+.belt.empty { background:transparent; border-style:dashed; opacity:.8; }
+.belt.empty .belt-bar { background:transparent; box-shadow:inset 0 0 0 1px var(--muted); opacity:.6; }
+.belt.empty .belt-bar::after { background:transparent; box-shadow:inset 0 0 0 1px var(--muted); }
 .belt-bar s { position:absolute; top:1px; width:2px; height:8px; background:#d4af5a; text-decoration:none; }
 
 /* ── Omikuji ── */
@@ -1001,6 +1004,29 @@ html:not([data-theme]) body::after { opacity:.55; }
 .share-wrap { background:var(--surface); color:var(--text); border:1px solid var(--border); border-radius:18px; padding:22px; width:100%; max-width:860px; max-height:94vh; overflow:auto; box-shadow:0 20px 60px rgba(0,0,0,.4); }
 .share-opts { display:flex; flex-wrap:wrap; gap:8px 22px; margin-top:14px; font-size:13px; color:var(--muted); }
 .share-opts label { display:flex; align-items:center; gap:7px; cursor:pointer; }
+
+/* ── Dojo ── */
+.belt-lbl { font-size:10px; letter-spacing:.8px; text-transform:uppercase; color:var(--muted); font-weight:700; padding-right:2px; }
+.dojo-chip { background:none; border:none; padding:0; cursor:pointer; font-family:inherit; align-items:center; }
+.dojo-chip:hover .belt { border-color:var(--muted); }
+.av-belt { position:absolute; left:50%; bottom:-4px; width:15px; height:5px; margin-left:-7.5px; border-radius:2px; background:var(--belt); box-shadow:0 0 0 1px var(--edge); }
+.dojo-card { background:var(--surface); color:var(--text); border:1px solid var(--border); border-radius:20px; width:100%; max-width:640px; max-height:92vh; overflow-y:auto; padding:24px 28px; box-shadow:0 20px 60px rgba(0,0,0,.4); }
+.dojo-title { font-family:var(--serif); font-size:24px; font-weight:400; flex:1; }
+.dj-sec { margin:20px 0 8px; font-size:11px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:var(--muted); }
+.dj-row { margin:10px 0; }
+.dj-lbl { display:flex; justify-content:space-between; font-size:13px; margin-bottom:5px; }
+.dj-lbl b { font-variant-numeric:tabular-nums; }
+.dj-track { height:8px; border-radius:6px; background:var(--border); overflow:hidden; }
+.dj-fill { height:100%; border-radius:6px; background:linear-gradient(90deg,#e8472b,#e9c978); }
+.dj-ck { font-size:13px; color:var(--muted); margin-right:16px; }
+.dj-ck.ok { color:var(--well); font-weight:600; }
+.dj-people { display:flex; flex-direction:column; gap:8px; }
+.dj-person { display:flex; align-items:center; gap:10px; font-size:13px; flex-wrap:wrap; }
+.dj-ladder { width:100%; border-collapse:collapse; font-size:13px; }
+.dj-ladder th, .dj-ladder td { padding:6px 8px; border-bottom:1px solid var(--border); text-align:left; }
+.dj-ladder th { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.6px; }
+.dj-ladder tr.cur td { background:rgba(232,71,43,.1); }
+.dj-note { font-size:12.5px; color:var(--muted); line-height:1.65; margin-top:14px; }
 </style>
 </head>
 <body>
@@ -1231,6 +1257,7 @@ html:not([data-theme]) body::after { opacity:.55; }
       </div>
       mood
     </div>
+    <div class="stat"><button id="dojo-chip" class="dojo-chip" onclick="openDojo()" style="display:none" aria-label="Open your dojo"></button></div>
     <div class="stat"><span id="streak-chip" style="display:none;align-items:center;cursor:default"></span></div>
     <div class="spacer"></div>
     <div class="stat" style="font-size:12px;color:#b0aca5"><span id="s-online">1 online</span></div>
@@ -1365,6 +1392,7 @@ html:not([data-theme]) body::after { opacity:.55; }
 
     <div id="sum-kaizen" class="sum-card" style="display:none;margin-bottom:20px;border-left:4px solid var(--brand)"></div>
     <div id="sum-goal" class="sum-card" style="display:none;margin-bottom:20px"></div>
+    <div id="sum-dojo" class="sum-card" style="display:none;margin-bottom:20px"></div>
 
     <div class="summary-grid">
       <div class="sum-card sum-score-card">
@@ -1691,6 +1719,19 @@ html:not([data-theme]) body::after { opacity:.55; }
         <button class="btn" onclick="copyShareCard()">Copy image</button>
         <button class="btn primary" onclick="downloadShareCard()">Download PNG</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- Dojo -->
+<div id="dojo-overlay" style="display:none;position:fixed;inset:0;z-index:310;background:rgba(0,0,0,.7)">
+  <div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;padding:24px">
+    <div class="dojo-card">
+      <div style="display:flex;align-items:center">
+        <h2 class="dojo-title">Dojo <span class="jp-s" style="font-size:14px">道場</span></h2>
+        <button onclick="closeDojo()" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:24px;line-height:1">×</button>
+      </div>
+      <div id="dojo-body"></div>
     </div>
   </div>
 </div>
@@ -2447,7 +2488,7 @@ async function joinAsHost() {
   if (tnb) tnb.style.display = '';
   startSync();
   initMyStats();
-  kaizenChime('start'); showBrandSplash('Opening your board…'); refreshStreakChip();
+  kaizenChime('start'); showBrandSplash('Opening your board…'); refreshStreakChip(); refreshDojo(true);
   if (teamId) checkPrevActions(teamId);
   else checkPrevActions('');
   if (jiraProject) loadJiraSprintForBoard(jiraProject, jiraSprintId);
@@ -2481,7 +2522,7 @@ async function joinAsParticipant() {
 
   startSync();
   initMyStats();
-  kaizenChime('start'); showBrandSplash('Joining the room…'); refreshStreakChip();
+  kaizenChime('start'); showBrandSplash('Joining the room…'); refreshStreakChip(); refreshDojo(true);
   try {
     const teamId = await fbGet(sessionPath('teamId'));
     if (teamId) { currentTeamId = teamId; checkPrevActions(teamId); }
@@ -2804,7 +2845,8 @@ function renderPresence() {
     <div class="presence-avatar" style="background:${u.color}">
       ${esc(u.name[0].toUpperCase())}
       <div class="online-dot"></div>
-      <div class="tip">${esc(u.name)}</div>
+      ${(() => { const b = dojoBeltFor(u.name); return b ? `<span class="av-belt" style="--belt:${b.color};--edge:${b.edge}"></span>` : ''; })()}
+      <div class="tip">${esc(u.name)}${(() => { const b = dojoBeltFor(u.name); return b ? ' · ' + esc(b.name) : ''; })()}</div>
     </div>`).join('');
   document.getElementById('s-online').textContent = Object.keys(presence).length + ' online';
 }
@@ -3390,7 +3432,9 @@ async function completeRetro() {
   playCompletionCeremony();
   // Save snapshot to history, then work out what improved
   await saveToHistory();
+  _histCache = null;
   renderKaizenCard(_completedTs);
+  renderDojoCard();
 }
 
 async function saveToHistory() {
@@ -5291,7 +5335,7 @@ async function checkPrevActions(teamId) {
     const actions = (last.actions || []).filter(a => a.text && a.text.trim());
     if (!actions.length) return;
 
-    prevActionItems = actions.map(a => ({ text: a.text, status: null }));
+    prevActionItems = actions.map(a => ({ text: a.text, owners: (a.owners || []).map(o => ({ name: o.name, color: o.color })), status: null }));
 
     const list = document.getElementById('prev-actions-list');
     const date = new Date(last.completedAt).toLocaleDateString(undefined, {month:'short', day:'numeric'});
@@ -5299,7 +5343,8 @@ async function checkPrevActions(teamId) {
       <div style="font-size:12px;color:var(--muted);margin-bottom:8px">From: <strong style="color:var(--text)">${esc(last.title||'Last Retro')}</strong> · ${date}</div>
       ${prevActionItems.map((a, i) => `
       <div style="border:1px solid var(--border);border-radius:12px;padding:14px 16px">
-        <div style="font-size:14px;color:var(--text);margin-bottom:10px;line-height:1.4">${esc(a.text)}</div>
+        <div style="font-size:14px;color:var(--text);margin-bottom:6px;line-height:1.4">${esc(a.text)}</div>
+        <div style="font-size:11.5px;color:var(--muted);margin-bottom:10px">${a.owners.length ? 'Owner' + (a.owners.length > 1 ? 's' : '') + ': <strong style="color:var(--text)">' + a.owners.map(o => esc(o.name)).join(', ') + '</strong>' + (a.owners.length > 1 ? ' earn' : ' earns') + ' dojo credit if Done' : 'No owner — nobody earns dojo credit for this one'}</div>
         <div style="display:flex;gap:6px">
           <button class="action-status-btn" onclick="setActionStatus(${i},'done',this)"
             style="font-family:var(--sans);font-size:12px;font-weight:600;padding:5px 10px;border-radius:8px;border:2px solid var(--border);background:var(--bg);color:var(--muted);cursor:pointer;flex:1;transition:all .15s">✅ Done</button>
@@ -5340,8 +5385,12 @@ async function savePrevActionsAndClose() {
       if (!entries.length) return;
       lastKey = entries[0][0];
     }
-    await fbSet(`history/${lastKey}/actionFollowUp`, prevActionItems.map(a=>({text:a.text,status:a.status||'unknown'})));
-    toast('Action item follow-up saved!');
+    await fbSet(`history/${lastKey}/actionFollowUp`, prevActionItems.map(a=>({text:a.text,owners:a.owners||[],status:a.status||'unknown'})));
+    _histCache = null;
+    const done = prevActionItems.filter(a => a.status === 'done');
+    const credited = done.filter(a => (a.owners || []).length).length;
+    toast(!done.length ? 'Action item follow-up saved!' : credited ? `Follow-up saved — ${credited} completed item${credited !== 1 ? 's' : ''} credited to their owners` : 'Follow-up saved — no owners were set, so no personal credit');
+    refreshStreakChip(); refreshDojo(true);
   } catch(e) {}
 }
 
@@ -5502,7 +5551,7 @@ function closeCeremony(el) {
 
 // ── Kaizen streak + "Kaizen of the sprint" ──
 async function loadTeamHistory(teamId) {
-  const all = await fbGet('history');
+  const all = await getHistory(false);
   if (!all) return [];
   return Object.entries(all).map(([k, v]) => ({ ...v, _key:k }))
     .filter(r => r.completedAt && (r.teamId || '') === (teamId || ''))
@@ -5526,7 +5575,10 @@ async function refreshStreakChip() {
     if (n >= 1) {
       chip.style.display = 'inline-flex';
       chip.innerHTML = beltChip(n);
-    } else chip.style.display = 'none';
+    } else {
+      chip.style.display = 'inline-flex';
+      chip.innerHTML = `<span class="belt empty" title="Team streak: at the start of a retro, mark at least one of last sprint's action items Done. Each retro in a row extends it."><span class="belt-lbl">Team</span><i class="belt-bar"></i><span class="belt-t">No streak yet</span></span>`;
+    }
   } catch (e) {}
 }
 async function renderKaizenCard(completedTs) {
@@ -5666,14 +5718,17 @@ function kaizenRank(n) {
   return { n, color:r.color, edge:r.edge, dan:0, jp:r.jp, name:r.name,
            toNext: nxt ? nxt.min - n : 9 - n, nextName: nxt ? nxt.name : 'Black belt' };
 }
+function beltMarkup(b, o) {                                    // one renderer for every belt chip
+  o = o || {};
+  const stripes = Array.from({ length: b.dan || 0 }, (_, k) => `<s style="right:${3 + k * 4}px"></s>`).join('');
+  return `<span class="belt"${o.title ? ` title="${esc(o.title)}"` : ''}>${o.label ? `<span class="belt-lbl">${o.label}</span>` : ''}` +
+    `<i class="belt-bar" style="--belt:${b.color};--edge:${b.edge}">${stripes}</i><b>${b.jp}</b>${o.text ? `<span class="belt-t">${o.text}</span>` : ''}</span>`;
+}
 function beltChip(n) {
   if (!n || n < 1) return '';
   const r = kaizenRank(n);
-  const stripes = Array.from({ length: r.dan }, (_, k) => `<s style="right:${3 + k * 4}px"></s>`).join('');
   const hint = r.toNext ? ` · ${r.toNext} more to ${r.nextName}` : ' · top rank';
-  return `<span class="belt" title="Consecutive retros where the team closed at least one action item${hint}">` +
-    `<i class="belt-bar" style="--belt:${r.color};--edge:${r.edge}">${stripes}</i>` +
-    `<b>${r.jp}</b><span class="belt-t">${r.name} · ${n} in a row</span></span>`;
+  return beltMarkup(r, { label:'Team', text:`${r.name} · ${n} in a row`, title:`Team streak: consecutive retros where at least one action item was closed${hint}` });
 }
 
 // ── Shareable summary card ──
@@ -5869,6 +5924,143 @@ function copyShareCard() {
     try { await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]); toast('Image copied — paste it into Slack or Teams'); }
     catch (e) { toast('Copy isn’t supported here — use Download PNG'); }
   }, 'image/png');
+}
+
+// ── Dojo (道場): everyone earns a belt of their own ──
+// A "full retro" = you added a card, cast a vote AND gave the sprint score.
+// A "completed item" = an action item you own that the host marked Done at the next retro's follow-up.
+// Both must reach a belt's targets, so showing up alone — or owning items you never finish — isn't enough.
+const DOJO_LADDER = [
+  { retros:3,  items:0,  jp:'白帯',      name:'White belt',            color:'#f3efe6', edge:'#c9c1ae', dan:0 },
+  { retros:6,  items:1,  jp:'黄帯',      name:'Yellow belt',           color:'#f2c94c', edge:'#b8941f', dan:0 },
+  { retros:10, items:3,  jp:'橙帯',      name:'Orange belt',           color:'#f2994a', edge:'#b86a1e', dan:0 },
+  { retros:15, items:5,  jp:'緑帯',      name:'Green belt',            color:'#3fae6a', edge:'#27774a', dan:0 },
+  { retros:21, items:8,  jp:'青帯',      name:'Blue belt',             color:'#3b7ddd', edge:'#2757a6', dan:0 },
+  { retros:28, items:12, jp:'茶帯',      name:'Brown belt',            color:'#8a5a3c', edge:'#5e3a22', dan:0 },
+  { retros:36, items:18, jp:'黒帯 初段', name:'Black belt · 1st dan',  color:'#1b1b24', edge:'#000000', dan:1 },
+  { retros:46, items:26, jp:'黒帯 二段', name:'Black belt · 2nd dan',  color:'#1b1b24', edge:'#000000', dan:2 },
+  { retros:58, items:36, jp:'黒帯 三段', name:'Black belt · 3rd dan',  color:'#1b1b24', edge:'#000000', dan:3 },
+  { retros:72, items:48, jp:'黒帯 四段', name:'Black belt · 4th dan',  color:'#1b1b24', edge:'#000000', dan:4 },
+  { retros:88, items:62, jp:'黒帯 五段', name:'Black belt · 5th dan',  color:'#1b1b24', edge:'#000000', dan:5 },
+];
+let dojoMap = {}, _histCache = null;
+const dojoKey = n => String(n || '').trim().toLowerCase().replace(/\s+/g, ' ');
+async function getHistory(force) {
+  if (!force && _histCache && Date.now() - _histCache.t < 20000) return _histCache.data;
+  const d = (await fbGet('history')) || {};
+  _histCache = { t: Date.now(), data: d };
+  return d;
+}
+function dojoFullRetro(u) { return u.cards >= 1 && u.hearts >= 1 && u.scored; }
+function dojoAggregate(userStatsObj) {                          // one entry per person (a refresh creates a second id)
+  const agg = {};
+  Object.values(userStatsObj || {}).forEach(u => {
+    if (!u || !u.name) return;
+    const k = dojoKey(u.name), a = agg[k] || (agg[k] = { name:u.name, cards:0, hearts:0, scored:false });
+    a.cards += u.cardsAdded || 0; a.hearts += u.heartsGiven || 0; a.scored = a.scored || !!u.scoreGiven;
+  });
+  return agg;
+}
+function computeDojo(history, excludeRoom) {
+  const people = {};
+  const P = name => { const k = dojoKey(name); if (!k) return null; return people[k] || (people[k] = { name:String(name).trim(), retros:0, items:0 }); };
+  Object.values(history || {}).forEach(r => {
+    if (!r || !r.completedAt || (excludeRoom && r.roomKey === excludeRoom)) return;
+    Object.values(dojoAggregate(r.userStats)).forEach(a => { if (dojoFullRetro(a)) { const p = P(a.name); if (p) p.retros++; } });
+    (r.actionFollowUp || []).forEach(f => {
+      if (!f || f.status !== 'done') return;
+      let owners = f.owners;
+      if (!owners) { const m = (r.actions || []).find(a => a.text === f.text); owners = m ? m.owners : []; }
+      const seen = new Set();
+      (owners || []).forEach(o => { const k = dojoKey(o && o.name ? o.name : o); if (!k || seen.has(k)) return; seen.add(k); const p = P(o && o.name ? o.name : o); if (p) p.items++; });
+    });
+  });
+  return people;
+}
+function dojoRank(retros, items) {
+  let level = 0;
+  DOJO_LADDER.forEach((b, i) => { if (retros >= b.retros && items >= b.items) level = i + 1; });
+  const next = DOJO_LADDER[level] || null;
+  return { level, belt: level ? DOJO_LADDER[level - 1] : null, next, retros, items,
+           needRetros: next ? Math.max(0, next.retros - retros) : 0, needItems: next ? Math.max(0, next.items - items) : 0 };
+}
+function dojoBeltFor(name) {
+  const p = dojoMap[dojoKey(name)];
+  return p ? dojoRank(p.retros, p.items).belt : null;
+}
+async function refreshDojo(force) {
+  try { dojoMap = computeDojo(await getHistory(force)); } catch (e) {}
+  renderDojoChip();
+  if (typeof renderPresence === 'function') renderPresence();
+}
+function renderDojoChip() {
+  const el = document.getElementById('dojo-chip'); if (!el || !me) return;
+  const p = dojoMap[dojoKey(me.name)] || { retros:0, items:0 };
+  const r = dojoRank(p.retros, p.items);
+  el.style.display = 'inline-flex';
+  const hint = r.next ? `Next: ${r.next.name} — ${r.retros}/${r.next.retros} full retros, ${r.items}/${r.next.items} completed items. Click for details.` : 'Top rank reached. Click for details.';
+  el.innerHTML = r.belt
+    ? beltMarkup(r.belt, { label:'You', text:r.belt.name, title:hint })
+    : `<span class="belt empty" title="${esc(hint)}"><span class="belt-lbl">You</span><i class="belt-bar"></i><span class="belt-t">No belt yet · ${p.retros}/${DOJO_LADDER[0].retros} full retros</span></span>`;
+}
+function closeDojo() { document.getElementById('dojo-overlay').style.display = 'none'; }
+function openDojo() {
+  const body = document.getElementById('dojo-body');
+  const mine = (me && dojoMap[dojoKey(me.name)]) || { retros:0, items:0 };
+  const r = dojoRank(mine.retros, mine.items);
+  const bar = (v, max, label) => `<div class="dj-row"><div class="dj-lbl"><span>${label}</span><b>${v}${max ? ' / ' + max : ''}</b></div><div class="dj-track"><div class="dj-fill" style="width:${max ? Math.min(100, Math.round(v / max * 100)) : 100}%"></div></div></div>`;
+  const st = (me && typeof userStats !== 'undefined' && userStats[me.id]) || {};
+  const ck = (ok, t) => `<span class="dj-ck ${ok ? 'ok' : ''}">${ok ? '✓' : '○'} ${t}</span>`;
+  const people = Object.values(presence || {}).map(u => ({ name:u.name, b:dojoBeltFor(u.name) }));
+  body.innerHTML = `
+    <div class="dj-sec">Your belt</div>
+    <div style="margin:4px 0 6px">${r.belt ? beltMarkup(r.belt, { text:r.belt.name }) : '<span style="color:var(--muted);font-size:14px">No belt yet. Your first belt takes ' + DOJO_LADDER[0].retros + ' full retros.</span>'}</div>
+    ${r.next ? `<div style="font-size:12.5px;color:var(--muted);margin:10px 0 2px">Next: <strong style="color:var(--text)">${r.next.name}</strong> — you need <strong style="color:var(--text)">both</strong>:</div>
+      ${bar(r.retros, r.next.retros, 'Full retros')}${bar(r.items, r.next.items, 'Completed action items')}`
+      : '<div style="font-size:13px;color:var(--muted);margin-top:8px">You have reached the top rank. 五段.</div>'}
+    <div class="dj-sec">This retro</div>
+    <div>${ck((st.cardsAdded || 0) >= 1, 'Added a card')}${ck((st.heartsGiven || 0) >= 1, 'Cast a vote')}${ck(!!st.scoreGiven, 'Gave the sprint score')}</div>
+    <div class="dj-note" style="margin-top:6px">All three are needed for this retro to count as a full retro.</div>
+    ${people.length ? `<div class="dj-sec">In the room</div><div class="dj-people">${people.map(x => `<div class="dj-person"><span style="min-width:110px;font-weight:600">${esc(x.name)}</span>${x.b ? beltMarkup(x.b, { text:x.b.name }) : '<span style="color:var(--muted);font-size:12px">no belt yet</span>'}</div>`).join('')}</div>` : ''}
+    <div class="dj-sec">The ladder</div>
+    <table class="dj-ladder"><tr><th>Belt</th><th>Full retros</th><th>Completed items</th></tr>
+      ${DOJO_LADDER.map((b, i) => `<tr class="${r.level === i + 1 ? 'cur' : ''}"><td><b style="font-family:var(--mincho)">${b.jp}</b> <span style="color:var(--muted)">${b.name}</span></td><td>${b.retros}</td><td>${b.items}</td></tr>`).join('')}
+    </table>
+    <div class="dj-note"><b>Full retro:</b> you added a card, cast a vote and gave the sprint score.<br>
+      <b>Completed item:</b> an action item you own that the host marks Done at the start of the next retro. Items with no owner earn nobody credit.<br>
+      Both numbers must reach a belt's targets. Belts are matched by the name you join with.</div>`;
+  document.getElementById('dojo-overlay').style.display = 'flex';
+}
+async function renderDojoCard() {
+  const box = document.getElementById('sum-dojo'); if (!box) return;
+  try {
+    const h = await getHistory(true);
+    const after = computeDojo(h), before = computeDojo(h, roomKey);
+    const entry = Object.values(h).filter(r => r.roomKey === roomKey).sort((a, b) => b.completedAt - a.completedAt)[0];
+    const agg = dojoAggregate((entry && entry.userStats) || (typeof userStats !== 'undefined' ? userStats : {}));
+    const rows = Object.entries(agg).map(([k, a]) => {
+      const pa = after[k] || { retros:0, items:0 }, pb = before[k] || { retros:0, items:0 };
+      const ra = dojoRank(pa.retros, pa.items), rb = dojoRank(pb.retros, pb.items);
+      const missing = [!a.cards && 'a card', !a.hearts && 'a vote', !a.scored && 'the sprint score'].filter(Boolean);
+      return { a, ra, full: dojoFullRetro(a), missing, promoted: ra.level > rb.level };
+    }).sort((x, y) => (y.promoted - x.promoted) || (y.full - x.full) || x.a.name.localeCompare(y.a.name));
+    if (!rows.length) { box.style.display = 'none'; return; }
+    window.dojoSummary = rows.map(r => ({ name:r.a.name, belt:r.ra.belt, promoted:r.promoted, full:r.full }));
+    box.innerHTML = `<div class="sum-card-label">Dojo <span class="jp-s">道場</span></div>
+      <div style="display:flex;flex-direction:column;gap:9px;margin-top:10px">${rows.map(r => `
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+          <span style="min-width:110px;font-weight:600">${esc(r.a.name)}</span>
+          ${r.ra.belt ? beltMarkup(r.ra.belt, { text:r.ra.belt.name }) : '<span style="color:var(--muted);font-size:12px">no belt yet</span>'}
+          ${r.promoted ? '<span style="font-size:12px;font-weight:700;color:var(--brand)">▲ Promoted!</span>'
+            : r.full ? '<span style="font-size:12px;font-weight:600;color:var(--well)">✓ full retro</span>'
+            : `<span style="font-size:12px;color:var(--muted)">didn't count — missing ${r.missing.join(' and ')}</span>`}
+          ${r.ra.next ? `<span style="font-size:11.5px;color:var(--muted);margin-left:auto">${[r.ra.needRetros > 0 && r.ra.needRetros + ' more full retro' + (r.ra.needRetros !== 1 ? 's' : ''), r.ra.needItems > 0 && r.ra.needItems + ' more completed item' + (r.ra.needItems !== 1 ? 's' : '')].filter(Boolean).join(' · ')} to ${r.ra.next.name}</span>` : ''}
+        </div>`).join('')}</div>`;
+    box.style.display = 'block';
+    const mine = rows.find(r => me && dojoKey(r.a.name) === dojoKey(me.name));
+    if (mine && mine.promoted && mine.ra.belt) { toast(`You earned the ${mine.ra.belt.name}!`); confetti(30); }
+    dojoMap = after; renderDojoChip();
+  } catch (e) { console.error('renderDojoCard failed:', e); }
 }
 
 function esc(s='') { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
