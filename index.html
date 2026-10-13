@@ -98,7 +98,7 @@ body { font-family: var(--sans); background: var(--bg); color: var(--text); min-
 .avatar-pick.selected { border-color:var(--text); box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--text); }
 .join-btn {
   font-family:var(--sans); font-size:15px; font-weight:500; padding:12px;
-  border-radius:10px; border:none; background:var(--text); color:#fff; cursor:pointer; transition:background .15s; margin-top:4px;
+  border-radius:10px; border:none; background:var(--inv); color:#fff; cursor:pointer; transition:background .15s; margin-top:4px;
 }
 .join-btn:hover { background:#2a2926; }
 .room-hint { font-size:12px; color:#b8b4ac; text-align:center; line-height:1.5; }
@@ -146,7 +146,7 @@ header {
 .presence-avatar:hover { transform:translateY(-3px); z-index:5; }
 .presence-avatar .tip {
   position:absolute; bottom:calc(100% + 6px); left:50%; transform:translateX(-50%);
-  background:var(--text); color:#fff; font-size:11px; padding:3px 8px; border-radius:6px;
+  background:var(--inv); color:#fff; font-size:11px; padding:3px 8px; border-radius:6px;
   white-space:nowrap; opacity:0; pointer-events:none; transition:opacity .15s;
 }
 .presence-avatar:hover .tip { opacity:1; }
@@ -180,7 +180,7 @@ header {
 .complete-btn {
   font-family:var(--sans); font-size:15px; font-weight:500;
   padding:13px 32px; border-radius:12px; border:none;
-  background:var(--text); color:#fff; cursor:pointer;
+  background:var(--inv); color:#fff; cursor:pointer;
   display:flex; align-items:center; gap:8px;
   transition:all .2s; box-shadow:0 2px 8px rgba(0,0,0,.15);
 }
@@ -196,7 +196,7 @@ header {
 .summary-body { max-width:900px; margin:0 auto; padding:40px 24px 64px; }
 .summary-hero { text-align:center; margin-bottom:40px; }
 .summary-check {
-  width:64px; height:64px; border-radius:50%; background:var(--text);
+  width:64px; height:64px; border-radius:50%; background:var(--inv);
   display:flex; align-items:center; justify-content:center; margin:0 auto 16px;
   animation:pop-in .4s cubic-bezier(.16,1,.3,1);
 }
@@ -415,7 +415,7 @@ header {
 .emoji-picker { border:1px solid var(--border); border-radius:10px; overflow:hidden; background:var(--surface); }
 .emoji-tabs { display:flex; border-bottom:1px solid var(--border); background:var(--bg); }
 .emoji-tab { flex:1; padding:6px; border:none; background:transparent; font-size:16px; cursor:pointer; transition:background .1s; }
-.emoji-tab.active { background:var(--text); }
+.emoji-tab.active { background:var(--inv); }
 .emoji-grid { display:grid; grid-template-columns:repeat(9,1fr); gap:1px; padding:6px; max-height:150px; overflow-y:auto; }
 .emoji-cell { background:none; border:none; font-size:20px; cursor:pointer; padding:4px; border-radius:6px; line-height:1.3; transition:background .1s; }
 .emoji-cell:hover { background:var(--border); }
@@ -438,14 +438,14 @@ header {
   animation:flyEmoji 3s cubic-bezier(.2,.6,.4,1) forwards;
 }
 .sbtn { font-family:var(--sans); font-size:12px; font-weight:500; padding:5px 12px; border-radius:7px; border:1px solid var(--border); background:var(--bg); cursor:pointer; color:var(--text); transition:all .15s; }
-.sbtn.ok { background:var(--text); color:#fff; border-color:transparent; }
+.sbtn.ok { background:var(--inv); color:#fff; border-color:transparent; }
 .sbtn:hover { background:var(--border); }
 .sbtn.ok:hover { background:#2a2926; }
 .empty { font-size:12px; color:#b0aca5; text-align:center; padding:8px 0; }
 
 /* TOASTS */
 .toasts { position:fixed; bottom:24px; right:24px; display:flex; flex-direction:column; gap:8px; z-index:500; pointer-events:none; }
-.toast { background:var(--text); color:#fff; border-radius:10px; padding:10px 16px; font-size:13px; font-weight:500; display:flex; align-items:center; gap:8px; box-shadow:var(--shadow-lg); animation:toast-in .3s cubic-bezier(.16,1,.3,1); max-width:280px; }
+.toast { background:var(--inv); color:#fff; border-radius:10px; padding:10px 16px; font-size:13px; font-weight:500; display:flex; align-items:center; gap:8px; box-shadow:var(--shadow-lg); animation:toast-in .3s cubic-bezier(.16,1,.3,1); max-width:280px; }
 @keyframes toast-in { from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:none} }
 
 /* AI */
@@ -604,7 +604,7 @@ header {
   transition:all .15s; text-align:center;
   box-shadow:0 1px 3px rgba(0,0,0,.08);
 }
-.sound-btn:hover { background:var(--text); color:#fff; transform:scale(1.04); box-shadow:0 4px 12px rgba(0,0,0,.15); }
+.sound-btn:hover { background:var(--inv); color:#fff; transform:scale(1.04); box-shadow:0 4px 12px rgba(0,0,0,.15); }
 .sound-btn:active { transform:scale(0.97); }
 
 .cp { position:fixed; pointer-events:none; z-index:999; animation:fall linear forwards; }
@@ -910,6 +910,29 @@ html:not([data-theme]) body::after { opacity:.55; }
 @keyframes stamp-in { from { transform:scale(1.9) rotate(-14deg); opacity:0; } to { transform:scale(1) rotate(-6deg); opacity:1; } }
 
 @media (prefers-reduced-motion:reduce) { .card.do-more::after, .card.stop-doing::after, .card.carried::after { animation:none; } }
+
+/* inverse surface: always readable with white text, on every theme */
+:root { --inv:#1c2340; }
+[data-theme="kaizen"], [data-theme="dark"], [data-theme="midnight"] { --inv:#16224a; }
+#music-tip > div { border:1px solid rgba(212,175,90,.45); }
+.presence-avatar .tip { border:1px solid rgba(255,255,255,.12); }
+
+/* ── Falling cherry blossoms ── */
+.sk { position:fixed; top:-40px; z-index:999; pointer-events:none; perspective:260px; animation:sk-fall linear both; }
+.sk i { display:block; width:100%; height:100%; background-size:contain; background-repeat:no-repeat; background-position:center; animation:sk-flutter ease-in-out infinite alternate; filter:drop-shadow(0 1px 1px rgba(120,40,70,.18)); }
+@keyframes sk-fall {
+  0%   { transform:translate3d(0,0,0); opacity:0; }
+  8%   { opacity:1; }
+  25%  { transform:translate3d(var(--sway),28vh,0); }
+  50%  { transform:translate3d(calc(var(--sway) * -.7),58vh,0); }
+  75%  { transform:translate3d(calc(var(--sway) * .8),86vh,0); opacity:1; }
+  100% { transform:translate3d(var(--dx),112vh,0); opacity:0; }
+}
+@keyframes sk-flutter {
+  0%   { transform:rotateX(0deg)   rotateY(0deg)   rotateZ(-25deg); }
+  50%  { transform:rotateX(70deg)  rotateY(20deg)  rotateZ(40deg); }
+  100% { transform:rotateX(-30deg) rotateY(-50deg) rotateZ(120deg); }
+}
 </style>
 </head>
 <body>
@@ -1391,7 +1414,7 @@ html:not([data-theme]) body::after { opacity:.55; }
 
 <!-- Timer overlay -->
 <div id="timer-overlay" style="display:none;position:fixed;inset:0;z-index:150;pointer-events:none;padding-top:80px">
-  <div style="background:var(--text);color:#fff;border-radius:20px;padding:24px 40px;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,.3);pointer-events:all;min-width:320px">
+  <div style="background:var(--inv);color:#fff;border:1px solid rgba(212,175,90,.45);border-radius:20px;padding:24px 40px;text-align:center;box-shadow:0 18px 50px rgba(0,0,0,.4);pointer-events:all;min-width:320px">
     <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;opacity:.6;margin-bottom:8px">Card time remaining</div>
     <div id="timer-big" style="font-family:var(--serif);font-size:72px;line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-2px">6:00</div>
     <div style="height:3px;margin-top:14px;border-radius:3px;background:rgba(255,255,255,.14);overflow:hidden"><div id="timer-progress-fill" style="height:100%;width:100%;background:linear-gradient(90deg,#d4af5a,#ecd089);transition:width 1s linear"></div></div>
@@ -1505,7 +1528,7 @@ html:not([data-theme]) body::after { opacity:.55; }
           onkeydown="if(event.key==='Enter') addCustomSong()"/>
         <input id="music-name-input" type="text" placeholder="Name (optional)"
           style="font-family:var(--sans);font-size:13px;width:140px;padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);outline:none"/>
-        <button onclick="addCustomSong()" style="font-family:var(--sans);font-size:13px;padding:8px 14px;border-radius:8px;border:none;background:var(--text);color:#fff;cursor:pointer;white-space:nowrap">+ Add</button>
+        <button onclick="addCustomSong()" style="font-family:var(--sans);font-size:13px;padding:8px 14px;border-radius:8px;border:none;background:var(--inv);color:#fff;cursor:pointer;white-space:nowrap">+ Add</button>
       </div>
     </div>
   </div>
@@ -1514,7 +1537,7 @@ html:not([data-theme]) body::after { opacity:.55; }
 
 <!-- Music tip overlay -->
 <div id="music-tip" style="display:none;position:fixed;inset:0;z-index:500;pointer-events:none">
-  <div style="position:absolute;top:70px;right:24px;background:var(--text);color:#fff;border-radius:16px;padding:16px 20px;max-width:260px;box-shadow:0 8px 32px rgba(0,0,0,.3);pointer-events:all;animation:fadeSlideIn .4s ease">
+  <div style="position:absolute;top:70px;right:24px;background:var(--inv);color:#fff;border-radius:16px;padding:16px 20px;max-width:260px;box-shadow:0 8px 32px rgba(0,0,0,.3);pointer-events:all;animation:fadeSlideIn .4s ease">
     <div style="font-size:22px;margin-bottom:6px">🎵</div>
     <div style="font-size:14px;font-weight:600;margin-bottom:4px">Want music while you write?</div>
     <div style="font-size:12px;opacity:.8;line-height:1.5;margin-bottom:12px">Click the <strong>🎵 button</strong> in the header to pick a song. It's only available while the timer is running.</div>
@@ -1546,7 +1569,7 @@ html:not([data-theme]) body::after { opacity:.55; }
     <!-- Host controls -->
     <div id="icebreaker-host-controls" style="display:none;gap:10px;margin-top:20px;border-top:1px solid var(--border);padding-top:16px">
       <button onclick="nextIcebreakerQuestion()" style="font-family:var(--sans);font-size:13px;padding:8px 16px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);cursor:pointer">🎲 New question</button>
-      <button onclick="closeIcebreaker()" style="font-family:var(--sans);font-size:13px;padding:8px 16px;border-radius:8px;border:none;background:var(--text);color:#fff;cursor:pointer">End icebreaker</button>
+      <button onclick="closeIcebreaker()" style="font-family:var(--sans);font-size:13px;padding:8px 16px;border-radius:8px;border:none;background:var(--inv);color:#fff;cursor:pointer">End icebreaker</button>
     </div>
     <button id="icebreaker-close-btn" onclick="closeIcebreaker()" style="display:none;font-family:var(--sans);font-size:13px;padding:8px 16px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--muted);cursor:pointer;margin-top:16px">Close</button>
   </div>
@@ -1566,7 +1589,7 @@ html:not([data-theme]) body::after { opacity:.55; }
       <button onclick="closePrevActions()" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:22px">×</button>
     </div>
     <div id="prev-actions-list" style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px"></div>
-    <button onclick="savePrevActionsAndClose()" style="font-family:var(--sans);font-size:14px;font-weight:600;padding:10px 24px;border-radius:10px;border:none;background:var(--text);color:#fff;cursor:pointer;width:100%;margin-bottom:8px">Done — Start Retro →</button>
+    <button onclick="savePrevActionsAndClose()" style="font-family:var(--sans);font-size:14px;font-weight:600;padding:10px 24px;border-radius:10px;border:none;background:var(--inv);color:#fff;cursor:pointer;width:100%;margin-bottom:8px">Done — Start Retro →</button>
     <button onclick="closePrevActions()" style="font-family:var(--sans);font-size:13px;padding:8px 24px;border-radius:10px;border:1px solid var(--border);background:none;color:var(--muted);cursor:pointer;width:100%">Skip →</button>
   </div>
   </div>
@@ -2565,7 +2588,7 @@ function startSync() {
   pingPresence();
   presence[me.id] = { name: me.name, color: me.color, ts: Date.now() };
   renderPresence();
-  document.querySelectorAll('.cp, .flying-emoji').forEach(el => el.remove());
+  document.querySelectorAll('.cp, .sk, .flying-emoji').forEach(el => el.remove());
   loadCardGroups();
   loadBoard();
   loadRetroName();
@@ -2850,7 +2873,7 @@ async function vote(col, id, delta) {
   if (delta > 0) {
     if (votesUsed(col) >= VOTE_BUDGET) { toast('You\'ve used all 5 votes in this column'); return; }
     card.userVotes[me.id] = cur + 1;
-    confetti();
+    confetti(8);
     trackStat('heartsGiven');
   } else {
     if (cur <= 0) return;
@@ -3899,14 +3922,31 @@ function exportRetro() {
 }
 
 // Confetti
-function confetti(){
-  ['#5c7ef7','#e07b30','#0e7a54','#764ba2','#d4516c','#f5c842'].forEach((c,i)=>{
-    setTimeout(()=>{
-      const el=document.createElement('div');el.className='cp';
-      el.style.cssText=`left:${25+Math.random()*50}vw;top:${Math.random()*25}vh;background:${c};animation-duration:${0.8+Math.random()*1.2}s;width:${5+Math.random()*8}px;height:${5+Math.random()*8}px;border-radius:${Math.random()>.5?'50%':'2px'}`;
-      document.body.appendChild(el);el.addEventListener('animationend',()=>el.remove());
-    },i*40);
-  });
+// Cherry blossoms (sakura) — replaces the old confetti everywhere it was used
+const _petalCache = {};
+function petalUrl(fill) {
+  if (_petalCache[fill]) return _petalCache[fill];
+  const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='-9 -9 18 18'><path d='M0 -7.4C4.2 -8.4 7.4 -3.2 5.3 3C4.2 6.2 1.7 7.8 0 5.5C-1.7 7.8 -4.2 6.2 -5.3 3C-7.4 -3.2 -4.2 -8.4 0 -7.4Z' fill='${fill}'/><path d='M0 5 C0.4 1.5 0.4 -2 0 -5.2' fill='none' stroke='#c2587a' stroke-opacity='.28' stroke-width='.7' stroke-linecap='round'/></svg>`;
+  return (_petalCache[fill] = 'url("data:image/svg+xml,' + encodeURIComponent(svg).replace(/'/g, '%27') + '")');
+}
+function confetti(n) {
+  if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  if (document.querySelectorAll('.sk').length > 120) return;          // never pile up
+  const count = typeof n === 'number' ? n : 24;
+  const cols = ['#f9d3de', '#f4b6c8', '#ee9bb4', '#fbe4ea', '#f2a8bf'];
+  for (let i = 0; i < count; i++) {
+    const el = document.createElement('div');
+    el.className = 'sk';
+    const size = 14 + Math.random() * 14;
+    el.style.cssText = `left:${(Math.random() * 98).toFixed(1)}vw;width:${size.toFixed(0)}px;height:${size.toFixed(0)}px;` +
+      `--sway:${((Math.random() * 2 - 1) * 70).toFixed(0)}px;--dx:${((Math.random() * 2 - 1) * 140).toFixed(0)}px;` +
+      `animation-duration:${(4 + Math.random() * 3.2).toFixed(2)}s;animation-delay:${(Math.random() * 1.3).toFixed(2)}s;`;
+    const p = document.createElement('i');
+    p.style.cssText = `background-image:${petalUrl(cols[i % cols.length])};animation-duration:${(1.6 + Math.random() * 2).toFixed(2)}s;animation-delay:${(Math.random()).toFixed(2)}s;`;
+    el.appendChild(p);
+    document.body.appendChild(el);
+    el.addEventListener('animationend', ev => { if (ev.target === el) el.remove(); });
+  }
 }
 
 function openSoundPicker() {
