@@ -1029,6 +1029,18 @@ html:not([data-theme]) body::after { opacity:.55; }
 .dj-ladder th { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.6px; }
 .dj-ladder tr.cur td { background:rgba(232,71,43,.1); }
 .dj-note { font-size:12.5px; color:var(--muted); line-height:1.65; margin-top:14px; }
+
+.omi-card { position:relative; }
+.omi-x { position:absolute; top:14px; right:16px; width:34px; height:34px; border-radius:50%; background:none; border:none; color:var(--muted); font-size:26px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+.omi-x:hover { background:rgba(128,128,128,.18); color:var(--text); }
+
+/* buttons never fall back to the browser's black text on dark themes */
+button { color:inherit; }
+.emoji-tab { color:var(--text); }
+.emoji-tab.active { color:#fff; }
+.emoji-tab.gif-tab { font-family:var(--sans); font-size:12px; font-weight:800; letter-spacing:1px; color:var(--brand); border-left:1px solid var(--border); }
+.emoji-tab.gif-tab:hover { background:var(--brand-soft); }
+.emoji-tab.gif-tab.active { background:var(--brand); color:#fff; }
 </style>
 </head>
 <body>
@@ -1662,6 +1674,7 @@ html:not([data-theme]) body::after { opacity:.55; }
 <div id="icebreaker-overlay" style="display:none;position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.7)">
   <div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;padding:24px">
   <div class="omi-card">
+    <button class="omi-x" onclick="closeIcebreaker()" aria-label="Close" title="Close (Esc)">×</button>
     <h2 class="omi-title">Omikuji <span class="jp">おみくじ</span></h2>
     <div class="omi-sub">Draw a fortune to choose the icebreaker.</div>
     <div class="omi-stage">
@@ -1681,7 +1694,8 @@ html:not([data-theme]) body::after { opacity:.55; }
     <div id="icebreaker-answers" style="display:flex;flex-direction:column;gap:8px;max-height:260px;overflow-y:auto"></div>
     <div id="icebreaker-host-controls" style="display:none;gap:10px;margin-top:20px;border-top:1px solid var(--border);padding-top:16px">
       <button onclick="drawOmikuji()" style="font-family:var(--sans);font-size:13px;padding:8px 16px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);cursor:pointer">🎴 Draw again</button>
-      <button onclick="closeIcebreaker()" style="font-family:var(--sans);font-size:13px;padding:8px 16px;border-radius:8px;border:none;background:var(--inv);color:#fff;cursor:pointer">End icebreaker</button>
+      <button onclick="endIcebreaker()" title="Closes the omikuji window for everyone" style="font-family:var(--sans);font-size:13px;padding:8px 16px;border-radius:8px;border:none;background:var(--inv);color:#fff;cursor:pointer">End for everyone</button>
+      <button onclick="closeIcebreaker()" title="Close only your own window" style="font-family:var(--sans);font-size:13px;padding:8px 16px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--muted);cursor:pointer">Close</button>
     </div>
     <button id="icebreaker-close-btn" onclick="closeIcebreaker()" style="display:none;font-family:var(--sans);font-size:13px;padding:8px 16px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--muted);cursor:pointer;margin-top:16px">Close</button>
   </div>
@@ -3819,7 +3833,7 @@ function buildEmojiPicker(col) {
       ${EMOJI_CAT_KEYS.map(k =>
         `<button class="emoji-tab${k===activeCat?' active':''}" onmousedown="event.preventDefault()" onclick="switchEmojiCat('${col}','${k}')">${k}</button>`
       ).join('')}
-      <button class="emoji-tab${activeCat==='gif'?' active':''}" onmousedown="event.preventDefault()" onclick="switchEmojiCat('${col}','gif')" style="font-size:11px;font-weight:600;letter-spacing:.5px">GIF</button>
+      <button class="emoji-tab gif-tab${activeCat==='gif'?' active':''}" onmousedown="event.preventDefault()" onclick="switchEmojiCat('${col}','gif')" title="Search GIFs" aria-label="Search GIFs">GIF</button>
     </div>`;
   }
 
@@ -5189,7 +5203,7 @@ const OMIKUJI = [
     "What would you do differently if you could replay this sprint?",
     "What's a small frustration the team could clear for you?" ] },
 ];
-let icebreakerAnswered = false, icebreakerCheckInterval = null, omiShown = '', omiDrawing = false, omiLastLocalDraw = 0;
+let icebreakerAnswered = false, icebreakerCheckInterval = null, omiShown = '', omiDrawing = false, omiLastLocalDraw = 0, omiEndedSeen = null;
 
 function pickOmikuji() {
   const total = OMIKUJI.reduce((s, f) => s + f.w, 0);
@@ -5254,13 +5268,18 @@ function openIcebreaker() {
   const hc = document.getElementById('icebreaker-host-controls'), cb = document.getElementById('icebreaker-close-btn');
   if (isHost) { hc.style.display = 'flex'; cb.style.display = 'none'; } else { hc.style.display = 'none'; cb.style.display = 'block'; }
   document.getElementById('icebreaker-overlay').style.display = 'flex';
-  omiShown = '';
+  omiShown = ''; omiEndedSeen = null;
   loadIcebreakerAnswers();
   icebreakerCheckInterval = setInterval(loadIcebreakerAnswers, 3000);
 }
 function closeIcebreaker() {
   document.getElementById('icebreaker-overlay').style.display = 'none';
   clearInterval(icebreakerCheckInterval);
+}
+async function endIcebreaker() {                              // host: close it for everyone who has it open
+  try { await fbSet(`rooms/${roomKey}/icebreaker/ended`, Date.now()); } catch (e) {}
+  closeIcebreaker();
+  toast('Icebreaker ended for everyone');
 }
 async function drawOmikuji() {
   if (omiDrawing || !isHost) return;
@@ -5292,6 +5311,9 @@ async function submitIcebreakerAnswer() {
 async function loadIcebreakerAnswers() {
   try {
     const data = await fbGet(`rooms/${roomKey}/icebreaker`);
+    const endedVal = (data && data.ended) || 0;
+    if (omiEndedSeen === null) omiEndedSeen = endedVal;
+    else if (endedVal && endedVal !== omiEndedSeen && !isHost) { closeIcebreaker(); toast('The host ended the icebreaker'); return; }
     const hostJustDrew = isHost && (omiDrawing || Date.now() - omiLastLocalDraw < 5000);   // don't let a stale poll undo a fresh draw
     if (!hostJustDrew) {
       if (!data || !data.fortune) {
@@ -6072,6 +6094,20 @@ async function renderDojoCard() {
     dojoMap = after; renderDojoChip();
   } catch (e) { console.error('renderDojoCard failed:', e); }
 }
+
+// Close windows the normal ways: click the dark backdrop, or press Escape
+(function () {
+  const wins = [['share-overlay', () => closeShareCard()], ['dojo-overlay', () => closeDojo()], ['icebreaker-overlay', () => closeIcebreaker()],
+                ['theme-modal', () => closeThemePicker()], ['sound-modal', () => closeSoundPicker()], ['music-modal', () => closeMusicModal()], ['cotd-overlay', () => closeCotd()]];
+  const isOpen = el => el && el.style.display && el.style.display !== 'none';
+  document.addEventListener('click', e => {
+    for (const [id, close] of wins) { const ov = document.getElementById(id); if (isOpen(ov) && e.target.parentElement === ov) { close(); break; } }
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Escape') return;
+    for (const [id, close] of wins) { if (isOpen(document.getElementById(id))) { close(); e.preventDefault(); break; } }
+  });
+})();
 
 function esc(s='') { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 </script>
