@@ -28,7 +28,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>Kaizen — Sprint Retrospectives</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;400;500;600&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@600&display=swap&text=%E6%94%B9%E5%96%84%E8%89%AF%E3%81%8B%E3%81%A3%E3%81%9F%E7%82%B9%E6%AC%A1%E3%81%AE%E4%B8%80%E6%AD%A9%E7%9B%AE%E6%A8%99%E6%AD%A2%E7%B6%99%E5%AE%8C%E4%BA%86%E6%A1%9C%E7%B4%85%E8%91%89%E9%9B%AA%E8%9B%8D%E5%9B%9B%E5%AD%A3%E9%A1%98%E9%81%94%E6%88%90%E5%A4%A7%E5%90%89%E4%B8%AD%E5%B0%8F%E6%9C%AB%E5%87%B6%E5%BE%A1%E7%A5%9E%E7%B1%A4%E7%99%BD%E9%BB%84%E6%A9%99%E7%B7%91%E9%9D%92%E8%8C%B6%E9%BB%92%E5%B8%AF%E5%88%9D%E6%AE%B5%E4%BA%8C%E4%B8%89%E4%BA%94%E3%81%8A%E3%81%BF%E3%81%8F%E3%81%98%E9%81%93%E5%A0%B4" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@600&display=swap&text=%E6%94%B9%E5%96%84%E8%89%AF%E3%81%8B%E3%81%A3%E3%81%9F%E7%82%B9%E6%AC%A1%E3%81%AE%E4%B8%80%E6%AD%A9%E7%9B%AE%E6%A8%99%E6%AD%A2%E7%B6%99%E5%AE%8C%E4%BA%86%E6%A1%9C%E7%B4%85%E8%91%89%E9%9B%AA%E8%9B%8D%E5%9B%9B%E5%AD%A3%E9%A1%98%E9%81%94%E6%88%90%E5%A4%A7%E5%90%89%E4%B8%AD%E5%B0%8F%E6%9C%AB%E5%87%B6%E5%BE%A1%E7%A5%9E%E7%B1%A4%E7%99%BD%E9%BB%84%E6%A9%99%E7%B7%91%E9%9D%92%E8%8C%B6%E9%BB%92%E5%B8%AF%E5%88%9D%E6%AE%B5%E4%BA%8C%E4%B8%89%E4%BA%94%E3%81%8A%E3%81%BF%E3%81%8F%E3%81%98%E9%81%93%E5%A0%B4%E6%9B%B8%E5%87%BA%E5%B1%A5%E6%AD%B4%E6%A6%82%E8%A6%81%E9%A6%96%E4%BD%8D%E5%BD%A9%E6%B4%9E%E5%AF%9F%E6%99%82%E9%96%93%E5%8F%8D%E5%BF%9C%E9%9F%B3%E6%A5%BD" rel="stylesheet">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
@@ -1041,6 +1041,37 @@ button { color:inherit; }
 .emoji-tab.gif-tab { font-family:var(--sans); font-size:12px; font-weight:800; letter-spacing:1px; color:var(--brand); border-left:1px solid var(--border); }
 .emoji-tab.gif-tab:hover { background:var(--brand-soft); }
 .emoji-tab.gif-tab.active { background:var(--brand); color:#fff; }
+
+/* ══════════ Header "tags": icon + kanji over the English label ══════════ */
+:root { --kb-ic:#a9822d; }
+[data-theme="kaizen"], [data-theme="dark"], [data-theme="midnight"] { --kb-ic:#d4af5a; }
+.btn.kb { display:flex; align-items:center; gap:8px; padding:5px 13px 5px 10px; min-height:40px; line-height:1; }
+.kb .ic { display:flex; width:18px; height:18px; flex-shrink:0; color:var(--kb-ic); transition:color .15s, transform .2s; }
+.kb .ic svg { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; }
+.kb:hover .ic { color:var(--brand); transform:translateY(-1px) rotate(-4deg); }
+.kb-t { display:flex; flex-direction:column; align-items:flex-start; gap:4px; text-align:left; }
+.kb-t small, .kb.iconic small { font-family:var(--mincho); font-size:10px; font-weight:600; letter-spacing:1.6px; line-height:1; opacity:.62; }
+.kb-t b { font-weight:500; font-size:13px; line-height:1; white-space:nowrap; }
+.btn.kb.iconic { flex-direction:column; justify-content:center; gap:4px; padding:5px 11px; min-width:48px; }
+.btn.kb.iconic small { font-size:9.5px; letter-spacing:1px; }
+.kb.ai-btn .ic { color:#fff; }
+.kb.ai-btn:hover .ic { color:#fff; }
+#timer-btn .ic { color:inherit; }
+#music-btn:disabled .ic { color:var(--muted); }
+
+/* header fits: tighter spacing, English-only on medium screens, wrapping on small ones */
+header { gap:8px; }
+.btn.kb { padding:5px 12px 5px 9px; }
+@media (max-width:1519px) {
+  .kb-t small, .btn.kb.iconic small { display:none; }
+  .btn.kb { min-height:34px; padding:6px 11px 6px 9px; }
+  .btn.kb.iconic { min-width:0; padding:6px 9px; }
+  .kb-t { gap:0; }
+  header { padding-left:20px; padding-right:20px; }
+}
+@media (max-width:1365px) {
+  header { flex-wrap:wrap; height:auto; min-height:62px; padding-top:8px; padding-bottom:8px; row-gap:8px; }
+}
 </style>
 </head>
 <body>
@@ -1220,37 +1251,17 @@ button { color:inherit; }
     <div class="spacer"></div>
     <div class="presence-bar" id="presence"></div>
     <div class="sync-dot" id="sync" title="Live sync"></div>
-    <button class="btn" onclick="exportRetro()" style="margin-left:8px">Export</button>
-    <button class="btn" onclick="openHistory()" style="display:flex;align-items:center;gap:5px">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
-      History
-    </button>
-    <button class="btn" id="jira-board-btn" onclick="showJiraSprint()" style="display:none;gap:5px">
-      <div style="width:14px;height:14px;border-radius:4px;background:linear-gradient(135deg,#0052cc,#2684ff);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-        <svg width="8" height="8" viewBox="0 0 32 32" fill="none"><path d="M22.4 15.1l-6.57-6.57-6.57 6.57 2.29 2.29 4.28-4.28 4.28 4.28 2.29-2.29z" fill="white"/></svg>
-      </div>
-      Sprint Summary
-    </button>
-    <button class="btn" onclick="openCotd()" title="Card of the Day" style="display:flex;align-items:center;gap:5px">
-      ⭐ Top Card
-    </button>
-    <button class="btn" id="icebreaker-btn" onclick="openIcebreaker()" title="Icebreaker — draw an omikuji fortune" style="display:flex;align-items:center;gap:5px">
-      🎴 Omikuji
-    </button>
-    <button class="btn" id="dojo-btn" onclick="openDojo()" title="Dojo — belts and progress for everyone" style="display:flex;align-items:center;gap:5px">
-      🥋 Dojo
-    </button>
-    <button class="btn" onclick="openThemePicker()" title="Change theme" style="font-size:16px;padding:6px 10px">🎨</button>
-    <button class="btn ai-btn" onclick="openAI()">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
-      AI Insights
-    </button>
-    <button class="btn" id="timer-btn" onclick="toggleTimer()" style="display:none;font-variant-numeric:tabular-nums;min-width:90px">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-      <span id="timer-display">Start</span>
-    </button>
-    <button onclick="openEmojiReact()" title="Send a reaction" class="btn" style="font-size:18px;padding:6px 10px">😊</button>
-    <button id="music-btn" onclick="openMusicModal()" title="Music player" class="btn" style="font-size:16px;padding:6px 10px;opacity:.4;cursor:not-allowed" disabled>🎵</button>
+    <button class="btn kb" onclick="exportRetro()" title="Export the retro" style="margin-left:8px"><span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V4"/><path d="M8 8l4-4 4 4"/><path d="M5 14v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4"/></svg></span><span class="kb-t"><small>書出</small><b>Export</b></span></button>
+    <button class="btn kb" onclick="openHistory()" title="Past retros"><span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><span class="kb-t"><small>履歴</small><b>History</b></span></button>
+    <button class="btn kb" id="jira-board-btn" onclick="showJiraSprint()" title="Jira sprint summary" style="display:none"><span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h9l3 3V19a1.5 1.5 0 0 1-1.5 1.5h-10A1.5 1.5 0 0 1 6 19V5A1.5 1.5 0 0 1 7.5 3.5z"/><path d="M9 10h7M9 13.5h7M9 17h4"/></svg></span><span class="kb-t"><small>概要</small><b>Sprint Summary</b></span></button>
+    <button class="btn kb" onclick="openCotd()" title="Card of the Day"><span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="6.6" rx="2.7" ry="3.9" transform="rotate(0 12 12)"/><ellipse cx="12" cy="6.6" rx="2.7" ry="3.9" transform="rotate(72 12 12)"/><ellipse cx="12" cy="6.6" rx="2.7" ry="3.9" transform="rotate(144 12 12)"/><ellipse cx="12" cy="6.6" rx="2.7" ry="3.9" transform="rotate(216 12 12)"/><ellipse cx="12" cy="6.6" rx="2.7" ry="3.9" transform="rotate(288 12 12)"/><circle cx="12" cy="12" r="1.3"/></svg></span><span class="kb-t"><small>首位</small><b>Top Card</b></span></button>
+    <button class="btn kb" id="icebreaker-btn" onclick="openIcebreaker()" title="Icebreaker — draw an omikuji fortune"><span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="3" width="8" height="18" rx="1"/><path d="M8 7h8"/><path d="M12 10v7"/></svg></span><span class="kb-t"><small>御神籤</small><b>Omikuji</b></span></button>
+    <button class="btn kb" id="dojo-btn" onclick="openDojo()" title="Dojo — belts and progress for everyone"><span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="10" width="18" height="5" rx="1"/><rect x="9.5" y="8" width="5" height="9" rx="1.2"/><path d="M11 17l-2 4M13 17l2 4"/></svg></span><span class="kb-t"><small>道場</small><b>Dojo</b></span></button>
+    <button class="btn kb iconic" onclick="openThemePicker()" title="Appearance — theme, background and effects" aria-label="Appearance"><span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20L3.5 9.5a12 12 0 0 1 17 0z"/><path d="M12 20L7.5 8.6M12 20l4.5-11.4M12 20V8"/></svg></span><small>彩</small></button>
+    <button class="btn kb ai-btn" onclick="openAI()" title="AI insights for this retro"><span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></span><span class="kb-t"><small>洞察</small><b>AI Insights</b></span></button>
+    <button class="btn kb" id="timer-btn" onclick="toggleTimer()" title="Start the card timer" style="display:none;font-variant-numeric:tabular-nums;min-width:96px"><span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10v3.5L13 12l4 5.5V21H7v-3.5L11 12 7 6.5z"/></svg></span><span class="kb-t"><small>時間</small><b><span id="timer-display">Start</span></b></span></button>
+    <button onclick="openEmojiReact()" title="Send a reaction" aria-label="Send a reaction" class="btn kb iconic"><span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 10.8q1-1.7 2 0M14 10.8q1-1.7 2 0"/><path d="M8.6 14.6q3.4 3.2 6.8 0"/></svg></span><small>反応</small></button>
+    <button id="music-btn" onclick="openMusicModal()" title="Music player" aria-label="Music player" class="btn kb iconic" style="opacity:.4;cursor:not-allowed" disabled><span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18V6l10-2v12"/><circle cx="7" cy="18" r="2.4"/><circle cx="17" cy="16" r="2.4"/></svg></span><small>音楽</small></button>
     <button onclick="openSoundPicker()" title="Easy Button — play a sound" style="background:none;border:none;cursor:pointer;padding:0;margin-left:4px;flex-shrink:0">
       <div style="position:relative;width:44px;height:44px">
         <!-- silver base -->
@@ -2212,7 +2223,7 @@ async function loadJiraSprintForBoard(projectKey, preferredSprintId) {
 
   const btn = document.getElementById('jira-board-btn');
   btn.style.display = 'flex';
-  btn.innerHTML = `<div style="width:14px;height:14px;border-radius:4px;background:linear-gradient(135deg,#0052cc,#2684ff);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="8" height="8" viewBox="0 0 32 32" fill="none"><path d="M22.4 15.1l-6.57-6.57-6.57 6.57 2.29 2.29 4.28-4.28 4.28 4.28 2.29-2.29z" fill="white"/></svg></div> Loading sprint…`;
+  btn.innerHTML = kbLabel('概要', 'Loading sprint…', 'summary');
 
   // Try scrum boards first, then any board type
   let boards = [];
@@ -2264,14 +2275,14 @@ async function loadJiraSprintForBoard(projectKey, preferredSprintId) {
 
   jiraSprintData = { boardId, sprints, sprint: selectedSprint, issues: [] };
 
-  btn.innerHTML = `<div style="width:14px;height:14px;border-radius:4px;background:linear-gradient(135deg,#0052cc,#2684ff);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="8" height="8" viewBox="0 0 32 32" fill="none"><path d="M22.4 15.1l-6.57-6.57-6.57 6.57 2.29 2.29 4.28-4.28 4.28 4.28 2.29-2.29z" fill="white"/></svg></div> Sprint Summary`;
+  btn.innerHTML = kbLabel('概要', 'Sprint Summary', 'summary');
 
   await loadSprintIssues(selectedSprint, boardId);
 }
 
 async function loadSprintIssues(sprint, boardId) {
   const btn = document.getElementById('jira-board-btn');
-  btn.innerHTML = `<div style="width:14px;height:14px;border-radius:4px;background:linear-gradient(135deg,#0052cc,#2684ff);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="8" height="8" viewBox="0 0 32 32" fill="none"><path d="M22.4 15.1l-6.57-6.57-6.57 6.57 2.29 2.29 4.28-4.28 4.28 4.28 2.29-2.29z" fill="white"/></svg></div> Loading…`;
+  btn.innerHTML = kbLabel('概要', 'Loading…', 'summary');
 
   // Fetch every page so Total / % Complete are right even for big sprints
   let allIssues = [], startAt = 0, total = Infinity;
@@ -2290,7 +2301,7 @@ async function loadSprintIssues(sprint, boardId) {
     jiraSprintData.issues = issues?.issues || [];
   }
 
-  btn.innerHTML = `<div style="width:14px;height:14px;border-radius:4px;background:linear-gradient(135deg,#0052cc,#2684ff);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="8" height="8" viewBox="0 0 32 32" fill="none"><path d="M22.4 15.1l-6.57-6.57-6.57 6.57 2.29 2.29 4.28-4.28 4.28 4.28 2.29-2.29z" fill="white"/></svg></div> Sprint Summary`;
+  btn.innerHTML = kbLabel('概要', 'Sprint Summary', 'summary');
   showJiraSprint();
 }
 
@@ -6109,6 +6120,10 @@ async function renderDojoCard() {
   });
 })();
 
+function kbLabel(kanji, label, iconKey) {                      // header tag: icon + kanji over English label
+  const ICONS = { summary:`<path d="M7 3.5h9l3 3V19a1.5 1.5 0 0 1-1.5 1.5h-10A1.5 1.5 0 0 1 6 19V5A1.5 1.5 0 0 1 7.5 3.5z"/><path d="M9 10h7M9 13.5h7M9 17h4"/>` };
+  return `<span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true">${ICONS[iconKey]}</svg></span><span class="kb-t"><small>${kanji}</small><b>${label}</b></span>`;
+}
 function esc(s='') { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 </script>
 </body>
